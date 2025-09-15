@@ -1,0 +1,14 @@
+{
+  "name": "@sprintsense/shared-types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types generated from SprintSense API",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}
