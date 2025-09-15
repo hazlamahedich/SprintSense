@@ -1,0 +1,239 @@
+name: Deploy to Development
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      backend-image: ${{ steps.meta-backend.outputs.tags }}
+      frontend-image: ${{ steps.meta-frontend.outputs.tags }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build and push backend image
+      - name: Extract backend metadata
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ inputs.environment }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.API_URL }}
+
+      # Build and push frontend image
+      - name: Extract frontend metadata
+        id: meta-frontend  
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ inputs.environment }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Create frontend Dockerfile
+        run: |
+          cat > frontend/Dockerfile.prod << 'EOF'
+          FROM nginx:alpine
+          
+          # Copy built assets
+          COPY dist/ /usr/share/nginx/html/
+          
+          # Copy nginx configuration
+          COPY nginx.conf /etc/nginx/nginx.conf
+          
+          EXPOSE 80
+          
+          CMD ["nginx", "-g", "daemon off;"]
+          EOF
+
+      - name: Create nginx configuration
+        run: |
+          cat > frontend/nginx.conf << 'EOF'
+          events {
+              worker_connections 1024;
+          }
+          
+          http {
+              include       /etc/nginx/mime.types;
+              default_type  application/octet-stream;
+              
+              server {
+                  listen 80;
+                  server_name localhost;
+                  
+                  location / {
+                      root   /usr/share/nginx/html;
+                      index  index.html index.htm;
+                      try_files $uri $uri/ /index.html;
+                  }
+                  
+                  # API proxy (for development)
+                  location /api/ {
+                      proxy_pass $BACKEND_URL;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                      proxy_set_header X-Forwarded-Proto $scheme;
+                  }
+              }
+          }
+          EOF
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.prod
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Placeholder for actual deployment
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: ${{ inputs.environment }}
+    
+    steps:
+      - name: Deploy to ${{ inputs.environment }}
+        run: |
+          echo "🚀 Deploying to ${{ inputs.environment }} environment"
+          echo "Backend image: ${{ needs.build-and-push.outputs.backend-image }}"
+          echo "Frontend image: ${{ needs.build-and-push.outputs.frontend-image }}"
+          echo "Branch: ${{ inputs.branch }}"
+          
+          # TODO: Implement actual deployment logic
+          # This could be:
+          # - Docker Compose deployment to a remote server
+          # - Kubernetes deployment
+          # - Cloud provider specific deployment
+          # - Infrastructure as Code (Terraform/Pulumi) updates
+          
+          echo "✅ Deployment completed successfully"
+          
+      - name: Update deployment status
+        run: |
+          echo "📊 Deployment Summary:"
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Branch: ${{ inputs.branch }}"
+          echo "Commit SHA: ${{ github.sha }}"
+          echo "Deployed at: $(date)"
+          
+          # TODO: Update external deployment tracking system
+          # TODO: Send notifications to team (Slack, email, etc.)
+          
+  # Health check after deployment
+  health-check:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: ${{ inputs.environment == 'dev' || inputs.environment == 'staging' }}
+    
+    steps:
+      - name: Wait for deployment
+        run: sleep 30
+        
+      - name: Health check
+        run: |
+          echo "🏥 Performing health checks..."
+          
+          # TODO: Replace with actual health check URLs
+          BACKEND_URL="https://api-${{ inputs.environment }}.sprintsense.dev"
+          FRONTEND_URL="https://app-${{ inputs.environment }}.sprintsense.dev"
+          
+          echo "Checking backend health at $BACKEND_URL/api/v1/health"
+          # curl -f "$BACKEND_URL/api/v1/health" || exit 1
+          
+          echo "Checking frontend at $FRONTEND_URL"
+          # curl -f "$FRONTEND_URL" || exit 1
+          
+          echo "✅ All health checks passed"
+
+  # Notification
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy, health-check]
+    if: always()
+    
+    steps:
+      - name: Notify deployment result
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment to ${{ inputs.environment }} was successful!"
+            # TODO: Send success notification
+          else
+            echo "❌ Deployment to ${{ inputs.environment }} failed!"
+            # TODO: Send failure notification  
+          fi
