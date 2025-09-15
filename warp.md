@@ -14,6 +14,7 @@
 - [📁 Codebase Analysis](#-codebase-analysis-workflow)
 - [📚 Documentation Index](#-documentation-index)
 - [🚀 Getting Started](#-getting-started)
+- [🎭 BMAD Persona Switching](#-bmad-persona-switching)
 - [🤖 AI & BMAD Integration](#-ai--bmad-integration)
 - [🛠️ Development Tools](#️-development-tools)
 
@@ -435,6 +436,141 @@ open tasks/document-project.md
 - **BMAD Version:** 4.43.1
 - **IDE Setup:** Claude, Gemini, Roo integrations
 - **Type:** Full installation with expansion packs
+
+---
+
+## 🎭 BMAD Persona Switching
+
+### ⚡ **Quick Persona Activation**
+
+Simply type any of these phrases to instantly switch to the corresponding BMAD agent persona:
+
+| **Command** | **Agent** | **Icon** | **Role** |
+|-------------|-----------|----------|----------|
+| `switch to dev` | James | 💻 | Full Stack Developer |
+| `switch to architect` | Sarah | 🏗️ | Technical Architect |
+| `switch to po` | Alex | 📋 | Product Owner |
+| `switch to pm` | Morgan | 🎯 | Project Manager |
+| `switch to qa` | Jordan | ✅ | Quality Assurance |
+| `switch to analyst` | Taylor | 📊 | Business Analyst |
+| `switch to sm` | Casey | 🔄 | Scrum Master |
+| `switch to ux-expert` | River | 🎨 | UX Expert |
+| `switch to bmad-orchestrator` | BMad Orchestrator | 🎭 | Master Orchestrator |
+
+### 🎯 **Persona Activation Process**
+
+When you request a persona switch, the AI will:
+
+1. **🔄 Load Agent Configuration** - Read the specific agent file from `.bmad-core/agents/`
+2. **⚙️ Initialize Core Settings** - Load `core-config.yaml` and required files
+3. **🎭 Adopt Identity** - Transform into the agent's personality and role
+4. **📋 Display Commands** - Automatically show `*help` with available commands
+5. **⏸️ Await Instructions** - Ready to execute agent-specific workflows
+
+### 📋 **Agent-Specific Commands**
+
+Once switched to a persona, all commands use the `*` prefix:
+
+#### 💻 **Dev Agent (James) Commands**
+```bash
+*help              # Show available commands
+*develop-story     # Implement user story tasks sequentially
+*explain           # Detailed explanation of recent work
+*review-qa         # Apply QA fixes and improvements
+*run-tests         # Execute linting and test suites
+*exit              # Exit persona and return to general mode
+```
+
+#### 🏗️ **Architect Agent (Sarah) Commands**
+```bash
+*help              # Show available commands
+*review-architecture  # Analyze current architecture
+*create-design     # Generate technical design documents
+*assess-risk       # Evaluate technical risks
+*validate-patterns # Check architectural patterns
+*exit              # Exit persona and return to general mode
+```
+
+#### 📋 **Product Owner (Alex) Commands**
+```bash
+*help              # Show available commands
+*create-story      # Generate new user stories
+*prioritize-backlog # Analyze and prioritize features
+*review-requirements # Validate business requirements
+*stakeholder-sync  # Prepare stakeholder communications
+*exit              # Exit persona and return to general mode
+```
+
+### 🔄 **Switching Between Personas**
+
+You can switch between personas at any time:
+
+```bash
+# From any persona, simply request a switch
+"switch to architect"  # Becomes Sarah 🏗️
+"switch to dev"        # Becomes James 💻
+"switch to qa"         # Becomes Jordan ✅
+```
+
+### 🎭 **Master Orchestrator Mode**
+
+Type `switch to bmad-orchestrator` for the ultimate multi-agent experience:
+
+- **🎯 Workflow Coordination** - Manages complex multi-agent tasks
+- **🔄 Dynamic Agent Switching** - Automatically switches to best agent for each task
+- **📊 Progress Tracking** - Monitors overall project status
+- **👥 Team Simulation** - Coordinates multiple agents simultaneously
+
+### ⚙️ **Persona Configuration Files**
+
+Each persona is defined by:
+
+```
+.bmad-core/agents/
+├── dev.md                 # 💻 James - Full Stack Developer
+├── architect.md           # 🏗️ Sarah - Technical Architect  
+├── po.md                  # 📋 Alex - Product Owner
+├── pm.md                  # 🎯 Morgan - Project Manager
+├── qa.md                  # ✅ Jordan - Quality Assurance
+├── analyst.md             # 📊 Taylor - Business Analyst
+├── sm.md                  # 🔄 Casey - Scrum Master
+├── ux-expert.md           # 🎨 River - UX Expert
+└── bmad-orchestrator.md   # 🎭 Master Orchestrator
+```
+
+### 🚀 **Quick Start Examples**
+
+#### 🔨 **Development Work**
+```
+User: "switch to dev"
+James: "Hello! I'm James 💻, your Full Stack Developer. *help to see commands."
+User: "*develop-story"
+James: "Reading current story requirements and implementing tasks..."
+```
+
+#### 📋 **Story Creation**
+```
+User: "switch to po" 
+Alex: "Hi! I'm Alex 📋, your Product Owner. *help for my commands."
+User: "*create-story"
+Alex: "Let me generate a new user story based on our backlog..."
+```
+
+#### 🏗️ **Architecture Review**
+```
+User: "switch to architect"
+Sarah: "Greetings! I'm Sarah 🏗️, your Technical Architect. *help for options."
+User: "*review-architecture"
+Sarah: "Analyzing current system architecture and identifying improvements..."
+```
+
+### 💡 **Pro Tips**
+
+- **🎯 Stay in Character**: Each agent maintains their personality until you switch
+- **📋 Use Commands**: All agent commands require the `*` prefix
+- **🔄 Switch Freely**: No need to exit before switching to another persona
+- **🎭 Orchestrator Power**: Use BMad Orchestrator for complex multi-step workflows
+- **📚 Context Aware**: Each agent has access to all project documentation and code
 
 ---
 
