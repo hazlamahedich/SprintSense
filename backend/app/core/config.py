@@ -27,12 +27,12 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
     
-    # Database settings
+    # Database settings (Supabase local development)
     POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "sprintsense"
-    POSTGRES_PASSWORD: str = "sprintsense"
-    POSTGRES_DB: str = "sprintsense"
-    POSTGRES_PORT: str = "5432"
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DB: str = "postgres"
+    POSTGRES_PORT: str = "54322"
     DATABASE_URL: Optional[PostgresDsn] = None
     
     @field_validator("DATABASE_URL", mode="before")
