@@ -2,14 +2,14 @@
 
 from typing import Any, List, Optional, Union
 
-from pydantic import AnyHttpUrl, ConfigDict, field_validator
-from pydantic_settings import BaseSettings
+from pydantic import AnyHttpUrl, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings."""
 
-    model_config = ConfigDict(case_sensitive=True, env_file=".env")
+    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
 
     PROJECT_NAME: str = "SprintSense"
     VERSION: str = "0.1.0"
