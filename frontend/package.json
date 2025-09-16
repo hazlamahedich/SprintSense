@@ -13,6 +13,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "gen-types": "npx openapi-typescript-codegen --input http://localhost:8000/api/v1/openapi.json --output ../packages/shared-types --client axios",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -41,6 +42,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "jsdom": "^27.0.0",
+    "openapi-typescript-codegen": "^0.29.0",
     "prettier": "^3.6.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",

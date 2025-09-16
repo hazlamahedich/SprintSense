@@ -45,7 +45,7 @@ export const HealthPage: React.FC = () => {
       setGlobalHealthStatus(status)
     } catch (err) {
       const errorMsg =
-        err instanceof Error ? err.message : 'Health check failed'
+        (err as Error)?.message || 'Health check failed'
       setError(errorMsg)
       setHealthStatus(null)
     } finally {
@@ -64,7 +64,7 @@ export const HealthPage: React.FC = () => {
       setDetailedHealth(status)
     } catch (err) {
       const errorMsg =
-        err instanceof Error ? err.message : 'Detailed health check failed'
+        (err as Error)?.message || 'Detailed health check failed'
       setError(errorMsg)
       setDetailedHealth(null)
     } finally {
