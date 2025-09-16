@@ -1,7 +1,7 @@
 """Add users table
 
 Revision ID: 147879dc5463
-Revises: 
+Revises:
 Create Date: 2025-09-16 16:21:19.143583
 
 """

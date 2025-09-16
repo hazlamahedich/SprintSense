@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import verify_password
 from app.domains.models.user import User
-from app.main import app
 
 
 @pytest.mark.asyncio
@@ -225,7 +224,8 @@ class TestUserRegistrationAPI:
         response1 = await async_client.post("/api/v1/users/register", json=user_data1)
         assert response1.status_code == 201
 
-        # Try to register with different case - should fail if emails are case-insensitive
+        # Try to register with different case - should fail if emails are
+        # case-insensitive
         user_data2 = {
             "email": "TEST@EXAMPLE.COM",
             "full_name": "Test User 2",

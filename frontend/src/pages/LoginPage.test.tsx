@@ -32,9 +32,7 @@ vi.mock('react-router-dom', async () => {
 // Test wrapper component
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <BrowserRouter>
-    <ThemeProvider theme={baseTheme}>
-      {children}
-    </ThemeProvider>
+    <ThemeProvider theme={baseTheme}>{children}</ThemeProvider>
   </BrowserRouter>
 )
 
@@ -46,7 +44,7 @@ describe('LoginPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     mockUseAppStore.mockReturnValue({
       user: null,
       isAuthenticated: false,
@@ -68,7 +66,9 @@ describe('LoginPage', () => {
 
     expect(screen.getByText('SprintSense')).toBeInTheDocument()
     expect(screen.getByText('Welcome Back')).toBeInTheDocument()
-    expect(screen.getByText('Sign in to your account to continue')).toBeInTheDocument()
+    expect(
+      screen.getByText('Sign in to your account to continue')
+    ).toBeInTheDocument()
     expect(screen.getByLabelText('Email Address')).toBeInTheDocument()
     expect(screen.getByLabelText('Password')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
@@ -80,12 +80,14 @@ describe('LoginPage', () => {
     render(<LoginPage />, { wrapper: TestWrapper })
 
     const emailInput = screen.getByLabelText('Email Address')
-    
+
     await user.type(emailInput, 'invalid-email')
     await user.tab() // Trigger blur to show validation
 
     await waitFor(() => {
-      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument()
+      expect(
+        screen.getByText('Please enter a valid email address')
+      ).toBeInTheDocument()
     })
   })
 
@@ -95,7 +97,7 @@ describe('LoginPage', () => {
 
     const passwordInput = screen.getByLabelText('Password')
     const emailInput = screen.getByLabelText('Email Address')
-    
+
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'test')
     await user.clear(passwordInput) // Clear password to trigger validation
@@ -174,7 +176,10 @@ describe('LoginPage', () => {
     await user.click(submitButton)
 
     // Verify API call
-    expect(authApi.login).toHaveBeenCalledWith('test@example.com', 'TestPassword123')
+    expect(authApi.login).toHaveBeenCalledWith(
+      'test@example.com',
+      'TestPassword123'
+    )
 
     // Verify store updates
     await waitFor(() => {
@@ -205,7 +210,9 @@ describe('LoginPage', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid email or password. Please try again.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Invalid email or password. Please try again.')
+      ).toBeInTheDocument()
     })
 
     // Verify navigation was not called
@@ -231,7 +238,9 @@ describe('LoginPage', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Please check your email and password format.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Please check your email and password format.')
+      ).toBeInTheDocument()
     })
   })
 
@@ -254,7 +263,9 @@ describe('LoginPage', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Server error. Please try again later.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Server error. Please try again later.')
+      ).toBeInTheDocument()
     })
   })
 
@@ -275,13 +286,17 @@ describe('LoginPage', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Login failed. Please check your connection and try again.')).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          'Login failed. Please check your connection and try again.'
+        )
+      ).toBeInTheDocument()
     })
   })
 
   it('shows loading state during submission', async () => {
     const user = userEvent.setup()
-    
+
     // Mock a slow login call
     vi.mocked(authApi.login).mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 1000))
@@ -322,21 +337,25 @@ describe('LoginPage', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid email or password. Please try again.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Invalid email or password. Please try again.')
+      ).toBeInTheDocument()
     })
 
     // Find and click the close button in the alert
     const closeButton = screen.getByRole('button', { name: /close/i })
     await user.click(closeButton)
 
-    expect(screen.queryByText('Invalid email or password. Please try again.')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Invalid email or password. Please try again.')
+    ).not.toBeInTheDocument()
   })
 
   it('navigates to register page when Create Account link is clicked', async () => {
     render(<LoginPage />, { wrapper: TestWrapper })
 
     const createAccountLink = screen.getByText('Create Account')
-    
+
     // Since it's a Link component, we can't test navigation directly in this setup
     // but we can verify the link exists and has the correct href
     expect(createAccountLink.closest('a')).toHaveAttribute('href', '/register')

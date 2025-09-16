@@ -125,7 +125,10 @@ export const RegisterPage: React.FC = () => {
       navigate('/dashboard', { replace: true })
     } catch (err: unknown) {
       console.error('Registration error:', err)
-      const error = err as { response?: { status?: number; data?: { detail?: string } }; message?: string }
+      const error = err as {
+        response?: { status?: number; data?: { detail?: string } }
+        message?: string
+      }
 
       if (error.response?.status === 409) {
         // Email already exists
@@ -136,7 +139,8 @@ export const RegisterPage: React.FC = () => {
       } else if (error.response?.status === 422) {
         // Validation errors from backend
         const errorMessage =
-          error.response?.data?.detail || 'Please check your input and try again'
+          error.response?.data?.detail ||
+          'Please check your input and try again'
         setError(errorMessage)
       } else {
         // General error
@@ -216,7 +220,11 @@ export const RegisterPage: React.FC = () => {
                 )}
 
                 {/* Registration Form */}
-                <Box component="form" data-testid="registration-form" onSubmit={handleSubmit(onSubmit)}>
+                <Box
+                  component="form"
+                  data-testid="registration-form"
+                  onSubmit={handleSubmit(onSubmit)}
+                >
                   {/* Full Name Field */}
                   <Controller
                     name="full_name"

@@ -18,7 +18,13 @@ import {
   IconButton,
   useTheme,
 } from '@mui/material'
-import { Visibility, VisibilityOff, Email, Lock, Login } from '@mui/icons-material'
+import {
+  Visibility,
+  VisibilityOff,
+  Email,
+  Lock,
+  Login,
+} from '@mui/icons-material'
 import { useAppStore } from '../store/appStore'
 import { authApi } from '../services/api'
 
@@ -43,7 +49,7 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
   const theme = useTheme()
   const { setUser, setAccessToken, setLoading } = useAppStore()
-  
+
   const [showPassword, setShowPassword] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -68,19 +74,18 @@ export const LoginPage: React.FC = () => {
 
     try {
       const response = await authApi.login(data.email, data.password)
-      
+
       // Store user data and handle authentication
       setUser(response.user)
-      
+
       // Set a temporary token in store (actual token is in HTTP-only cookie)
       setAccessToken('authenticated')
-      
+
       // Navigate to dashboard
       navigate('/dashboard', { replace: true })
-      
     } catch (error: unknown) {
       console.error('Login error:', error)
-      
+
       // Handle different error types
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { status?: number } }
@@ -88,13 +93,20 @@ export const LoginPage: React.FC = () => {
           setLoginError('Invalid email or password. Please try again.')
         } else if (axiosError.response?.status === 422) {
           setLoginError('Please check your email and password format.')
-        } else if (axiosError.response?.status && axiosError.response.status >= 500) {
+        } else if (
+          axiosError.response?.status &&
+          axiosError.response.status >= 500
+        ) {
           setLoginError('Server error. Please try again later.')
         } else {
-          setLoginError('Login failed. Please check your connection and try again.')
+          setLoginError(
+            'Login failed. Please check your connection and try again.'
+          )
         }
       } else {
-        setLoginError('Login failed. Please check your connection and try again.')
+        setLoginError(
+          'Login failed. Please check your connection and try again.'
+        )
       }
     } finally {
       setIsSubmitting(false)
@@ -233,7 +245,9 @@ export const LoginPage: React.FC = () => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Lock color={errors.password ? 'error' : 'action'} />
+                            <Lock
+                              color={errors.password ? 'error' : 'action'}
+                            />
                           </InputAdornment>
                         ),
                         endAdornment: (
@@ -243,7 +257,11 @@ export const LoginPage: React.FC = () => {
                               edge="end"
                               disabled={isSubmitting}
                             >
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                              {showPassword ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
                             </IconButton>
                           </InputAdornment>
                         ),

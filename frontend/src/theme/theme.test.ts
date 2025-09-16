@@ -24,13 +24,16 @@ describe('Theme Configuration', () => {
   })
 
   it('should have correct typography settings', () => {
-    expect(baseTheme.typography.fontFamily).toBe('"Roboto", "Helvetica", "Arial", sans-serif')
+    expect(baseTheme.typography.fontFamily).toBe(
+      '"Roboto", "Helvetica", "Arial", sans-serif'
+    )
     expect(baseTheme.typography.h4?.fontWeight).toBe(600)
     expect(baseTheme.typography.h5?.fontWeight).toBe(500)
   })
 
   it('should have button text transform disabled', () => {
-    const buttonStyles = baseTheme.components?.MuiButton?.styleOverrides?.root as Record<string, unknown>
+    const buttonStyles = baseTheme.components?.MuiButton?.styleOverrides
+      ?.root as Record<string, unknown>
     expect(buttonStyles?.textTransform).toBe('none')
   })
 })

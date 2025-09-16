@@ -15,24 +15,26 @@ import { useAppStore } from './store/appStore'
 import { baseTheme } from './theme'
 
 // Protected route component
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { isAuthenticated } = useAppStore()
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
-  
+
   return <>{children}</>
 }
 
 // Public route component (redirect to dashboard if authenticated)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAppStore()
-  
+
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />
   }
-  
+
   return <>{children}</>
 }
 
@@ -43,29 +45,29 @@ function App() {
       <Router>
         <Routes>
           <Route path="/health" element={<HealthPage />} />
-          <Route 
-            path="/login" 
+          <Route
+            path="/login"
             element={
               <PublicRoute>
                 <LoginPage />
               </PublicRoute>
-            } 
+            }
           />
-          <Route 
-            path="/register" 
+          <Route
+            path="/register"
             element={
               <PublicRoute>
                 <RegisterPage />
               </PublicRoute>
-            } 
+            }
           />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <DashboardPage />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
