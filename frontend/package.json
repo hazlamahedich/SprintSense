@@ -13,6 +13,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit",
     "gen-types": "npx openapi-typescript-codegen --input http://localhost:8000/api/v1/openapi.json --output ../packages/shared-types --client axios",
     "preview": "vite preview"
   },

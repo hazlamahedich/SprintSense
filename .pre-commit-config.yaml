@@ -1,0 +1,109 @@
+# Pre-commit hooks configuration for SprintSense
+# This catches formatting, linting, and type errors before commits reach GitHub
+
+repos:
+  # General code formatting and basic checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^.*\.(md|rst)$
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # Python Backend Quality Checks
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+        files: ^backend/
+        language_version: python3.11
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        files: ^backend/
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        files: ^backend/
+        args: [
+          "--max-line-length=88",
+          "--extend-ignore=E203,W503,E501"
+        ]
+
+  # MyPy type checking for backend
+  - repo: local
+    hooks:
+      - id: mypy-backend
+        name: mypy (backend)
+        entry: bash -c 'cd backend && poetry run mypy app --ignore-missing-imports'
+        language: system
+        files: ^backend/app/.*\.py$
+        pass_filenames: false
+
+  # Backend tests
+  - repo: local
+    hooks:
+      - id: pytest-backend
+        name: pytest (backend)
+        entry: bash -c 'cd backend && poetry run pytest tests/ -q --tb=short'
+        language: system
+        files: ^backend/
+        pass_filenames: false
+
+  # Frontend Quality Checks
+  - repo: local
+    hooks:
+      - id: eslint-frontend
+        name: ESLint (frontend)
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        files: ^frontend/src/.*\.(ts|tsx)$
+        pass_filenames: false
+
+      - id: typescript-frontend
+        name: TypeScript Check (frontend)
+        entry: bash -c 'cd frontend && npm run type-check'
+        language: system
+        files: ^frontend/src/.*\.(ts|tsx)$
+        pass_filenames: false
+
+      - id: vitest-frontend
+        name: Vitest Tests (frontend)
+        entry: bash -c 'cd frontend && npm run test:run'
+        language: system
+        files: ^frontend/
+        pass_filenames: false
+
+  # Security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        files: ^backend/
+        args: ["-r", "-f", "json"]
+        exclude: ^backend/tests/
+
+  # Documentation checks
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix']
+        exclude: ^(CHANGELOG\.md|\.github/)
+
+# Global settings
+default_stages: [commit, push]
+fail_fast: true
