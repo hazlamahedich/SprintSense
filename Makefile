@@ -14,12 +14,11 @@ help: ## Show this help message
 	@echo "================================"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "$(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-install-hooks: ## Install pre-commit hooks
-	@echo "$(BLUE)Installing pre-commit hooks...$(NC)"
-	pip install pre-commit
-	pre-commit install
-	pre-commit install --hook-type pre-push
-	@echo "$(GREEN)✅ Pre-commit hooks installed$(NC)"
+install-hooks: ## Install and configure all Git hooks
+	@echo "$(BLUE)Installing Git hooks...$(NC)"
+	chmod +x scripts/install-git-hooks.sh
+	./scripts/install-git-hooks.sh
+	@echo "$(GREEN)✅ All Git hooks installed$(NC)"
 
 check: ## Run all quality checks (use before committing)
 	@echo "$(BLUE)Running pre-commit quality checks...$(NC)"
@@ -106,7 +105,7 @@ ci-check: ## Run CI checks locally (mimics GitHub Actions)
 	@echo "$(BLUE)Running CI checks locally...$(NC)"
 	$(MAKE) deps
 	$(MAKE) backend-format
-	$(MAKE) frontend-format  
+	$(MAKE) frontend-format
 	$(MAKE) backend-lint
 	$(MAKE) frontend-lint
 	$(MAKE) test
@@ -117,3 +116,8 @@ git-safe: ## Check if repository is in a safe state for push
 	@git status --porcelain | grep -q . && echo "$(YELLOW)⚠️  Uncommitted changes detected$(NC)" || echo "$(GREEN)✅ Working directory clean$(NC)"
 	@git log --oneline -n 1
 	@echo "$(GREEN)✅ Repository ready for operations$(NC)"
+
+automation-status: ## Check automation setup and configuration
+	@echo "$(BLUE)Checking automation status...$(NC)"
+	chmod +x scripts/automation-status.sh
+	./scripts/automation-status.sh

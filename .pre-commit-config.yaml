@@ -105,5 +105,5 @@ repos:
         exclude: ^(CHANGELOG\.md|\.github/)
 
 # Global settings
-default_stages: [commit, push]
+default_stages: [pre-commit, pre-push]
 fail_fast: true
