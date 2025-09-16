@@ -1,0 +1,13 @@
+schema: 1
+story: "1.1"
+story_title: "Project Initialization"
+gate: "CONCERNS"
+status_reason: "The implementation is functionally correct, but the developer did not update the story file to reflect the work done. This is a critical process gap that needs to be addressed."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-09-15T14:00:00Z"
+waiver: { active: false }
+top_issues:
+  - id: "PROCESS-001"
+    severity: "medium"
+    finding: "Story file not updated after implementation."
+    suggested_action: "Developer needs to update the story file, marking tasks as complete and filling out the File List."

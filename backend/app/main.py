@@ -36,14 +36,17 @@ if settings.BACKEND_CORS_ORIGINS:
 # Include routers
 app.include_router(health.router, prefix=settings.API_V1_STR, tags=["health"])
 
+
 # Root endpoint
 @app.get("/")
 async def root():
     """Root endpoint."""
     return {"message": "Welcome to SprintSense API", "version": settings.VERSION}
 
+
 # Instrument with OpenTelemetry
 instrument_fastapi(app)
+
 
 # Startup event
 @app.on_event("startup")
@@ -53,8 +56,9 @@ async def startup_event():
         "SprintSense backend starting up",
         version=settings.VERSION,
         environment=settings.ENVIRONMENT,
-        debug=settings.DEBUG
+        debug=settings.DEBUG,
     )
+
 
 # Shutdown event
 @app.on_event("shutdown")

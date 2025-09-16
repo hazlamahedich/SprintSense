@@ -16,7 +16,7 @@ router = APIRouter()
 async def health_check() -> Dict[str, str]:
     """
     Health check endpoint.
-    
+
     Returns:
         Dict indicating service status
     """
@@ -26,14 +26,14 @@ async def health_check() -> Dict[str, str]:
 
 @router.get("/health/detailed", status_code=200)
 async def detailed_health_check(
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
 ) -> Dict[str, str]:
     """
     Detailed health check endpoint that includes database connectivity.
-    
+
     Args:
         session: Database session
-        
+
     Returns:
         Dict with detailed service status
     """
@@ -45,10 +45,10 @@ async def detailed_health_check(
     except Exception as e:
         db_status = f"error: {str(e)}"
         logger.error("Detailed health check - database connection failed", error=str(e))
-    
+
     return {
         "status": "OK",
         "service": "SprintSense Backend",
         "database": db_status,
-        "version": "0.1.0"
+        "version": "0.1.0",
     }
