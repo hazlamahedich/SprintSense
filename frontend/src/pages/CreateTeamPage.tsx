@@ -78,15 +78,20 @@ export const CreateTeamPage: React.FC = () => {
         name: data.name.trim(),
       }
 
-      await teamsApi.createTeam(trimmedData)
+      const result = await teamsApi.createTeam(trimmedData)
 
       // Show success animation
       setShowSuccess(true)
 
-      // Wait for animation then redirect
+      // Wait for animation then redirect to team dashboard
       setTimeout(() => {
-        // Navigate to team dashboard (placeholder for now, redirect to main dashboard)
-        navigate('/dashboard', { replace: true })
+        // Navigate to the created team's dashboard
+        if (result.team?.id) {
+          navigate(`/teams/${result.team.id}`, { replace: true })
+        } else {
+          // Fallback to main dashboard if no team ID
+          navigate('/dashboard', { replace: true })
+        }
       }, 2000)
     } catch (error: unknown) {
       console.error('Team creation error:', error)

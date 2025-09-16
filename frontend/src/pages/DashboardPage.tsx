@@ -180,24 +180,40 @@ export const DashboardPage: React.FC = () => {
             <Typography variant="body2" color="text.secondary" paragraph>
               Create and manage your teams to organize your work effectively.
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => navigate('/teams/create')}
-              sx={{
-                textTransform: 'none',
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-                '&:hover': {
-                  background:
-                    'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%)',
-                },
-              }}
-            >
-              Create New Team
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => navigate('/teams/create')}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                  background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                  '&:hover': {
+                    background:
+                      'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%)',
+                  },
+                }}
+              >
+                Create New Team
+              </Button>
+
+              <Button
+                variant="outlined"
+                startIcon={<GroupsIcon />}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                }}
+                disabled
+              >
+                View Teams (Coming Soon)
+              </Button>
+            </Box>
           </CardContent>
         </Card>
 

@@ -12,6 +12,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { CreateTeamPage } from './pages/CreateTeamPage'
+import { TeamDashboardPage } from './pages/TeamDashboardPage'
 import { useAppStore } from './store/appStore'
 import { baseTheme } from './theme'
 
@@ -75,6 +76,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateTeamPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teams/:teamId"
+            element={
+              <ProtectedRoute>
+                <TeamDashboardPage />
               </ProtectedRoute>
             }
           />

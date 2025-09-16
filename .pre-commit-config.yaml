@@ -33,17 +33,18 @@ repos:
         files: ^backend/
         args: ["--profile", "black"]
 
-  # Autopep8 for automatic line length and PEP8 fixes
-  - repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v2.0.4
-    hooks:
-      - id: autopep8
-        files: ^backend/
-        args: [
-          "--max-line-length=88",
-          "--aggressive",
-          "--aggressive"
-        ]
+  # Autopep8 disabled to avoid conflicts with Black formatter
+  # - repo: https://github.com/pre-commit/mirrors-autopep8
+  #   rev: v2.0.4
+  #   hooks:
+  #     - id: autopep8
+  #       files: ^backend/
+  #       args: [
+  #         "--in-place",
+  #         "--max-line-length=88",
+  #         "--aggressive",
+  #         "--aggressive"
+  #       ]
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.3.0

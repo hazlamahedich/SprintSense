@@ -19,6 +19,14 @@ class TeamRole(str, Enum):
     MEMBER = "member"
 
 
+class InvitationStatus(str, Enum):
+    """Enum for invitation statuses."""
+
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
+
+
 class Team(Base):
     """Team model representing teams in the system."""
 
@@ -96,4 +104,56 @@ class TeamMember(Base):
         return (
             f"<TeamMember(id={self.id}, team_id={self.team_id}, "
             f"user_id={self.user_id}, role={self.role})>"
+        )
+
+
+class Invitation(Base):
+    """Invitation model representing team invitations."""
+
+    __tablename__ = "invitations"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True,
+    )
+    team_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("teams.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    email: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    role: Mapped[TeamRole] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+    status: Mapped[InvitationStatus] = mapped_column(
+        String(20),
+        nullable=False,
+        default=InvitationStatus.PENDING,
+    )
+    inviter_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+    # Relationships
+    team = relationship("Team")
+    inviter = relationship("User")
+
+    def __repr__(self) -> str:
+        """String representation of Invitation."""
+        return (
+            f"<Invitation(id={self.id}, team_id={self.team_id}, "
+            f"email={self.email}, status={self.status})>"
         )
