@@ -2,7 +2,7 @@
 
 from typing import Any, List, Optional, Union
 
-from pydantic import AnyHttpUrl, PostgresDsn, field_validator
+from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -46,7 +46,12 @@ class Settings(BaseSettings):
 
         values = info.data if hasattr(info, "data") else {}
         # Build URL with async driver for runtime engine
-        return f"postgresql+psycopg_async://{values.get('POSTGRES_USER')}:{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}:{values.get('POSTGRES_PORT', 5432)}/{values.get('POSTGRES_DB', '')}"
+        user = values.get('POSTGRES_USER')
+        password = values.get('POSTGRES_PASSWORD')
+        host = values.get('POSTGRES_SERVER')
+        port = values.get('POSTGRES_PORT', 5432)
+        db = values.get('POSTGRES_DB', '')
+        return f"postgresql+psycopg_async://{user}:{password}@{host}:{port}/{db}"
 
     def get_alembic_url(self) -> str:
         """Get database URL for Alembic (uses sync driver)."""
@@ -54,7 +59,10 @@ class Settings(BaseSettings):
             return self.DATABASE_URL.replace(
                 "postgresql+psycopg_async://", "postgresql+psycopg://"
             )
-        return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return (
+            f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        )
 
     # Logging settings
     LOG_LEVEL: str = "INFO"
