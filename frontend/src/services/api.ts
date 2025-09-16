@@ -28,7 +28,11 @@ if (import.meta.env.DEV) {
       return response
     },
     (error) => {
-      console.error('API Response Error:', error.response?.status, error.message)
+      console.error(
+        'API Response Error:',
+        error.response?.status,
+        error.message
+      )
       return Promise.reject(error)
     }
   )
