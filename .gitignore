@@ -61,7 +61,7 @@ build/
 out/
 
 # Dependencies
-package-lock.json
+# package-lock.json - tracked for CI consistency
 yarn.lock
 
 # Runtime data
