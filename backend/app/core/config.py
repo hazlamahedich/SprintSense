@@ -46,11 +46,11 @@ class Settings(BaseSettings):
 
         values = info.data if hasattr(info, "data") else {}
         # Build URL with async driver for runtime engine
-        user = values.get('POSTGRES_USER')
-        password = values.get('POSTGRES_PASSWORD')
-        host = values.get('POSTGRES_SERVER')
-        port = values.get('POSTGRES_PORT', 5432)
-        db = values.get('POSTGRES_DB', '')
+        user = values.get("POSTGRES_USER")
+        password = values.get("POSTGRES_PASSWORD")
+        host = values.get("POSTGRES_SERVER")
+        port = values.get("POSTGRES_PORT", 5432)
+        db = values.get("POSTGRES_DB", "")
         return f"postgresql+psycopg_async://{user}:{password}@{host}:{port}/{db}"
 
     def get_alembic_url(self) -> str:
