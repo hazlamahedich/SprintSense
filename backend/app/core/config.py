@@ -43,15 +43,17 @@ class Settings(BaseSettings):
             if v.startswith("postgresql://"):
                 return v.replace("postgresql://", "postgresql+psycopg_async://")
             return v
-        
+
         values = info.data if hasattr(info, "data") else {}
         # Build URL with async driver for runtime engine
         return f"postgresql+psycopg_async://{values.get('POSTGRES_USER')}:{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}:{values.get('POSTGRES_PORT', 5432)}/{values.get('POSTGRES_DB', '')}"
-        
+
     def get_alembic_url(self) -> str:
         """Get database URL for Alembic (uses sync driver)."""
         if self.DATABASE_URL:
-            return self.DATABASE_URL.replace("postgresql+psycopg_async://", "postgresql+psycopg://")
+            return self.DATABASE_URL.replace(
+                "postgresql+psycopg_async://", "postgresql+psycopg://"
+            )
         return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     # Logging settings
