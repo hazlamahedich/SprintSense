@@ -1,7 +1,8 @@
 """Main FastAPI application."""
 
-import structlog
 from typing import Dict
+
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
