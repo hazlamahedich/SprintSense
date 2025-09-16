@@ -88,3 +88,23 @@ export const userApi = {
     return response.data
   },
 }
+
+export const teamsApi = {
+  // Create a new team
+  createTeam: async (teamData: { name: string }) => {
+    const response = await api.post('/api/v1/teams/', teamData)
+    return response.data
+  },
+
+  // Get teams for the current user (placeholder for future implementation)
+  getUserTeams: async () => {
+    const response = await api.get('/api/v1/teams/')
+    return response.data
+  },
+
+  // Get team by ID (placeholder for future implementation)
+  getTeam: async (teamId: string) => {
+    const response = await api.get(`/api/v1/teams/${teamId}`)
+    return response.data
+  },
+}

@@ -1,6 +1,7 @@
 """User service with business logic for user registration and management."""
 
-from typing import Optional
+import uuid
+from typing import Optional, Union
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,8 +23,22 @@ class UserService:
         result = await self.db_session.execute(select(User).where(User.email == email))
         return result.scalars().first()
 
-    async def get_user_by_id(self, user_id: str) -> Optional[User]:
-        """Get user by ID."""
+    async def get_user_by_id(self, user_id: Union[str, uuid.UUID]) -> Optional[User]:
+        """Get user by ID.
+        
+        Args:
+            user_id: The user ID as a string or UUID object
+            
+        Returns:
+            The user if found, None otherwise
+        """
+        # Convert string to UUID if needed
+        if isinstance(user_id, str):
+            try:
+                user_id = uuid.UUID(user_id)
+            except ValueError:
+                return None
+                
         result = await self.db_session.execute(select(User).where(User.id == user_id))
         return result.scalars().first()
 

@@ -11,6 +11,7 @@ import { HealthPage } from './pages/HealthPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { CreateTeamPage } from './pages/CreateTeamPage'
 import { useAppStore } from './store/appStore'
 import { baseTheme } from './theme'
 
@@ -66,6 +67,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teams/create"
+            element={
+              <ProtectedRoute>
+                <CreateTeamPage />
               </ProtectedRoute>
             }
           />

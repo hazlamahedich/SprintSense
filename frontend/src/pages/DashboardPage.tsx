@@ -13,6 +13,8 @@ import {
   Dashboard as DashboardIcon,
   ExitToApp as LogoutIcon,
   Person as PersonIcon,
+  Add as AddIcon,
+  Groups as GroupsIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store/appStore'
@@ -161,6 +163,36 @@ export const DashboardPage: React.FC = () => {
                 </Box>
               </Box>
             </Box>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card sx={{ mb: 4 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+              <GroupsIcon sx={{ mr: 1, color: 'primary.main' }} />
+              Team Management
+            </Typography>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Create and manage your teams to organize your work effectively.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/teams/create')}
+              sx={{
+                textTransform: 'none',
+                borderRadius: 2,
+                px: 3,
+                py: 1,
+                background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%)',
+                },
+              }}
+            >
+              Create New Team
+            </Button>
           </CardContent>
         </Card>
 
