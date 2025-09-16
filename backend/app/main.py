@@ -1,6 +1,7 @@
 """Main FastAPI application."""
 
 import structlog
+from typing import Dict
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -39,7 +40,7 @@ app.include_router(health.router, prefix=settings.API_V1_STR, tags=["health"])
 
 # Root endpoint
 @app.get("/")
-async def root():
+async def root() -> Dict[str, str]:
     """Root endpoint."""
     return {"message": "Welcome to SprintSense API", "version": settings.VERSION}
 
@@ -50,7 +51,7 @@ instrument_fastapi(app)
 
 # Startup event
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Application startup event."""
     logger.info(
         "SprintSense backend starting up",
@@ -62,6 +63,6 @@ async def startup_event():
 
 # Shutdown event
 @app.on_event("shutdown")
-async def shutdown_event():
+async def shutdown_event() -> None:
     """Application shutdown event."""
     logger.info("SprintSense backend shutting down")

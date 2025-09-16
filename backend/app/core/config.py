@@ -36,11 +36,12 @@ class Settings(BaseSettings):
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: Optional[str], info) -> Any:
+    def assemble_db_connection(cls, v: Optional[str], info: Any) -> Any:
         """Assemble database URL from components."""
         if isinstance(v, str):
             return v
         values = info.data if hasattr(info, "data") else {}
+        # Use async driver for runtime engine
         return PostgresDsn.build(
             scheme="postgresql+psycopg_async",
             username=values.get("POSTGRES_USER"),

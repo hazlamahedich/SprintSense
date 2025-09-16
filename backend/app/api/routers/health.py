@@ -4,6 +4,7 @@ from typing import Dict
 
 import structlog
 from fastapi import APIRouter, Depends
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infra.db import get_session
@@ -39,7 +40,7 @@ async def detailed_health_check(
     """
     try:
         # Test database connectivity
-        await session.execute("SELECT 1")
+        await session.execute(text("SELECT 1"))
         db_status = "connected"
         logger.info("Detailed health check - database connected")
     except Exception as e:

@@ -48,7 +48,7 @@ def configure_logging() -> None:
         processors.extend([structlog.processors.JSONRenderer()])
 
     structlog.configure(
-        processors=processors,
+        processors=processors,  # type: ignore[arg-type]
         wrapper_class=structlog.stdlib.BoundLogger,
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,

@@ -1,5 +1,6 @@
 """Database infrastructure setup."""
 
+from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -18,13 +19,13 @@ AsyncSessionLocal = sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
-)
+)  # type: ignore[call-overload]
 
 # Base class for models
 Base = declarative_base()
 
 
-async def get_session():
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """Get async database session."""
     async with AsyncSessionLocal() as session:
         try:

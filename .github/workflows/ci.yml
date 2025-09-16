@@ -105,7 +105,7 @@ jobs:
 
       - name: Run tests with coverage
         env:
-          DATABASE_URL: postgresql://sprintsense:sprintsense@localhost:5432/sprintsense_test
+          DATABASE_URL: postgresql+psycopg_async://sprintsense:sprintsense@localhost:5432/sprintsense_test
         run: poetry run pytest --cov=app --cov-report=term --cov-report=xml
 
       - name: Upload coverage reports
