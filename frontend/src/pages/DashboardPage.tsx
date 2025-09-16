@@ -16,14 +16,24 @@ import {
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store/appStore'
+import { authApi } from '../services/api'
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate()
   const { user, logout } = useAppStore()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/', { replace: true })
+  const handleLogout = async () => {
+    try {
+      // Call backend logout endpoint
+      await authApi.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Continue with logout even if API call fails
+    } finally {
+      // Clear local state regardless
+      logout()
+      navigate('/', { replace: true })
+    }
   }
 
   if (!user) {

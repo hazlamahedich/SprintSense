@@ -89,6 +89,27 @@ class UserCreateRequest(BaseModel):
         return v.strip()
 
 
+class UserLoginRequest(BaseModel):
+    """Schema for user login request."""
+
+    email: EmailStr
+    password: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: EmailStr) -> EmailStr:
+        """Validate email format."""
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_not_empty(cls, v: str) -> str:
+        """Validate password is not empty."""
+        if not v or not v.strip():
+            raise ValueError("Password cannot be empty")
+        return v
+
+
 class UserResponse(UserRead):
     """Schema for user registration response."""
 

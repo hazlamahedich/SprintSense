@@ -7,6 +7,7 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include cookies for authentication
 })
 
 // Add request interceptor for logging (development only)
@@ -49,6 +50,23 @@ export const healthApi = {
   // Detailed health check with database status
   checkDetailedHealth: async () => {
     const response = await api.get('/api/v1/health/detailed')
+    return response.data
+  },
+}
+
+export const authApi = {
+  // User login
+  login: async (email: string, password: string) => {
+    const response = await api.post('/api/v1/auth/login', {
+      email,
+      password,
+    })
+    return response.data
+  },
+
+  // User logout
+  logout: async () => {
+    const response = await api.post('/api/v1/auth/logout')
     return response.data
   },
 }

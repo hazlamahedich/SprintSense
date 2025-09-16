@@ -52,10 +52,11 @@ async def db_session():
 @pytest_asyncio.fixture
 async def async_client(db_session: AsyncSession):
     """Create test client with database dependency override."""
+
     # Override the dependency to use our test session
     async def override_get_session():
         yield db_session
-    
+
     app.dependency_overrides[get_session] = override_get_session
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
@@ -63,5 +64,3 @@ async def async_client(db_session: AsyncSession):
 
     # Clean up
     app.dependency_overrides.clear()
-
-

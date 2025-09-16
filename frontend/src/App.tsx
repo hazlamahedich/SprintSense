@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom'
 import { HealthPage } from './pages/HealthPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { useAppStore } from './store/appStore'
 import { baseTheme } from './theme'
@@ -18,7 +19,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { isAuthenticated } = useAppStore()
   
   if (!isAuthenticated) {
-    return <Navigate to="/register" replace />
+    return <Navigate to="/login" replace />
   }
   
   return <>{children}</>
@@ -43,6 +44,14 @@ function App() {
         <Routes>
           <Route path="/health" element={<HealthPage />} />
           <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            } 
+          />
+          <Route 
             path="/register" 
             element={
               <PublicRoute>
@@ -58,7 +67,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route path="/" element={<Navigate to="/register" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </ThemeProvider>

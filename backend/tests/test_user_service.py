@@ -28,9 +28,7 @@ def user_service(mock_db_session: AsyncSession) -> UserService:
 def sample_user_data() -> UserCreateRequest:
     """Sample user registration data."""
     return UserCreateRequest(
-        email="test@example.com",
-        full_name="Test User",
-        password="TestPassword123"
+        email="test@example.com", full_name="Test User", password="TestPassword123"
     )
 
 
@@ -55,7 +53,10 @@ class TestUserService:
 
     @pytest.mark.asyncio
     async def test_get_user_by_email_found(
-        self, user_service: UserService, mock_db_session: AsyncSession, sample_user_model: User
+        self,
+        user_service: UserService,
+        mock_db_session: AsyncSession,
+        sample_user_model: User,
     ) -> None:
         """Test getting user by email when user exists."""
         # Mock the database query result
@@ -87,11 +88,14 @@ class TestUserService:
 
     @pytest.mark.asyncio
     async def test_get_user_by_id_found(
-        self, user_service: UserService, mock_db_session: AsyncSession, sample_user_model: User
+        self,
+        user_service: UserService,
+        mock_db_session: AsyncSession,
+        sample_user_model: User,
     ) -> None:
         """Test getting user by ID when user exists."""
         user_id = str(sample_user_model.id)
-        
+
         # Mock the database query result
         mock_result = MagicMock()
         mock_result.scalars.return_value.first.return_value = sample_user_model
@@ -105,7 +109,10 @@ class TestUserService:
 
     @pytest.mark.asyncio
     async def test_create_user_success(
-        self, user_service: UserService, mock_db_session: AsyncSession, sample_user_data: UserCreateRequest
+        self,
+        user_service: UserService,
+        mock_db_session: AsyncSession,
+        sample_user_data: UserCreateRequest,
     ) -> None:
         """Test successful user creation."""
         # Mock that email doesn't exist
@@ -154,11 +161,11 @@ class TestUserService:
 
     @pytest.mark.asyncio
     async def test_create_user_email_already_exists(
-        self, 
-        user_service: UserService, 
-        mock_db_session: AsyncSession, 
+        self,
+        user_service: UserService,
+        mock_db_session: AsyncSession,
         sample_user_data: UserCreateRequest,
-        sample_user_model: User
+        sample_user_model: User,
     ) -> None:
         """Test user creation when email already exists."""
         # Mock that email already exists
@@ -176,7 +183,10 @@ class TestUserService:
 
     @pytest.mark.asyncio
     async def test_is_email_taken_true(
-        self, user_service: UserService, mock_db_session: AsyncSession, sample_user_model: User
+        self,
+        user_service: UserService,
+        mock_db_session: AsyncSession,
+        sample_user_model: User,
     ) -> None:
         """Test checking if email is taken when it exists."""
         # Mock that email exists
@@ -211,9 +221,10 @@ class TestUserService:
         """Test successful user authentication."""
         # Create a user with a known password hash
         from app.core.security import hash_password
+
         password = "TestPassword123"
         hashed_password = hash_password(password)
-        
+
         user_model = User(
             id=uuid.uuid4(),
             email="test@example.com",
@@ -241,10 +252,11 @@ class TestUserService:
         """Test user authentication with wrong password."""
         # Create a user with a known password hash
         from app.core.security import hash_password
+
         correct_password = "TestPassword123"
         wrong_password = "WrongPassword456"
         hashed_password = hash_password(correct_password)
-        
+
         user_model = User(
             id=uuid.uuid4(),
             email="test@example.com",
@@ -259,7 +271,9 @@ class TestUserService:
         mock_db_session.execute.return_value = mock_result
 
         # Authenticate with wrong password
-        result = await user_service.authenticate_user("test@example.com", wrong_password)
+        result = await user_service.authenticate_user(
+            "test@example.com", wrong_password
+        )
 
         assert result is None
 
@@ -274,7 +288,9 @@ class TestUserService:
         mock_db_session.execute.return_value = mock_result
 
         # Try to authenticate non-existent user
-        result = await user_service.authenticate_user("nonexistent@example.com", "password")
+        result = await user_service.authenticate_user(
+            "nonexistent@example.com", "password"
+        )
 
         assert result is None
         mock_db_session.execute.assert_called_once()
