@@ -169,7 +169,11 @@ export const DashboardPage: React.FC = () => {
         {/* Quick Actions */}
         <Card sx={{ mb: 4 }}>
           <CardContent sx={{ p: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ display: 'flex', alignItems: 'center' }}
+            >
               <GroupsIcon sx={{ mr: 1, color: 'primary.main' }} />
               Team Management
             </Typography>
@@ -187,7 +191,8 @@ export const DashboardPage: React.FC = () => {
                 py: 1,
                 background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%)',
+                  background:
+                    'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%)',
                 },
               }}
             >

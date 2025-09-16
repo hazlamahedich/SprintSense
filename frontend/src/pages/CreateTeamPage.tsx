@@ -19,13 +19,7 @@ import {
   Fade,
   Grow,
 } from '@mui/material'
-import {
-  Groups,
-  ArrowBack,
-  Add,
-  CheckCircle,
-  Edit,
-} from '@mui/icons-material'
+import { Groups, ArrowBack, Add, CheckCircle, Edit } from '@mui/icons-material'
 import { useAppStore } from '../store/appStore'
 import { teamsApi } from '../services/api'
 
@@ -36,9 +30,13 @@ const createTeamSchema = yup.object({
     .required('Team name is required')
     .min(1, 'Team name cannot be empty')
     .max(100, 'Team name cannot exceed 100 characters')
-    .test('no-only-whitespace', 'Team name cannot be only whitespace', (value) => {
-      return value ? value.trim().length > 0 : false
-    }),
+    .test(
+      'no-only-whitespace',
+      'Team name cannot be only whitespace',
+      (value) => {
+        return value ? value.trim().length > 0 : false
+      }
+    ),
 })
 
 interface CreateTeamFormData {
@@ -81,24 +79,27 @@ export const CreateTeamPage: React.FC = () => {
       }
 
       await teamsApi.createTeam(trimmedData)
-      
+
       // Show success animation
       setShowSuccess(true)
-      
+
       // Wait for animation then redirect
       setTimeout(() => {
         // Navigate to team dashboard (placeholder for now, redirect to main dashboard)
         navigate('/dashboard', { replace: true })
       }, 2000)
-
     } catch (error: unknown) {
       console.error('Team creation error:', error)
 
       // Handle different error types
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { status?: number; data?: { detail?: string } } }
+        const axiosError = error as {
+          response?: { status?: number; data?: { detail?: string } }
+        }
         if (axiosError.response?.status === 409) {
-          setCreateError('A team with this name already exists. Please choose a different name.')
+          setCreateError(
+            'A team with this name already exists. Please choose a different name.'
+          )
         } else if (axiosError.response?.status === 422) {
           setCreateError('Please check your team name format.')
         } else if (axiosError.response?.status === 401) {
@@ -112,11 +113,14 @@ export const CreateTeamPage: React.FC = () => {
           setCreateError('Server error. Please try again later.')
         } else {
           setCreateError(
-            axiosError.response?.data?.detail || 'Failed to create team. Please try again.'
+            axiosError.response?.data?.detail ||
+              'Failed to create team. Please try again.'
           )
         }
       } else {
-        setCreateError('Failed to create team. Please check your connection and try again.')
+        setCreateError(
+          'Failed to create team. Please check your connection and try again.'
+        )
       }
     } finally {
       setIsSubmitting(false)
@@ -130,7 +134,15 @@ export const CreateTeamPage: React.FC = () => {
 
   if (showSuccess) {
     return (
-      <Container maxWidth="sm" sx={{ py: 8, display: 'flex', alignItems: 'center', minHeight: '100vh' }}>
+      <Container
+        maxWidth="sm"
+        sx={{
+          py: 8,
+          display: 'flex',
+          alignItems: 'center',
+          minHeight: '100vh',
+        }}
+      >
         <Fade in={showSuccess} timeout={1000}>
           <Paper
             elevation={8}
@@ -146,7 +158,12 @@ export const CreateTeamPage: React.FC = () => {
             <Grow in={showSuccess} timeout={1500}>
               <CheckCircle sx={{ fontSize: 80, mb: 2 }} />
             </Grow>
-            <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
+            <Typography
+              variant="h4"
+              component="h1"
+              fontWeight="bold"
+              gutterBottom
+            >
               Team Created Successfully!
             </Typography>
             <Typography variant="h6" sx={{ opacity: 0.9 }}>
@@ -220,7 +237,9 @@ export const CreateTeamPage: React.FC = () => {
         </Box>
 
         {/* Header */}
-        <Box sx={{ textAlign: 'center', mb: 4, position: 'relative', zIndex: 1 }}>
+        <Box
+          sx={{ textAlign: 'center', mb: 4, position: 'relative', zIndex: 1 }}
+        >
           <Box
             sx={{
               display: 'flex',
@@ -260,7 +279,8 @@ export const CreateTeamPage: React.FC = () => {
             color="text.secondary"
             sx={{ maxWidth: 400, mx: 'auto', lineHeight: 1.6 }}
           >
-            Give your team a unique name to get started with collaborative project management
+            Give your team a unique name to get started with collaborative
+            project management
           </Typography>
         </Box>
 
@@ -284,9 +304,9 @@ export const CreateTeamPage: React.FC = () => {
         )}
 
         {/* Create Team Form */}
-        <Card 
-          elevation={3} 
-          sx={{ 
+        <Card
+          elevation={3}
+          sx={{
             borderRadius: 3,
             border: `1px solid ${theme.palette.grey[200]}`,
             position: 'relative',
@@ -352,10 +372,18 @@ export const CreateTeamPage: React.FC = () => {
                         borderRadius: 2,
                       }}
                     >
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        gutterBottom
+                      >
                         Team Preview:
                       </Typography>
-                      <Typography variant="h6" color="primary" fontWeight="bold">
+                      <Typography
+                        variant="h6"
+                        color="primary"
+                        fontWeight="bold"
+                      >
                         {teamName.trim()}
                       </Typography>
                     </Paper>
@@ -401,10 +429,10 @@ export const CreateTeamPage: React.FC = () => {
                 </Button>
 
                 {/* Info Text */}
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary" 
-                  sx={{ 
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
                     textAlign: 'center',
                     mt: 1,
                     fontSize: '0.9rem',

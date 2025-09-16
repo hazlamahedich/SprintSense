@@ -23,16 +23,14 @@ vi.mock('react-router-dom', async () => {
 // Test wrapper component
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <BrowserRouter>
-    <ThemeProvider theme={baseTheme}>
-      {children}
-    </ThemeProvider>
+    <ThemeProvider theme={baseTheme}>{children}</ThemeProvider>
   </BrowserRouter>
 )
 
 describe('CreateTeamPage', () => {
   const mockNavigate = vi.fn()
   const mockSetLoading = vi.fn()
-  
+
   const mockUser = {
     id: '123',
     email: 'test@example.com',
@@ -43,11 +41,11 @@ describe('CreateTeamPage', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    
+
     // Mock useNavigate
     const { useNavigate } = await import('react-router-dom')
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-    
+
     // Mock useAppStore
     vi.mocked(useAppStore).mockReturnValue({
       user: mockUser,
@@ -79,7 +77,9 @@ describe('CreateTeamPage', () => {
 
       expect(screen.getByText('Create New Team')).toBeInTheDocument()
       expect(screen.getByLabelText('Team Name')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /create team/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /create team/i })
+      ).toBeInTheDocument()
       expect(screen.getByText('Back to Dashboard')).toBeInTheDocument()
     })
 
@@ -91,8 +91,14 @@ describe('CreateTeamPage', () => {
       )
 
       // Check for unique design elements
-      expect(screen.getByText('Give your team a unique name to get started with collaborative project management')).toBeInTheDocument()
-      expect(screen.getByText('You will be automatically assigned as the team owner')).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          'Give your team a unique name to get started with collaborative project management'
+        )
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('You will be automatically assigned as the team owner')
+      ).toBeInTheDocument()
     })
   })
 
@@ -129,7 +135,9 @@ describe('CreateTeamPage', () => {
       await user.type(teamNameInput, '   ')
 
       await waitFor(() => {
-        expect(screen.getByText('Team name cannot be only whitespace')).toBeInTheDocument()
+        expect(
+          screen.getByText('Team name cannot be only whitespace')
+        ).toBeInTheDocument()
       })
     })
 
@@ -146,7 +154,9 @@ describe('CreateTeamPage', () => {
       await user.type(teamNameInput, longName)
 
       await waitFor(() => {
-        expect(screen.getByText('Team name cannot exceed 100 characters')).toBeInTheDocument()
+        expect(
+          screen.getByText('Team name cannot exceed 100 characters')
+        ).toBeInTheDocument()
       })
     })
 
@@ -216,7 +226,7 @@ describe('CreateTeamPage', () => {
       const submitButton = screen.getByRole('button', { name: /create team/i })
 
       await user.type(teamNameInput, 'Test Team')
-      
+
       await waitFor(() => {
         expect(submitButton).toBeEnabled()
       })
@@ -229,12 +239,14 @@ describe('CreateTeamPage', () => {
           name: 'Test Team',
         })
       })
-      
+
       expect(mockSetLoading).toHaveBeenCalledWith(true)
 
       // Check success state
       await waitFor(() => {
-        expect(screen.getByText('Team Created Successfully!')).toBeInTheDocument()
+        expect(
+          screen.getByText('Team Created Successfully!')
+        ).toBeInTheDocument()
         expect(screen.getByText('Welcome to "Test Team"')).toBeInTheDocument()
       })
 
@@ -298,7 +310,11 @@ describe('CreateTeamPage', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('A team with this name already exists. Please choose a different name.')).toBeInTheDocument()
+        expect(
+          screen.getByText(
+            'A team with this name already exists. Please choose a different name.'
+          )
+        ).toBeInTheDocument()
       })
     })
 
@@ -325,7 +341,9 @@ describe('CreateTeamPage', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Please check your team name format.')).toBeInTheDocument()
+        expect(
+          screen.getByText('Please check your team name format.')
+        ).toBeInTheDocument()
       })
     })
 
@@ -352,7 +370,9 @@ describe('CreateTeamPage', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('You need to be logged in to create a team.')).toBeInTheDocument()
+        expect(
+          screen.getByText('You need to be logged in to create a team.')
+        ).toBeInTheDocument()
       })
 
       // Check navigation after delay
@@ -386,7 +406,9 @@ describe('CreateTeamPage', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Server error. Please try again later.')).toBeInTheDocument()
+        expect(
+          screen.getByText('Server error. Please try again later.')
+        ).toBeInTheDocument()
       })
     })
 
@@ -408,7 +430,11 @@ describe('CreateTeamPage', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to create team. Please check your connection and try again.')).toBeInTheDocument()
+        expect(
+          screen.getByText(
+            'Failed to create team. Please check your connection and try again.'
+          )
+        ).toBeInTheDocument()
       })
     })
 
@@ -434,7 +460,11 @@ describe('CreateTeamPage', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('A team with this name already exists. Please choose a different name.')).toBeInTheDocument()
+        expect(
+          screen.getByText(
+            'A team with this name already exists. Please choose a different name.'
+          )
+        ).toBeInTheDocument()
       })
 
       // Find and click the dismiss button
@@ -442,7 +472,11 @@ describe('CreateTeamPage', () => {
       await user.click(dismissButton)
 
       await waitFor(() => {
-        expect(screen.queryByText('A team with this name already exists. Please choose a different name.')).not.toBeInTheDocument()
+        expect(
+          screen.queryByText(
+            'A team with this name already exists. Please choose a different name.'
+          )
+        ).not.toBeInTheDocument()
       })
     })
   })
@@ -472,7 +506,9 @@ describe('CreateTeamPage', () => {
       )
 
       expect(screen.getByLabelText('Team Name')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /create team/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /create team/i })
+      ).toBeInTheDocument()
       expect(container.querySelector('form')).toBeInTheDocument()
     })
 
@@ -483,7 +519,9 @@ describe('CreateTeamPage', () => {
         </TestWrapper>
       )
 
-      expect(screen.getByRole('heading', { name: /create new team/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /create new team/i })
+      ).toBeInTheDocument()
     })
   })
 })

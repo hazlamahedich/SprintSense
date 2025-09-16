@@ -34,7 +34,7 @@ print_separator() {
 }
 
 # Check if we're in the correct directory
-if [[ ! -f "pyproject.toml" && ! -f "package.json" ]]; then
+if [[ ! -d "backend" && ! -d "frontend" ]]; then
     print_error "Please run this script from the SprintSense root directory"
     exit 1
 fi
@@ -56,7 +56,7 @@ if [[ -d "backend" ]]; then
     
     # Install dependencies if needed
     print_status "Ensuring backend dependencies are installed..."
-    poetry install --no-dev || {
+    poetry install || {
         print_error "Failed to install backend dependencies"
         exit 1
     }

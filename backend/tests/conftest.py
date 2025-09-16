@@ -68,8 +68,8 @@ async def async_client(db_session: AsyncSession):
 @pytest_asyncio.fixture
 async def test_user(db_session):
     """Create a test user in the database."""
-    from app.domains.services.user_service import UserService
     from app.domains.schemas.user import UserCreate
+    from app.domains.services.user_service import UserService
 
     user_service = UserService(db_session)
     user_data = UserCreate(
@@ -83,8 +83,9 @@ async def test_user(db_session):
 @pytest_asyncio.fixture
 async def auth_headers_for_user(test_user):
     """Create authentication headers for the test user."""
-    from app.core.security import create_access_token
     from datetime import timedelta
+
+    from app.core.security import create_access_token
 
     access_token = create_access_token(
         data={"sub": str(test_user.id), "email": test_user.email},
