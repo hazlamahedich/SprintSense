@@ -42,7 +42,7 @@ class Settings(BaseSettings):
             return v
         values = info.data if hasattr(info, "data") else {}
         return PostgresDsn.build(
-            scheme="postgresql+psycopg_async",
+            scheme="postgresql+psycopg",
             username=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
