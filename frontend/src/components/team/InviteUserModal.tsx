@@ -19,7 +19,7 @@ import {
 import { Close as CloseIcon } from '@mui/icons-material'
 import { useForm, Controller } from 'react-hook-form'
 import { invitationsApi } from '../../services/api'
-import { InvitationFormData, InvitationError } from '../../types/invitations'
+import type { InvitationFormData, InvitationError } from '../../types/invitations'
 
 interface InviteUserModalProps {
   open: boolean

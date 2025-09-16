@@ -21,7 +21,7 @@ import {
   AccessTime as TimeIcon,
 } from '@mui/icons-material'
 import { invitationsApi } from '../../services/api'
-import { InvitationListItem } from '../../types/invitations'
+import type { InvitationListItem } from '../../types/invitations'
 
 interface PendingInvitationsProps {
   teamId: string
