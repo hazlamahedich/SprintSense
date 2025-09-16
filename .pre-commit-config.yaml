@@ -4,7 +4,7 @@
 repos:
   # General code formatting and basic checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: ^.*\.(md|rst)$
@@ -20,28 +20,50 @@ repos:
 
   # Python Backend Quality Checks
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 25.1.0
     hooks:
       - id: black
         files: ^backend/
         language_version: python3.11
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 6.0.1
     hooks:
       - id: isort
         files: ^backend/
         args: ["--profile", "black"]
 
+  # Autopep8 for automatic line length and PEP8 fixes
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v2.0.4
+    hooks:
+      - id: autopep8
+        files: ^backend/
+        args: [
+          "--max-line-length=88",
+          "--aggressive",
+          "--aggressive"
+        ]
+
   - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
+    rev: 7.3.0
     hooks:
       - id: flake8
         files: ^backend/
         args: [
           "--max-line-length=88",
-          "--extend-ignore=E203,W503,E501"
+          "--extend-ignore=E203,W503"
         ]
+
+  # Line length fixer for backend
+  - repo: local
+    hooks:
+      - id: fix-line-lengths
+        name: Fix line lengths (backend)
+        entry: python3 scripts/fix-line-lengths.py
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: true
 
   # MyPy type checking for backend
   - repo: local
@@ -89,7 +111,7 @@ repos:
 
   # Security checks
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
+    rev: 1.8.6
     hooks:
       - id: bandit
         files: ^backend/
@@ -98,7 +120,7 @@ repos:
 
   # Documentation checks
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.37.0
+    rev: v0.45.0
     hooks:
       - id: markdownlint
         args: ['--fix']

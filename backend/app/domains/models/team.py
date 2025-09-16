@@ -93,4 +93,7 @@ class TeamMember(Base):
 
     def __repr__(self) -> str:
         """String representation of TeamMember."""
-        return f"<TeamMember(id={self.id}, team_id={self.team_id}, user_id={self.user_id}, role={self.role})>"
+        return (
+            f"<TeamMember(id={self.id}, team_id={self.team_id}, "
+            f"user_id={self.user_id}, role={self.role})>"
+        )

@@ -58,9 +58,15 @@ frontend-format: ## Format frontend code (Prettier + ESLint)
 
 backend-lint: ## Run backend linting checks
 	@echo "$(BLUE)Running backend linting...$(NC)"
-	cd backend && poetry run flake8 app tests --max-line-length=88 --extend-ignore=E203,W503,E501
+	cd backend && poetry run flake8 app tests --max-line-length=88 --extend-ignore=E203,W503
 	cd backend && poetry run mypy app --ignore-missing-imports
 	@echo "$(GREEN)✅ Backend linting completed$(NC)"
+
+fix-line-lengths: ## Fix line length issues in Python files
+	@echo "$(BLUE)Fixing line length issues...$(NC)"
+	chmod +x scripts/fix-line-lengths.py
+	python3 scripts/fix-line-lengths.py backend/app/**/*.py backend/tests/**/*.py
+	@echo "$(GREEN)✅ Line length fixes completed$(NC)"
 
 frontend-lint: ## Run frontend linting checks
 	@echo "$(BLUE)Running frontend linting...$(NC)"
