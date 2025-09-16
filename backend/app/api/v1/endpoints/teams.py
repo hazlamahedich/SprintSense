@@ -46,9 +46,7 @@ async def create_team(
         HTTPException: 409 if team name already exists, 400 for validation errors
     """
     logger.info(
-        "Team creation attempt", 
-        team_name=team_data.name, 
-        user_id=str(current_user.id)
+        "Team creation attempt", team_name=team_data.name, user_id=str(current_user.id)
     )
 
     try:
@@ -62,10 +60,7 @@ async def create_team(
             owner_id=str(current_user.id),
         )
 
-        return TeamCreateResponse(
-            message="Team created successfully",
-            team=team
-        )
+        return TeamCreateResponse(message="Team created successfully", team=team)
 
     except ValueError as e:
         if "already exists" in str(e):
@@ -80,9 +75,9 @@ async def create_team(
             )
 
         logger.warning(
-            "Team creation failed - validation error", 
+            "Team creation failed - validation error",
             error=str(e),
-            user_id=str(current_user.id)
+            user_id=str(current_user.id),
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

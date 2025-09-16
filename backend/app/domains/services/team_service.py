@@ -36,7 +36,9 @@ class TeamService:
         )
         return list(result.scalars().all())
 
-    async def check_team_name_exists_for_user(self, name: str, owner_id: uuid.UUID) -> bool:
+    async def check_team_name_exists_for_user(
+        self, name: str, owner_id: uuid.UUID
+    ) -> bool:
         """Check if a team with the same name already exists for the user as owner."""
         result = await self.db_session.execute(
             select(Team)
@@ -45,14 +47,16 @@ class TeamService:
                 and_(
                     Team.name == name,
                     TeamMember.user_id == owner_id,
-                    TeamMember.role == TeamRole.OWNER
+                    TeamMember.role == TeamRole.OWNER,
                 )
             )
         )
         existing_team = result.scalars().first()
         return existing_team is not None
 
-    async def create_team(self, team_data: TeamCreateRequest, owner: User) -> TeamResponse:
+    async def create_team(
+        self, team_data: TeamCreateRequest, owner: User
+    ) -> TeamResponse:
         """Create a new team with the specified owner.
 
         Args:
@@ -77,18 +81,14 @@ class TeamService:
         await self.db_session.flush()  # Flush to get the team ID
 
         # Create team member record with owner role
-        team_member = TeamMember(
-            team_id=team.id,
-            user_id=owner.id,
-            role=TeamRole.OWNER
-        )
+        team_member = TeamMember(team_id=team.id, user_id=owner.id, role=TeamRole.OWNER)
 
         self.db_session.add(team_member)
         await self.db_session.commit()
-        
+
         # Refresh to get updated data with relationships
         await self.db_session.refresh(team)
-        
+
         # Load the team with members
         result = await self.db_session.execute(
             select(Team).options(selectinload(Team.members)).where(Team.id == team.id)
@@ -105,7 +105,7 @@ class TeamService:
                 and_(
                     TeamMember.team_id == team_id,
                     TeamMember.user_id == user_id,
-                    TeamMember.role == TeamRole.OWNER
+                    TeamMember.role == TeamRole.OWNER,
                 )
             )
         )

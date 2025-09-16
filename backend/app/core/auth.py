@@ -25,14 +25,14 @@ async def get_current_user(
     user_service: UserService = Depends(get_user_service),
 ) -> User:
     """Get the current authenticated user from the access token cookie.
-    
+
     Args:
         access_token: JWT token from HTTP-only cookie
         user_service: User service dependency
-        
+
     Returns:
         User: The authenticated user
-        
+
     Raises:
         HTTPException: 401 if token is invalid or user not found
     """

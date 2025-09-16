@@ -66,7 +66,9 @@ async def test_check_team_name_exists_for_user_returns_false_when_no_team_exists
     mock_db_session.execute.return_value = mock_result
 
     # Act
-    result = await team_service.check_team_name_exists_for_user("Test Team", sample_user.id)
+    result = await team_service.check_team_name_exists_for_user(
+        "Test Team", sample_user.id
+    )
 
     # Assert
     assert result is False
@@ -84,7 +86,9 @@ async def test_check_team_name_exists_for_user_returns_true_when_team_exists(
     mock_db_session.execute.return_value = mock_result
 
     # Act
-    result = await team_service.check_team_name_exists_for_user("Test Team", sample_user.id)
+    result = await team_service.check_team_name_exists_for_user(
+        "Test Team", sample_user.id
+    )
 
     # Assert
     assert result is True
@@ -98,11 +102,11 @@ async def test_create_team_success(
     """Test successful team creation."""
     # Arrange
     team_id = uuid.uuid4()
-    
+
     # Mock check for existing team (returns False)
     mock_check_result = MagicMock()
     mock_check_result.scalars().first.return_value = None
-    
+
     # Mock team retrieval after creation
     created_team = Team(
         id=team_id,
@@ -119,18 +123,18 @@ async def test_create_team_success(
             created_at=datetime.utcnow(),
         )
     ]
-    
+
     mock_get_result = MagicMock()
     mock_get_result.scalars().first.return_value = created_team
-    
+
     # Configure mock to return different results for different calls
     mock_db_session.execute.side_effect = [mock_check_result, mock_get_result]
-    
+
     # Mock flush to simulate getting team ID
     async def mock_flush():
         # Simulate the team getting an ID after flush
         pass
-    
+
     mock_db_session.flush = AsyncMock(side_effect=mock_flush)
     mock_db_session.add = MagicMock()
     mock_db_session.commit = AsyncMock()
@@ -145,7 +149,7 @@ async def test_create_team_success(
     assert len(result.members) == 1
     assert result.members[0].role == TeamRole.OWNER
     assert result.members[0].user_id == sample_user.id
-    
+
     # Verify database operations
     assert mock_db_session.add.call_count == 2  # Team and TeamMember
     mock_db_session.flush.assert_called_once()
@@ -185,7 +189,9 @@ async def test_get_team_by_id(team_service, mock_db_session, sample_team):
 
 
 @pytest.mark.asyncio
-async def test_get_teams_by_user(team_service, mock_db_session, sample_user, sample_team):
+async def test_get_teams_by_user(
+    team_service, mock_db_session, sample_user, sample_team
+):
     """Test getting teams by user."""
     # Arrange
     mock_result = MagicMock()
@@ -214,7 +220,7 @@ async def test_is_user_team_owner_returns_true_when_owner(
         role=TeamRole.OWNER,
         created_at=datetime.utcnow(),
     )
-    
+
     mock_result = MagicMock()
     mock_result.scalars().first.return_value = team_member
     mock_db_session.execute.return_value = mock_result

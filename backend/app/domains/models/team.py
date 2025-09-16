@@ -14,7 +14,7 @@ from app.infra.db import Base
 
 class TeamRole(str, Enum):
     """Enum for team member roles."""
-    
+
     OWNER = "owner"
     MEMBER = "member"
 
@@ -47,7 +47,9 @@ class Team(Base):
     )
 
     # Relationships
-    members = relationship("TeamMember", back_populates="team", cascade="all, delete-orphan")
+    members = relationship(
+        "TeamMember", back_populates="team", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         """String representation of Team."""

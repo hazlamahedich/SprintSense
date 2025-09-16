@@ -25,10 +25,10 @@ class UserService:
 
     async def get_user_by_id(self, user_id: Union[str, uuid.UUID]) -> Optional[User]:
         """Get user by ID.
-        
+
         Args:
             user_id: The user ID as a string or UUID object
-            
+
         Returns:
             The user if found, None otherwise
         """
@@ -38,7 +38,7 @@ class UserService:
                 user_id = uuid.UUID(user_id)
             except ValueError:
                 return None
-                
+
         result = await self.db_session.execute(select(User).where(User.id == user_id))
         return result.scalars().first()
 

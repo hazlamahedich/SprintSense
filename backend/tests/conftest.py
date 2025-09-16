@@ -70,14 +70,12 @@ async def test_user(db_session):
     """Create a test user in the database."""
     from app.domains.services.user_service import UserService
     from app.domains.schemas.user import UserCreate
-    
+
     user_service = UserService(db_session)
     user_data = UserCreate(
-        email="testuser@example.com",
-        full_name="Test User", 
-        password="TestPassword123"
+        email="testuser@example.com", full_name="Test User", password="TestPassword123"
     )
-    
+
     user = await user_service.create_user(user_data)
     return user
 
@@ -87,10 +85,10 @@ async def auth_headers_for_user(test_user):
     """Create authentication headers for the test user."""
     from app.core.security import create_access_token
     from datetime import timedelta
-    
+
     access_token = create_access_token(
         data={"sub": str(test_user.id), "email": test_user.email},
-        expires_delta=timedelta(minutes=30)
+        expires_delta=timedelta(minutes=30),
     )
-    
+
     return {"Cookie": f"access_token={access_token}"}
