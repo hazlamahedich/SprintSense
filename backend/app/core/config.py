@@ -32,24 +32,27 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "postgres"
     POSTGRES_PORT: str = "54322"
-    DATABASE_URL: Optional[PostgresDsn] = None
+    DATABASE_URL: Optional[str] = None
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: Optional[str], info: Any) -> Any:
+    def assemble_db_connection(cls, v: Optional[str], info: Any) -> str:
         """Assemble database URL from components."""
         if isinstance(v, str):
+            # If the URL uses standard postgresql://, convert to async for runtime
+            if v.startswith("postgresql://"):
+                return v.replace("postgresql://", "postgresql+psycopg_async://")
             return v
+        
         values = info.data if hasattr(info, "data") else {}
-        # Use async driver for runtime engine
-        return PostgresDsn.build(
-            scheme="postgresql+psycopg_async",
-            username=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            port=int(values.get("POSTGRES_PORT", 5432)),
-            path=values.get("POSTGRES_DB") or "",
-        )
+        # Build URL with async driver for runtime engine
+        return f"postgresql+psycopg_async://{values.get('POSTGRES_USER')}:{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}:{values.get('POSTGRES_PORT', 5432)}/{values.get('POSTGRES_DB', '')}"
+        
+    def get_alembic_url(self) -> str:
+        """Get database URL for Alembic (uses sync driver)."""
+        if self.DATABASE_URL:
+            return self.DATABASE_URL.replace("postgresql+psycopg_async://", "postgresql+psycopg://")
+        return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     # Logging settings
     LOG_LEVEL: str = "INFO"
