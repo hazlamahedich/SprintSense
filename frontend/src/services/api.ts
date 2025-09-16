@@ -34,6 +34,33 @@ if (import.meta.env.DEV) {
   )
 }
 
+// Types for API responses
+export interface User {
+  id: string
+  email: string
+  full_name: string
+  created_at: string
+  updated_at: string
+}
+
+export interface AuthResponse {
+  user: User
+  access_token: string
+  token_type: string
+}
+
+export interface RegisterRequest {
+  email: string
+  password: string
+  full_name: string
+}
+
+export interface ApiError {
+  detail: string
+  error_type?: string
+  errors?: string[]
+}
+
 // API endpoints
 export const healthApi = {
   // Basic health check
@@ -46,5 +73,23 @@ export const healthApi = {
   checkDetailedHealth: async () => {
     const response = await api.get('/api/v1/health/detailed')
     return response.data
+  },
+}
+
+export const authApi = {
+  // Register a new user
+  register: async (userData: RegisterRequest): Promise<AuthResponse> => {
+    const response = await api.post('/api/v1/auth/register', userData)
+    return response.data
+  },
+
+  // Set authorization header for future requests
+  setAuthToken: (token: string) => {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  },
+
+  // Remove authorization header
+  removeAuthToken: () => {
+    delete api.defaults.headers.common['Authorization']
   },
 }
