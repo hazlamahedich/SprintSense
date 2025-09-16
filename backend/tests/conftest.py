@@ -6,9 +6,8 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.infra.db import Base, get_session
 from app.main import app
-from app.infra.db import get_session, Base
-
 
 # Test database URL (using SQLite for simplicity in tests)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -39,7 +38,7 @@ async def test_session():
     """Create test database session."""
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     async with TestSessionLocal() as session:
         yield session
 
@@ -48,10 +47,10 @@ async def test_session():
 async def client():
     """Create test client with database dependency override."""
     app.dependency_overrides[get_session] = get_test_session
-    
+
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
-    
+
     # Clean up
     app.dependency_overrides.clear()
 
@@ -60,6 +59,7 @@ async def client():
 def event_loop():
     """Create event loop for testing."""
     import asyncio
+
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()

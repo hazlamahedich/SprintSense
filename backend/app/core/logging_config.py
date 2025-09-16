@@ -15,7 +15,9 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from app.core.config import settings
 
 
-def add_trace_info(logger: Any, name: str, event_dict: Dict[str, Any]) -> Dict[str, Any]:
+def add_trace_info(
+    logger: Any, name: str, event_dict: Dict[str, Any]
+) -> Dict[str, Any]:
     """Add trace and span IDs to log events."""
     span = trace.get_current_span()
     if span != trace.INVALID_SPAN:
@@ -27,7 +29,7 @@ def add_trace_info(logger: Any, name: str, event_dict: Dict[str, Any]) -> Dict[s
 
 def configure_logging() -> None:
     """Configure structured logging with OpenTelemetry integration."""
-    
+
     # Configure structlog
     processors = [
         structlog.stdlib.filter_by_level,
@@ -39,23 +41,19 @@ def configure_logging() -> None:
         add_trace_info,
         structlog.processors.format_exc_info,
     ]
-    
+
     if settings.ENVIRONMENT == "development":
-        processors.extend([
-            structlog.dev.ConsoleRenderer(colors=True)
-        ])
+        processors.extend([structlog.dev.ConsoleRenderer(colors=True)])
     else:
-        processors.extend([
-            structlog.processors.JSONRenderer()
-        ])
-    
+        processors.extend([structlog.processors.JSONRenderer()])
+
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.stdlib.BoundLogger,
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
-    
+
     # Configure stdlib logging
     logging.basicConfig(
         format="%(message)s",
@@ -66,30 +64,32 @@ def configure_logging() -> None:
 
 def configure_tracing() -> None:
     """Configure OpenTelemetry tracing."""
-    
-    resource = Resource.create({
-        "service.name": settings.OTEL_SERVICE_NAME,
-        "service.version": settings.VERSION,
-    })
-    
+
+    resource = Resource.create(
+        {
+            "service.name": settings.OTEL_SERVICE_NAME,
+            "service.version": settings.VERSION,
+        }
+    )
+
     provider = TracerProvider(resource=resource)
-    
+
     # Configure OTLP exporter
     otlp_exporter = OTLPSpanExporter(
         endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
         insecure=True,  # Use gRPC without TLS for local development
     )
-    
+
     span_processor = BatchSpanProcessor(otlp_exporter)
     provider.add_span_processor(span_processor)
-    
+
     trace.set_tracer_provider(provider)
 
 
 def setup_instrumentation() -> None:
     """Set up all logging and tracing instrumentation."""
     configure_logging()
-    
+
     # Only configure tracing if we have an endpoint
     if settings.OTEL_EXPORTER_OTLP_ENDPOINT:
         try:
@@ -99,7 +99,7 @@ def setup_instrumentation() -> None:
             logger.warning(
                 "Failed to configure OpenTelemetry tracing",
                 error=str(e),
-                endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT
+                endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
             )
 
 
