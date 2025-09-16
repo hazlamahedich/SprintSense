@@ -62,6 +62,11 @@ class Settings(BaseSettings):
     OTEL_SERVICE_NAME: str = "sprintsense-backend"
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"
     
+    # JWT/Session settings
+    SECRET_KEY: str = "your-secret-key-change-in-production"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ALGORITHM: str = "HS256"
+    
     class Config:
         case_sensitive = True
         env_file = ".env"
