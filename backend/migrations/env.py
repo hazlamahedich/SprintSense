@@ -14,6 +14,9 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from app.core.config import settings
 from app.infra.db import Base
 
+# Import models so Alembic can detect them for autogenerate
+from app.domains.models import User  # noqa: F401
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

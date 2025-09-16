@@ -1,12 +1,14 @@
 """Main FastAPI application."""
 
-from typing import Dict
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Dict
 
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers import health
+from app.api.v1.endpoints import users
 from app.core.config import settings
 from app.core.logging_config import instrument_fastapi, setup_instrumentation
 
@@ -14,6 +16,22 @@ from app.core.logging_config import instrument_fastapi, setup_instrumentation
 setup_instrumentation()
 
 logger = structlog.get_logger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Application lifespan management."""
+    # Startup
+    logger.info(
+        "SprintSense backend starting up",
+        version=settings.VERSION,
+        environment=settings.ENVIRONMENT,
+        debug=settings.DEBUG,
+    )
+    yield
+    # Shutdown
+    logger.info("SprintSense backend shutting down")
+
 
 # Create FastAPI app
 app = FastAPI(
@@ -23,6 +41,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Set up CORS
@@ -37,6 +56,7 @@ if settings.BACKEND_CORS_ORIGINS:
 
 # Include routers
 app.include_router(health.router, prefix=settings.API_V1_STR, tags=["health"])
+app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 
 
 # Root endpoint
@@ -48,22 +68,3 @@ async def root() -> Dict[str, str]:
 
 # Instrument with OpenTelemetry
 instrument_fastapi(app)
-
-
-# Startup event
-@app.on_event("startup")
-async def startup_event() -> None:
-    """Application startup event."""
-    logger.info(
-        "SprintSense backend starting up",
-        version=settings.VERSION,
-        environment=settings.ENVIRONMENT,
-        debug=settings.DEBUG,
-    )
-
-
-# Shutdown event
-@app.on_event("shutdown")
-async def shutdown_event() -> None:
-    """Application shutdown event."""
-    logger.info("SprintSense backend shutting down")

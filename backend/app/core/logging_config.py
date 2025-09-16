@@ -1,6 +1,7 @@
 """Logging configuration with structlog and OpenTelemetry integration."""
 
 import logging
+import os
 import sys
 from typing import Any, Dict
 
@@ -64,6 +65,9 @@ def configure_logging() -> None:
 
 def configure_tracing() -> None:
     """Configure OpenTelemetry tracing."""
+    # Skip tracing configuration during tests
+    if os.getenv("NODE_ENV") == "test" or "pytest" in sys.modules:
+        return
 
     resource = Resource.create(
         {
@@ -105,6 +109,10 @@ def setup_instrumentation() -> None:
 
 def instrument_fastapi(app: Any) -> None:
     """Instrument FastAPI app with OpenTelemetry."""
+    # Skip instrumentation during tests
+    if os.getenv("NODE_ENV") == "test" or "pytest" in sys.modules:
+        return
+
     try:
         FastAPIInstrumentor.instrument_app(app)
     except Exception as e:

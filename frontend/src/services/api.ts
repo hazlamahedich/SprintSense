@@ -52,3 +52,21 @@ export const healthApi = {
     return response.data
   },
 }
+
+export const userApi = {
+  // User registration
+  register: async (userData: {
+    full_name: string
+    email: string
+    password: string
+  }) => {
+    const response = await api.post('/api/v1/users/register', userData)
+    return response.data
+  },
+
+  // Get current user profile (placeholder for future implementation)
+  getCurrentUser: async () => {
+    const response = await api.get('/api/v1/users/me')
+    return response.data
+  },
+}

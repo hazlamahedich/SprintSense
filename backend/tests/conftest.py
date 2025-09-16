@@ -34,19 +34,29 @@ async def get_test_session():
 
 
 @pytest_asyncio.fixture
-async def test_session():
-    """Create test database session."""
+async def db_session():
+    """Create test database session with clean setup."""
+    # Create all tables
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    # Create session
     async with TestSessionLocal() as session:
         yield session
 
+    # Clean up - drop all tables
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
 
 @pytest_asyncio.fixture
-async def client():
+async def async_client(db_session: AsyncSession):
     """Create test client with database dependency override."""
-    app.dependency_overrides[get_session] = get_test_session
+    # Override the dependency to use our test session
+    async def override_get_session():
+        yield db_session
+    
+    app.dependency_overrides[get_session] = override_get_session
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
@@ -55,11 +65,3 @@ async def client():
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create event loop for testing."""
-    import asyncio
-
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()

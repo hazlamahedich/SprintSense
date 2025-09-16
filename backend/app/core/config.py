@@ -2,16 +2,22 @@
 
 from typing import Any, List, Optional, Union
 
-from pydantic import AnyHttpUrl, field_validator
+from pydantic import AnyHttpUrl, ConfigDict, field_validator
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """Application settings."""
 
+    model_config = ConfigDict(case_sensitive=True, env_file=".env")
+
     PROJECT_NAME: str = "SprintSense"
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
+
+    # Security settings
+    SECRET_KEY: str = "a-secure-default-secret-that-should-be-overridden"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS settings
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
@@ -74,10 +80,6 @@ class Settings(BaseSettings):
     # OpenTelemetry settings
     OTEL_SERVICE_NAME: str = "sprintsense-backend"
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"
-
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
 
 
 settings = Settings()
