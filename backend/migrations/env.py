@@ -12,7 +12,9 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import the settings and Base from the app
 from app.core.config import settings
-from app.infra.db import Base
+from app.infra.models import Base
+# Import all models to ensure they're registered with SQLAlchemy
+from app.infra.models import User  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
