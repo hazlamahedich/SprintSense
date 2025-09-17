@@ -3,8 +3,8 @@
  * Provides a clean interface to the backlog store.
  */
 
-import { useCallback, useEffect } from 'react';
-import { useBacklogStore } from '../stores/backlogStore';
+import { useCallback, useEffect } from 'react'
+import { useBacklogStore } from '../stores/backlogStore'
 import {
   WorkItem,
   WorkItemCreateRequest,
@@ -13,30 +13,37 @@ import {
   WorkItemSort,
   WorkItemPagination,
   ApiError,
-} from '../types/workItem.types';
+} from '../types/workItem.types'
 
 export interface UseWorkItemsReturn {
   // Data
-  workItems: WorkItem[];
-  loading: boolean;
-  error: ApiError | null;
-  hasMore: boolean;
-  totalCount: number;
-  filters: WorkItemFilters;
-  sort: WorkItemSort;
-  pagination: WorkItemPagination;
+  workItems: WorkItem[]
+  loading: boolean
+  error: ApiError | null
+  hasMore: boolean
+  totalCount: number
+  filters: WorkItemFilters
+  sort: WorkItemSort
+  pagination: WorkItemPagination
 
   // Actions
-  loadWorkItems: () => Promise<void>;
-  refreshWorkItems: () => Promise<void>;
-  createWorkItem: (data: WorkItemCreateRequest) => Promise<void>;
-  updateWorkItem: (workItemId: string, data: WorkItemUpdateRequest) => Promise<void>;
-  deleteWorkItem: (workItemId: string) => Promise<void>;
+  loadWorkItems: () => Promise<void>
+  refreshWorkItems: () => Promise<void>
+  createWorkItem: (data: WorkItemCreateRequest) => Promise<void>
+  updateWorkItem: (
+    workItemId: string,
+    data: WorkItemUpdateRequest
+  ) => Promise<void>
+  deleteWorkItem: (workItemId: string) => Promise<void>
 
   // State setters
-  setFilters: (filters: WorkItemFilters) => void;
-  setSort: (sort: WorkItemSort) => void;
-  setPagination: (pagination: WorkItemPagination | ((prev: WorkItemPagination) => WorkItemPagination)) => void;
+  setFilters: (filters: WorkItemFilters) => void
+  setSort: (sort: WorkItemSort) => void
+  setPagination: (
+    pagination:
+      | WorkItemPagination
+      | ((prev: WorkItemPagination) => WorkItemPagination)
+  ) => void
 }
 
 /**
@@ -62,89 +69,93 @@ export const useWorkItems = (teamId?: string): UseWorkItemsReturn => {
     setPage,
     setTeam,
     clearError,
-  } = useBacklogStore();
+  } = useBacklogStore()
 
   // Auto-load work items when teamId changes
   useEffect(() => {
     if (teamId && teamId !== selectedTeamId) {
-      setTeam(teamId);
+      setTeam(teamId)
     }
-  }, [teamId, selectedTeamId, setTeam]);
+  }, [teamId, selectedTeamId, setTeam])
 
   // Memoized actions to match expected interface
   const loadWorkItems = useCallback(async () => {
     if (teamId) {
-      await storeLoadWorkItems(teamId);
+      await storeLoadWorkItems(teamId)
     }
-  }, [teamId, storeLoadWorkItems]);
+  }, [teamId, storeLoadWorkItems])
 
   const refreshWorkItems = useCallback(async () => {
-    await storeRefreshWorkItems();
-  }, [storeRefreshWorkItems]);
+    await storeRefreshWorkItems()
+  }, [storeRefreshWorkItems])
 
   const createWorkItem = useCallback(
     async (data: CreateWorkItemRequest) => {
       if (teamId) {
-        const dataWithTeam = { ...data, teamId };
-        await storeCreateWorkItem(teamId, dataWithTeam);
+        const dataWithTeam = { ...data, teamId }
+        await storeCreateWorkItem(teamId, dataWithTeam)
       }
     },
     [teamId, storeCreateWorkItem]
-  );
+  )
 
   const updateWorkItem = useCallback(
     async (workItemId: string, data: WorkItemUpdateRequest) => {
       if (teamId) {
-        await storeUpdateWorkItem(teamId, workItemId, data);
+        await storeUpdateWorkItem(teamId, workItemId, data)
       }
     },
     [teamId, storeUpdateWorkItem]
-  );
+  )
 
   const deleteWorkItem = useCallback(
     async (workItemId: string) => {
       if (teamId) {
-        await storeDeleteWorkItem(teamId, workItemId);
+        await storeDeleteWorkItem(teamId, workItemId)
       }
     },
     [teamId, storeDeleteWorkItem]
-  );
+  )
 
   const setFilters = useCallback(
     (newFilters: WorkItemFilters) => {
       Object.entries(newFilters).forEach(([key, value]) => {
-        setFilter(key as keyof WorkItemFilters, value);
-      });
+        setFilter(key as keyof WorkItemFilters, value)
+      })
     },
     [setFilter]
-  );
+  )
 
   const setSort = useCallback(
     (sort: WorkItemSort) => {
-      storeSetSort(sort.field, sort.order);
+      storeSetSort(sort.field, sort.order)
     },
     [storeSetSort]
-  );
+  )
 
   const setPagination = useCallback(
-    (paginationOrUpdater: WorkItemPagination | ((prev: WorkItemPagination) => WorkItemPagination)) => {
+    (
+      paginationOrUpdater:
+        | WorkItemPagination
+        | ((prev: WorkItemPagination) => WorkItemPagination)
+    ) => {
       if (typeof paginationOrUpdater === 'function') {
         const currentPagination = {
           page: pagination.page,
-          size: pagination.limit
-        };
-        const newPagination = paginationOrUpdater(currentPagination);
-        setPage(newPagination.page);
+          size: pagination.limit,
+        }
+        const newPagination = paginationOrUpdater(currentPagination)
+        setPage(newPagination.page)
       } else {
-        setPage(paginationOrUpdater.page);
+        setPage(paginationOrUpdater.page)
       }
     },
     [pagination, setPage]
-  );
+  )
 
   // Computed values
-  const totalPages = Math.ceil(pagination.total / pagination.limit);
-  const hasMore = pagination.page < totalPages;
+  const totalPages = Math.ceil(pagination.total / pagination.limit)
+  const hasMore = pagination.page < totalPages
 
   return {
     // Data
@@ -156,11 +167,11 @@ export const useWorkItems = (teamId?: string): UseWorkItemsReturn => {
     filters,
     sort: {
       field: filters.sort_by || 'priority',
-      order: filters.sort_order || 'asc'
+      order: filters.sort_order || 'asc',
     },
     pagination: {
       page: pagination.page,
-      size: pagination.limit
+      size: pagination.limit,
     },
 
     // Actions
@@ -174,5 +185,7 @@ export const useWorkItems = (teamId?: string): UseWorkItemsReturn => {
     setFilters,
     setSort,
     setPagination,
-  };
-};
+    clearFilters,
+    clearError,
+  }
+}

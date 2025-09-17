@@ -10,11 +10,12 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
 
-from app.infra.db import get_session
 from app.main import app
 
 # Test database URL for integration tests
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/sprintsense_test"
+TEST_DATABASE_URL = (
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/sprintsense_test"
+)
 
 
 @pytest.fixture
@@ -30,17 +31,23 @@ async def test_db_session():
         TEST_DATABASE_URL,
         echo=False,
         poolclass=StaticPool,
-        connect_args={"check_same_thread": False} if "sqlite" in TEST_DATABASE_URL else {},
+        connect_args=(
+            {"check_same_thread": False} if "sqlite" in TEST_DATABASE_URL else {}
+        ),
     )
 
     async with engine.begin() as conn:
         # Create test table if needed
-        await conn.execute(text("""
+        await conn.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS test_health_table (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(50)
             )
-        """))
+        """
+            )
+        )
         await conn.commit()
 
     async with AsyncSession(engine) as session:
@@ -66,21 +73,28 @@ class TestHealthEndpoints:
         """Test detailed health check when all services are healthy."""
         with patch("app.api.routers.health.get_session") as mock_session:
             # Mock successful database connection
-            mock_db_session = AsyncSession(create_async_engine("sqlite+aiosqlite:///:memory:"))
+            mock_db_session = AsyncSession(
+                create_async_engine("sqlite+aiosqlite:///:memory:")
+            )
             mock_session.return_value = mock_db_session
 
             response = test_client.get("/api/v1/health/detailed")
 
             assert response.status_code == 200
             data = response.json()
-            assert data["status"] in ["OK", "DEGRADED"]  # May be degraded due to missing Supabase
+            assert data["status"] in [
+                "OK",
+                "DEGRADED",
+            ]  # May be degraded due to missing Supabase
             assert data["service"] == "SprintSense Backend"
             assert data["environment"] == "test"
             assert "checks" in data
             assert "timestamp" in data
             assert "response_time_seconds" in data
 
-    @patch.dict(os.environ, {"ENVIRONMENT": "test", "SUPABASE_URL": "http://localhost:54321"})
+    @patch.dict(
+        os.environ, {"ENVIRONMENT": "test", "SUPABASE_URL": "http://localhost:54321"}
+    )
     @patch("httpx.AsyncClient.get")
     def test_detailed_health_check_with_supabase(self, mock_httpx_get, test_client):
         """Test detailed health check with Supabase API check."""
@@ -91,7 +105,11 @@ class TestHealthEndpoints:
         response = test_client.get("/api/v1/health/detailed")
 
         assert response.status_code in [200, 503]  # May fail if DB connection fails
-        data = response.json() if response.status_code == 200 else response.json()["detail"]
+        data = (
+            response.json()
+            if response.status_code == 200
+            else response.json()["detail"]
+        )
 
         assert "checks" in data
         if "supabase_api" in data["checks"]:
@@ -107,7 +125,9 @@ class TestHealthEndpoints:
             async def failing_execute(*args, **kwargs):
                 raise Exception("Database connection failed")
 
-            mock_db_session = AsyncSession(create_async_engine("sqlite+aiosqlite:///:memory:"))
+            mock_db_session = AsyncSession(
+                create_async_engine("sqlite+aiosqlite:///:memory:")
+            )
             mock_db_session.execute = failing_execute
             mock_session.return_value = mock_db_session
 
@@ -129,7 +149,11 @@ class TestHealthEndpoints:
 
         response = test_client.get("/api/v1/health/detailed")
 
-        data = response.json() if response.status_code == 200 else response.json()["detail"]
+        data = (
+            response.json()
+            if response.status_code == 200
+            else response.json()["detail"]
+        )
 
         if "supabase_api" in data["checks"]:
             supabase_check = data["checks"]["supabase_api"]
@@ -138,10 +162,16 @@ class TestHealthEndpoints:
 
     def test_detailed_health_check_response_time(self, test_client):
         """Test that health check includes response time metrics."""
-        with patch("time.time", side_effect=[1000.0, 1001.5]):  # 1.5 second response time
+        with patch(
+            "time.time", side_effect=[1000.0, 1001.5]
+        ):  # 1.5 second response time
             response = test_client.get("/api/v1/health/detailed")
 
-            data = response.json() if response.status_code == 200 else response.json()["detail"]
+            data = (
+                response.json()
+                if response.status_code == 200
+                else response.json()["detail"]
+            )
             assert "response_time_seconds" in data
             assert data["response_time_seconds"] == 1.5
             # Should be marked as DEGRADED due to slow response
@@ -152,7 +182,11 @@ class TestHealthEndpoints:
         """Test health check when Supabase is not configured."""
         response = test_client.get("/api/v1/health/detailed")
 
-        data = response.json() if response.status_code == 200 else response.json()["detail"]
+        data = (
+            response.json()
+            if response.status_code == 200
+            else response.json()["detail"]
+        )
 
         assert "checks" in data
         supabase_check = data["checks"]["supabase_api"]
@@ -181,7 +215,11 @@ class TestHealthCheckIntegration:
 
             # Should work with real database
             assert response.status_code in [200, 503]
-            data = response.json() if response.status_code == 200 else response.json()["detail"]
+            data = (
+                response.json()
+                if response.status_code == 200
+                else response.json()["detail"]
+            )
 
             assert "checks" in data
             db_check = data["checks"]["database"]
@@ -189,7 +227,9 @@ class TestHealthCheckIntegration:
             assert db_check["status"] in ["healthy", "unhealthy"]
 
         except Exception:
-            pytest.skip("Test database not available - skipping real database integration test")
+            pytest.skip(
+                "Test database not available - skipping real database integration test"
+            )
 
     @pytest.mark.integration
     @patch.dict(os.environ, {"SUPABASE_URL": "http://127.0.0.1:54321"})
@@ -200,7 +240,11 @@ class TestHealthCheckIntegration:
         """
         response = test_client.get("/api/v1/health/detailed")
 
-        data = response.json() if response.status_code == 200 else response.json()["detail"]
+        data = (
+            response.json()
+            if response.status_code == 200
+            else response.json()["detail"]
+        )
 
         if "supabase_api" in data["checks"]:
             supabase_check = data["checks"]["supabase_api"]
@@ -214,5 +258,6 @@ class TestHealthCheckIntegration:
 def pytest_configure(config):
     """Configure pytest with custom markers."""
     config.addinivalue_line(
-        "markers", "integration: mark test as integration test requiring external services"
+        "markers",
+        "integration: mark test as integration test requiring external services",
     )

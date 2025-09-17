@@ -48,27 +48,31 @@ async def detailed_health_check(
         "version": "0.1.0",
         "environment": os.getenv("ENVIRONMENT", "unknown"),
         "timestamp": int(time.time()),
-        "checks": {}
+        "checks": {},
     }
 
     # Database connectivity check
     try:
         await session.execute(text("SELECT 1"))
         # Test actual table access
-        result = await session.execute(text("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' LIMIT 1"))
+        result = await session.execute(
+            text(
+                (
+                    "SELECT table_name FROM information_schema.tables WHERE"
+                    "table_schema = 'public' LIMIT 1"
+                )
+            )
+        )
         table_exists = result.fetchone() is not None
 
         health_status["checks"]["database"] = {
             "status": "healthy",
             "connection": "connected",
-            "tables_accessible": table_exists
+            "tables_accessible": table_exists,
         }
         logger.info("Health check - database connected and tables accessible")
     except Exception as e:
-        health_status["checks"]["database"] = {
-            "status": "unhealthy",
-            "error": str(e)
-        }
+        health_status["checks"]["database"] = {"status": "unhealthy", "error": str(e)}
         health_status["status"] = "DEGRADED"
         logger.error("Health check - database connection failed", error=str(e))
 
@@ -82,19 +86,19 @@ async def detailed_health_check(
                 health_status["checks"]["supabase_api"] = {
                     "status": "healthy" if response.status_code == 200 else "unhealthy",
                     "url": supabase_url,
-                    "response_code": response.status_code
+                    "response_code": response.status_code,
                 }
         except Exception as e:
             health_status["checks"]["supabase_api"] = {
                 "status": "unhealthy",
-                "error": str(e)
+                "error": str(e),
             }
             health_status["status"] = "DEGRADED"
             logger.error("Health check - Supabase API check failed", error=str(e))
     else:
         health_status["checks"]["supabase_api"] = {
             "status": "not_configured",
-            "message": "SUPABASE_URL not set"
+            "message": "SUPABASE_URL not set",
         }
 
     # Response time check
@@ -106,12 +110,17 @@ async def detailed_health_check(
         logger.warning("Health check - slow response time", response_time=response_time)
 
     # Overall status determination
-    unhealthy_checks = [check for check in health_status["checks"].values()
-                       if check.get("status") == "unhealthy"]
+    unhealthy_checks = [
+        check
+        for check in health_status["checks"].values()
+        if check.get("status") == "unhealthy"
+    ]
 
     if unhealthy_checks:
         health_status["status"] = "UNHEALTHY"
-        logger.error("Health check - service unhealthy", unhealthy_checks=len(unhealthy_checks))
+        logger.error(
+            "Health check - service unhealthy", unhealthy_checks=len(unhealthy_checks)
+        )
 
     # Set appropriate HTTP status code
     if health_status["status"] == "UNHEALTHY":

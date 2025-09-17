@@ -1,14 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import { CreateWorkItemButton } from './CreateWorkItemButton';
-import { CreateWorkItemModal } from './CreateWorkItemModal';
-import { useCreateWorkItem } from '../../../hooks/useCreateWorkItem';
-import { CreateWorkItemRequest } from '../../../types/workItem.types';
+import React, { useState, useCallback } from 'react'
+import { CreateWorkItemButton } from './CreateWorkItemButton'
+import { CreateWorkItemModal } from './CreateWorkItemModal'
+import { useCreateWorkItem } from '../../../hooks/useCreateWorkItem'
+import { CreateWorkItemRequest, WorkItem } from '../../../types/workItem.types'
 
 interface CreateWorkItemDemoProps {
-  teamId: string;
-  onWorkItemCreated?: (workItem: any) => void;
-  showFloatingButton?: boolean;
-  showHeaderButton?: boolean;
+  teamId: string
+  onWorkItemCreated?: (workItem: WorkItem) => void
+  showFloatingButton?: boolean
+  showHeaderButton?: boolean
 }
 
 /**
@@ -19,42 +19,51 @@ export const CreateWorkItemDemo: React.FC<CreateWorkItemDemoProps> = ({
   teamId,
   onWorkItemCreated,
   showFloatingButton = true,
-  showHeaderButton = true
+  showHeaderButton = true,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { createWorkItem, isSubmitting, error, successMessage, clearMessages, reset } = useCreateWorkItem();
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const {
+    createWorkItem,
+    isSubmitting,
+    error,
+    successMessage,
+    clearMessages,
+    reset,
+  } = useCreateWorkItem()
 
   const handleOpenModal = useCallback(() => {
     // Clear any previous messages when opening modal
-    clearMessages();
-    setIsModalOpen(true);
-  }, [clearMessages]);
+    clearMessages()
+    setIsModalOpen(true)
+  }, [clearMessages])
 
   const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false);
+    setIsModalOpen(false)
     // Reset the hook state when closing modal
-    setTimeout(() => reset(), 300); // Delay to avoid flash during modal closing animation
-  }, [reset]);
+    setTimeout(() => reset(), 300) // Delay to avoid flash during modal closing animation
+  }, [reset])
 
-  const handleSubmit = useCallback(async (data: CreateWorkItemRequest) => {
-    try {
-      const workItem = await createWorkItem(teamId, data);
+  const handleSubmit = useCallback(
+    async (data: CreateWorkItemRequest) => {
+      try {
+        const workItem = await createWorkItem(teamId, data)
 
-      // Notify parent component about successful creation
-      if (onWorkItemCreated) {
-        onWorkItemCreated(workItem);
+        // Notify parent component about successful creation
+        if (onWorkItemCreated) {
+          onWorkItemCreated(workItem)
+        }
+
+        // Close modal after successful creation (with delay to show success message)
+        setTimeout(() => {
+          handleCloseModal()
+        }, 2000)
+      } catch (error) {
+        // Error is handled by the hook, no need to do anything here
+        console.error('Work item creation failed:', error)
       }
-
-      // Close modal after successful creation (with delay to show success message)
-      setTimeout(() => {
-        handleCloseModal();
-      }, 2000);
-
-    } catch (error) {
-      // Error is handled by the hook, no need to do anything here
-      console.error('Work item creation failed:', error);
-    }
-  }, [createWorkItem, teamId, onWorkItemCreated, handleCloseModal]);
+    },
+    [createWorkItem, teamId, onWorkItemCreated, handleCloseModal]
+  )
 
   return (
     <div className="create-work-item-demo">
@@ -88,7 +97,7 @@ export const CreateWorkItemDemo: React.FC<CreateWorkItemDemoProps> = ({
         successMessage={successMessage}
       />
     </div>
-  );
-};
+  )
+}
 
-export default CreateWorkItemDemo;
+export default CreateWorkItemDemo

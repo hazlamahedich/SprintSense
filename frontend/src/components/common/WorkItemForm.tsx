@@ -1,39 +1,41 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   WorkItem,
   CreateWorkItemRequest,
   UpdateWorkItemRequest,
   WorkItemType,
   WorkItemStatus,
-  WorkItemPriority
-} from '../../types/workItem.types';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
+  WorkItemPriority,
+} from '../../types/workItem.types'
+import { Button } from '../ui/button'
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
+import { Textarea } from '../ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
+} from '../ui/select'
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+} from '../ui/dialog'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 interface WorkItemFormProps {
-  workItem?: WorkItem | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: CreateWorkItemRequest | UpdateWorkItemRequest) => Promise<void>;
-  isSubmitting?: boolean;
-  teamId: string;
+  workItem?: WorkItem | null
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (
+    data: CreateWorkItemRequest | UpdateWorkItemRequest
+  ) => Promise<void>
+  isSubmitting?: boolean
+  teamId: string
 }
 
 const TYPE_OPTIONS = [
@@ -42,34 +44,34 @@ const TYPE_OPTIONS = [
   { value: WorkItemType.USER_STORY, label: 'User Story' },
   { value: WorkItemType.TASK, label: 'Task' },
   { value: WorkItemType.BUG, label: 'Bug' },
-  { value: WorkItemType.TECHNICAL_DEBT, label: 'Technical Debt' }
-];
+  { value: WorkItemType.TECHNICAL_DEBT, label: 'Technical Debt' },
+]
 
 const STATUS_OPTIONS = [
   { value: WorkItemStatus.NEW, label: 'New' },
   { value: WorkItemStatus.APPROVED, label: 'Approved' },
   { value: WorkItemStatus.COMMITTED, label: 'Committed' },
-  { value: WorkItemStatus.DONE, label: 'Done' }
-];
+  { value: WorkItemStatus.DONE, label: 'Done' },
+]
 
 const PRIORITY_OPTIONS = [
   { value: WorkItemPriority.LOW, label: 'Low' },
   { value: WorkItemPriority.MEDIUM, label: 'Medium' },
   { value: WorkItemPriority.HIGH, label: 'High' },
-  { value: WorkItemPriority.CRITICAL, label: 'Critical' }
-];
+  { value: WorkItemPriority.CRITICAL, label: 'Critical' },
+]
 
 interface FormData {
-  title: string;
-  description: string;
-  type: WorkItemType;
-  status: WorkItemStatus;
-  priority: WorkItemPriority;
-  assigneeId: string;
-  dueDate: string;
-  storyPoints: string;
-  acceptanceCriteria: string;
-  tags: string;
+  title: string
+  description: string
+  type: WorkItemType
+  status: WorkItemStatus
+  priority: WorkItemPriority
+  assigneeId: string
+  dueDate: string
+  storyPoints: string
+  acceptanceCriteria: string
+  tags: string
 }
 
 const initialFormData: FormData = {
@@ -82,8 +84,8 @@ const initialFormData: FormData = {
   dueDate: '',
   storyPoints: '',
   acceptanceCriteria: '',
-  tags: ''
-};
+  tags: '',
+}
 
 export const WorkItemForm: React.FC<WorkItemFormProps> = ({
   workItem,
@@ -91,12 +93,12 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
   onClose,
   onSubmit,
   isSubmitting = false,
-  teamId
+  teamId, // eslint-disable-line @typescript-eslint/no-unused-vars -- Required for API calls by parent
 }) => {
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [formData, setFormData] = useState<FormData>(initialFormData)
+  const [errors, setErrors] = useState<Partial<FormData>>({})
 
-  const isEditing = !!workItem;
+  const isEditing = !!workItem
 
   // Reset form when dialog opens/closes or workItem changes
   useEffect(() => {
@@ -110,90 +112,107 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
           status: workItem.status,
           priority: workItem.priority,
           assigneeId: workItem.assigneeId || '',
-          dueDate: workItem.dueDate ? new Date(workItem.dueDate).toISOString().split('T')[0] : '',
+          dueDate: workItem.dueDate
+            ? new Date(workItem.dueDate).toISOString().split('T')[0]
+            : '',
           storyPoints: workItem.storyPoints?.toString() || '',
           acceptanceCriteria: workItem.acceptanceCriteria || '',
-          tags: workItem.tags?.join(', ') || ''
-        });
+          tags: workItem.tags?.join(', ') || '',
+        })
       } else {
-        setFormData(initialFormData);
+        setFormData(initialFormData)
       }
-      setErrors({});
+      setErrors({})
     }
-  }, [isOpen, workItem]);
+  }, [isOpen, workItem])
 
   const validateForm = useCallback((): boolean => {
-    const newErrors: Partial<FormData> = {};
+    const newErrors: Partial<FormData> = {}
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = 'Title is required'
     } else if (formData.title.length > 200) {
-      newErrors.title = 'Title must be 200 characters or less';
+      newErrors.title = 'Title must be 200 characters or less'
     }
 
     if (formData.description && formData.description.length > 2000) {
-      newErrors.description = 'Description must be 2000 characters or less';
+      newErrors.description = 'Description must be 2000 characters or less'
     }
 
     if (formData.storyPoints) {
-      const points = parseInt(formData.storyPoints, 10);
+      const points = parseInt(formData.storyPoints, 10)
       if (isNaN(points) || points < 0) {
-        newErrors.storyPoints = 'Story points must be a positive number';
+        newErrors.storyPoints = 'Story points must be a positive number'
       }
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }, [formData])
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
 
-    if (!validateForm()) {
-      return;
-    }
+      if (!validateForm()) {
+        return
+      }
 
-    try {
-      const submitData: CreateWorkItemRequest | UpdateWorkItemRequest = {
-        title: formData.title.trim(),
-        description: formData.description.trim() || undefined,
-        type: formData.type,
-        status: formData.status,
-        priority: formData.priority,
-        assigneeId: formData.assigneeId.trim() || undefined,
-        dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
-        storyPoints: formData.storyPoints ? parseInt(formData.storyPoints, 10) : undefined,
-        acceptanceCriteria: formData.acceptanceCriteria.trim() || undefined,
-        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : undefined
-      };
+      try {
+        const submitData: CreateWorkItemRequest | UpdateWorkItemRequest = {
+          title: formData.title.trim(),
+          description: formData.description.trim() || undefined,
+          type: formData.type,
+          status: formData.status,
+          priority: formData.priority,
+          assigneeId: formData.assigneeId.trim() || undefined,
+          dueDate: formData.dueDate
+            ? new Date(formData.dueDate).toISOString()
+            : undefined,
+          storyPoints: formData.storyPoints
+            ? parseInt(formData.storyPoints, 10)
+            : undefined,
+          acceptanceCriteria: formData.acceptanceCriteria.trim() || undefined,
+          tags: formData.tags
+            ? formData.tags
+                .split(',')
+                .map((tag) => tag.trim())
+                .filter(Boolean)
+            : undefined,
+        }
 
-      await onSubmit(submitData);
-      onClose();
-    } catch (error) {
-      console.error('Form submission error:', error);
-    }
-  }, [formData, validateForm, onSubmit, onClose]);
+        await onSubmit(submitData)
+        onClose()
+      } catch (error) {
+        console.error('Form submission error:', error)
+      }
+    },
+    [formData, validateForm, onSubmit, onClose]
+  )
 
-  const handleFieldChange = useCallback((field: keyof FormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
+  const handleFieldChange = useCallback(
+    (field: keyof FormData, value: string) => {
+      setFormData((prev) => ({
         ...prev,
-        [field]: undefined
-      }));
-    }
-  }, [errors]);
+        [field]: value,
+      }))
+
+      // Clear error for this field when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: undefined,
+        }))
+      }
+    },
+    [errors]
+  )
 
   const handleClose = useCallback(() => {
     if (!isSubmitting) {
-      onClose();
+      onClose()
     }
-  }, [isSubmitting, onClose]);
+  }, [isSubmitting, onClose])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -262,7 +281,7 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TYPE_OPTIONS.map(option => (
+                  {TYPE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -282,7 +301,7 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_OPTIONS.map(option => (
+                  {STATUS_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -302,7 +321,7 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {PRIORITY_OPTIONS.map(option => (
+                  {PRIORITY_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -319,7 +338,9 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
               <Input
                 id="assigneeId"
                 value={formData.assigneeId}
-                onChange={(e) => handleFieldChange('assigneeId', e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange('assigneeId', e.target.value)
+                }
                 placeholder="Enter assignee ID"
                 disabled={isSubmitting}
               />
@@ -332,7 +353,9 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
                 type="number"
                 min="0"
                 value={formData.storyPoints}
-                onChange={(e) => handleFieldChange('storyPoints', e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange('storyPoints', e.target.value)
+                }
                 placeholder="Enter story points"
                 disabled={isSubmitting}
                 className={errors.storyPoints ? 'border-red-500' : ''}
@@ -361,7 +384,9 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
             <Textarea
               id="acceptanceCriteria"
               value={formData.acceptanceCriteria}
-              onChange={(e) => handleFieldChange('acceptanceCriteria', e.target.value)}
+              onChange={(e) =>
+                handleFieldChange('acceptanceCriteria', e.target.value)
+              }
               placeholder="Define acceptance criteria..."
               rows={3}
               disabled={isSubmitting}
@@ -392,24 +417,23 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                   {isEditing ? 'Updating...' : 'Creating...'}
                 </div>
+              ) : isEditing ? (
+                'Update Work Item'
               ) : (
-                isEditing ? 'Update Work Item' : 'Create Work Item'
+                'Create Work Item'
               )}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default WorkItemForm;
+export default WorkItemForm

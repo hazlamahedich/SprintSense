@@ -5,13 +5,12 @@ This module addresses QA Concern 3: Performance Validation Strategy
 by providing measurement tools, monitoring, and validation approaches.
 """
 
+import logging
 import time
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from functools import wraps
 from typing import Any, AsyncGenerator, Callable, Dict, Optional
-import logging
-import asyncio
-from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +34,8 @@ class PerformanceMonitor:
         self.thresholds = {
             "work_item_creation": 1000,  # 1 second threshold
             "priority_calculation": 500,  # 500ms for priority calc
-            "database_query": 300,       # 300ms for individual queries
-            "form_validation": 100,      # 100ms for validation
+            "database_query": 300,  # 300ms for individual queries
+            "form_validation": 100,  # 100ms for validation
         }
 
     def record_metric(self, metric: PerformanceMetrics) -> None:
@@ -71,9 +70,10 @@ class PerformanceMonitor:
             "max_duration_ms": max(durations),
             "success_rate": success_count / len(filtered_metrics) * 100,
             "threshold_violations": sum(
-                1 for m in filtered_metrics
+                1
+                for m in filtered_metrics
                 if m.duration_ms > self.thresholds.get(m.operation, 1000)
-            )
+            ),
         }
 
     def clear_metrics(self) -> None:
@@ -87,8 +87,7 @@ performance_monitor = PerformanceMonitor()
 
 @asynccontextmanager
 async def measure_performance(
-    operation: str,
-    metadata: Optional[Dict[str, Any]] = None
+    operation: str, metadata: Optional[Dict[str, Any]] = None
 ) -> AsyncGenerator[PerformanceMetrics, None]:
     """
     Context manager for measuring operation performance.
@@ -101,10 +100,7 @@ async def measure_performance(
     """
     start_time = time.perf_counter()
     metric = PerformanceMetrics(
-        operation=operation,
-        duration_ms=0.0,
-        success=False,
-        metadata=metadata or {}
+        operation=operation, duration_ms=0.0, success=False, metadata=metadata or {}
     )
 
     try:
@@ -128,7 +124,9 @@ def monitor_performance(operation: str, metadata: Optional[Dict[str, Any]] = Non
         async def wrapper(*args, **kwargs):
             async with measure_performance(operation, metadata):
                 return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -156,7 +154,7 @@ class PerformanceValidator:
         report = {
             "timestamp": time.time(),
             "summary": performance_monitor.get_metrics_summary(),
-            "operations": {}
+            "operations": {},
         }
 
         # Get operation-specific summaries
@@ -169,10 +167,7 @@ class PerformanceValidator:
 
 # Performance testing utilities
 async def benchmark_work_item_creation(
-    service,
-    team_id: str,
-    author_id: str,
-    num_iterations: int = 10
+    service, team_id: str, author_id: str, num_iterations: int = 10
 ) -> Dict[str, Any]:
     """Benchmark work item creation performance."""
 
@@ -183,14 +178,14 @@ async def benchmark_work_item_creation(
         try:
             async with measure_performance("benchmark_work_item_creation") as metric:
                 # Create test work item
-                from app.domains.schemas.work_item import WorkItemCreateRequest
                 from app.domains.models.work_item import WorkItemType
+                from app.domains.schemas.work_item import WorkItemCreateRequest
 
                 request = WorkItemCreateRequest(
                     team_id=team_id,
                     title=f"Benchmark Work Item {i}",
                     description="Performance test work item",
-                    type=WorkItemType.TASK
+                    type=WorkItemType.TASK,
                 )
 
                 await service.create_work_item(request, author_id)
@@ -207,7 +202,7 @@ async def benchmark_work_item_creation(
         "min_duration_ms": min(durations) if durations else 0,
         "max_duration_ms": max(durations) if durations else 0,
         "errors": errors,
-        "performance_threshold_met": all(d < 1000 for d in durations)
+        "performance_threshold_met": all(d < 1000 for d in durations),
     }
 
 
@@ -217,7 +212,7 @@ async def run_performance_validation() -> Dict[str, Any]:
     validation_results = {
         "timestamp": time.time(),
         "validations": {},
-        "overall_passed": True
+        "overall_passed": True,
     }
 
     # Check recent metrics
@@ -235,7 +230,7 @@ async def run_performance_validation() -> Dict[str, Any]:
             "success_rate_ok": success_rate_acceptable,
             "avg_duration_ms": summary["avg_duration_ms"],
             "max_duration_ms": summary["max_duration_ms"],
-            "success_rate": summary["success_rate"]
+            "success_rate": summary["success_rate"],
         }
 
         if not all([avg_meets_threshold, max_meets_threshold, success_rate_acceptable]):
@@ -259,8 +254,7 @@ class PerformanceMiddleware:
             # Monitor work item creation endpoint
             if "/work-items" in path and method == "POST":
                 async with measure_performance(
-                    "api_work_item_creation",
-                    {"path": path, "method": method}
+                    "api_work_item_creation", {"path": path, "method": method}
                 ):
                     await self.app(scope, receive, send)
             else:

@@ -1,40 +1,41 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useWorkItems } from '../hooks/useWorkItems';
+import React, { useState, useCallback, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import { useWorkItems } from '../hooks/useWorkItems'
 import {
   CreateWorkItemRequest,
   UpdateWorkItemRequest,
   WorkItem,
   WorkItemFilters,
   WorkItemSort,
-  SortOrder
-} from '../types/workItem.types';
+} from '../types/workItem.types'
 
 // Components
-import BacklogList from '../components/common/BacklogList';
-import FilterControls from '../components/common/FilterControls';
-import SortControls from '../components/common/SortControls';
-import ViewModeToggle, { ViewMode } from '../components/common/ViewModeToggle';
-import Pagination from '../components/common/Pagination';
-import WorkItemForm from '../components/common/WorkItemForm';
+import BacklogList from '../components/common/BacklogList'
+import FilterControls from '../components/common/FilterControls'
+import SortControls from '../components/common/SortControls'
+import ViewModeToggle, { ViewMode } from '../components/common/ViewModeToggle'
+import Pagination from '../components/common/Pagination'
+import WorkItemForm from '../components/common/WorkItemForm'
 
-import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
-import { Alert, AlertDescription } from '../components/ui/alert';
+import { Button } from '../components/ui/button'
+import { Card } from '../components/ui/card'
+import { Alert, AlertDescription } from '../components/ui/alert'
 import {
   PlusIcon,
   ExclamationTriangleIcon,
-  RefreshCwIcon
-} from '@heroicons/react/24/outline';
+  RefreshCwIcon,
+} from '@heroicons/react/24/outline'
 
 export const BacklogPage: React.FC = () => {
-  const { teamId } = useParams<{ teamId: string }>();
+  const { teamId } = useParams<{ teamId: string }>()
 
   // State for UI controls
-  const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.LIST);
-  const [selectedWorkItem, setSelectedWorkItem] = useState<WorkItem | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.LIST)
+  const [selectedWorkItem, setSelectedWorkItem] = useState<WorkItem | null>(
+    null
+  )
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Use the work items hook
   const {
@@ -53,105 +54,126 @@ export const BacklogPage: React.FC = () => {
     refreshWorkItems,
     createWorkItem,
     updateWorkItem,
-    deleteWorkItem
-  } = useWorkItems(teamId || '');
+    deleteWorkItem,
+  } = useWorkItems(teamId || '')
 
   // Load work items on mount
   useEffect(() => {
     if (teamId) {
-      loadWorkItems();
+      loadWorkItems()
     }
-  }, [teamId, loadWorkItems]);
+  }, [teamId, loadWorkItems])
 
   // Event handlers
   const handleCreateClick = useCallback(() => {
-    setSelectedWorkItem(null);
-    setIsFormOpen(true);
-  }, []);
+    setSelectedWorkItem(null)
+    setIsFormOpen(true)
+  }, [])
 
   const handleEditWorkItem = useCallback((workItem: WorkItem) => {
-    setSelectedWorkItem(workItem);
-    setIsFormOpen(true);
-  }, []);
+    setSelectedWorkItem(workItem)
+    setIsFormOpen(true)
+  }, [])
 
-  const handleDeleteWorkItem = useCallback(async (workItemId: string) => {
-    if (window.confirm('Are you sure you want to delete this work item?')) {
+  const handleDeleteWorkItem = useCallback(
+    async (workItemId: string) => {
+      if (window.confirm('Are you sure you want to delete this work item?')) {
+        try {
+          await deleteWorkItem(workItemId)
+        } catch (error) {
+          console.error('Failed to delete work item:', error)
+          // Error handling can be improved with toast notifications
+        }
+      }
+    },
+    [deleteWorkItem]
+  )
+
+  const handleFormSubmit = useCallback(
+    async (data: CreateWorkItemRequest | UpdateWorkItemRequest) => {
+      if (!teamId) return
+
+      setIsSubmitting(true)
       try {
-        await deleteWorkItem(workItemId);
+        if (selectedWorkItem) {
+          // Update existing work item
+          await updateWorkItem(
+            selectedWorkItem.id,
+            data as UpdateWorkItemRequest
+          )
+        } else {
+          // Create new work item
+          await createWorkItem(data as CreateWorkItemRequest)
+        }
+        setIsFormOpen(false)
+        setSelectedWorkItem(null)
       } catch (error) {
-        console.error('Failed to delete work item:', error);
+        console.error('Failed to save work item:', error)
         // Error handling can be improved with toast notifications
+      } finally {
+        setIsSubmitting(false)
       }
-    }
-  }, [deleteWorkItem]);
-
-  const handleFormSubmit = useCallback(async (data: CreateWorkItemRequest | UpdateWorkItemRequest) => {
-    if (!teamId) return;
-
-    setIsSubmitting(true);
-    try {
-      if (selectedWorkItem) {
-        // Update existing work item
-        await updateWorkItem(selectedWorkItem.id, data as UpdateWorkItemRequest);
-      } else {
-        // Create new work item
-        await createWorkItem(data as CreateWorkItemRequest);
-      }
-      setIsFormOpen(false);
-      setSelectedWorkItem(null);
-    } catch (error) {
-      console.error('Failed to save work item:', error);
-      // Error handling can be improved with toast notifications
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [teamId, selectedWorkItem, createWorkItem, updateWorkItem]);
+    },
+    [teamId, selectedWorkItem, createWorkItem, updateWorkItem]
+  )
 
   const handleFormClose = useCallback(() => {
     if (!isSubmitting) {
-      setIsFormOpen(false);
-      setSelectedWorkItem(null);
+      setIsFormOpen(false)
+      setSelectedWorkItem(null)
     }
-  }, [isSubmitting]);
+  }, [isSubmitting])
 
-  const handleFiltersChange = useCallback((newFilters: WorkItemFilters) => {
-    setFilters(newFilters);
-    // Reset to first page when filters change
-    setPagination(prev => ({ ...prev, page: 1 }));
-  }, [setFilters, setPagination]);
+  const handleFiltersChange = useCallback(
+    (newFilters: WorkItemFilters) => {
+      setFilters(newFilters)
+      // Reset to first page when filters change
+      setPagination((prev) => ({ ...prev, page: 1 }))
+    },
+    [setFilters, setPagination]
+  )
 
   const handleClearFilters = useCallback(() => {
-    setFilters({});
-    setPagination(prev => ({ ...prev, page: 1 }));
-  }, [setFilters, setPagination]);
+    setFilters({})
+    setPagination((prev) => ({ ...prev, page: 1 }))
+  }, [setFilters, setPagination])
 
-  const handleSortChange = useCallback((newSort: WorkItemSort) => {
-    setSort(newSort);
-    // Reset to first page when sort changes
-    setPagination(prev => ({ ...prev, page: 1 }));
-  }, [setSort, setPagination]);
+  const handleSortChange = useCallback(
+    (newSort: WorkItemSort) => {
+      setSort(newSort)
+      // Reset to first page when sort changes
+      setPagination((prev) => ({ ...prev, page: 1 }))
+    },
+    [setSort, setPagination]
+  )
 
-  const handlePageChange = useCallback((page: number) => {
-    setPagination(prev => ({ ...prev, page }));
-  }, [setPagination]);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setPagination((prev) => ({ ...prev, page }))
+    },
+    [setPagination]
+  )
 
-  const handleItemsPerPageChange = useCallback((size: number) => {
-    setPagination(prev => ({
-      ...prev,
-      size,
-      page: 1 // Reset to first page when page size changes
-    }));
-  }, [setPagination]);
+  const handleItemsPerPageChange = useCallback(
+    (size: number) => {
+      setPagination((prev) => ({
+        ...prev,
+        size,
+        page: 1, // Reset to first page when page size changes
+      }))
+    },
+    [setPagination]
+  )
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore) {
-      setPagination(prev => ({ ...prev, page: prev.page + 1 }));
+      setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
     }
-  }, [loading, hasMore, setPagination]);
+  }, [loading, hasMore, setPagination])
 
   const handleRefresh = useCallback(() => {
-    refreshWorkItems();
-  }, [refreshWorkItems]);
+    refreshWorkItems()
+  }, [refreshWorkItems])
 
   // Don't render if no team ID
   if (!teamId) {
@@ -164,7 +186,7 @@ export const BacklogPage: React.FC = () => {
           </AlertDescription>
         </Alert>
       </div>
-    );
+    )
   }
 
   return (
@@ -185,7 +207,9 @@ export const BacklogPage: React.FC = () => {
             disabled={loading}
             className="flex items-center gap-2"
           >
-            <RefreshCwIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCwIcon
+              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+            />
             Refresh
           </Button>
 
@@ -204,7 +228,9 @@ export const BacklogPage: React.FC = () => {
         <Alert variant="destructive">
           <ExclamationTriangleIcon className="w-4 h-4" />
           <AlertDescription>
-            {error instanceof Error ? error.message : 'An error occurred while loading work items'}
+            {error instanceof Error
+              ? error.message
+              : 'An error occurred while loading work items'}
           </AlertDescription>
         </Alert>
       )}
@@ -219,10 +245,7 @@ export const BacklogPage: React.FC = () => {
               onViewModeChange={setViewMode}
             />
 
-            <SortControls
-              sort={sort}
-              onSortChange={handleSortChange}
-            />
+            <SortControls sort={sort} onSortChange={handleSortChange} />
           </div>
 
           {/* Filters */}
@@ -255,16 +278,26 @@ export const BacklogPage: React.FC = () => {
         {viewMode === ViewMode.KANBAN && (
           <div className="text-center py-12 text-gray-500">
             <div className="text-6xl mb-4">🔧</div>
-            <h3 className="text-lg font-semibold mb-2">Kanban View Coming Soon</h3>
-            <p>This view is under development and will be available in a future release.</p>
+            <h3 className="text-lg font-semibold mb-2">
+              Kanban View Coming Soon
+            </h3>
+            <p>
+              This view is under development and will be available in a future
+              release.
+            </p>
           </div>
         )}
 
         {viewMode === ViewMode.TABLE && (
           <div className="text-center py-12 text-gray-500">
             <div className="text-6xl mb-4">📊</div>
-            <h3 className="text-lg font-semibold mb-2">Table View Coming Soon</h3>
-            <p>This view is under development and will be available in a future release.</p>
+            <h3 className="text-lg font-semibold mb-2">
+              Table View Coming Soon
+            </h3>
+            <p>
+              This view is under development and will be available in a future
+              release.
+            </p>
           </div>
         )}
       </div>
@@ -290,7 +323,7 @@ export const BacklogPage: React.FC = () => {
         teamId={teamId}
       />
     </div>
-  );
-};
+  )
+}
 
-export default BacklogPage;
+export default BacklogPage

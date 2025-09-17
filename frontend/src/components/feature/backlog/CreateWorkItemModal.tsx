@@ -1,22 +1,22 @@
-import React from 'react';
+import React from 'react'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '../../ui/dialog';
-import { CreateWorkItemForm } from './CreateWorkItemForm';
-import { CreateWorkItemRequest } from '../../../types/workItem.types';
-import { X } from 'lucide-react';
-import { Button } from '../../ui/button';
+} from '../../ui/dialog'
+import { CreateWorkItemForm } from './CreateWorkItemForm'
+import { CreateWorkItemRequest } from '../../../types/workItem.types'
+import { X } from 'lucide-react'
+import { Button } from '../../ui/button'
 
 interface CreateWorkItemModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: CreateWorkItemRequest) => Promise<void>;
-  isSubmitting?: boolean;
-  error?: string | null;
-  successMessage?: string | null;
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: CreateWorkItemRequest) => Promise<void>
+  isSubmitting?: boolean
+  error?: string | null
+  successMessage?: string | null
 }
 
 export const CreateWorkItemModal: React.FC<CreateWorkItemModalProps> = ({
@@ -25,18 +25,18 @@ export const CreateWorkItemModal: React.FC<CreateWorkItemModalProps> = ({
   onSubmit,
   isSubmitting = false,
   error = null,
-  successMessage = null
+  successMessage = null,
 }) => {
   const handleClose = () => {
     if (!isSubmitting) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     // Prevent closing when clicking inside the modal content
-    e.stopPropagation();
-  };
+    e.stopPropagation()
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -51,7 +51,8 @@ export const CreateWorkItemModal: React.FC<CreateWorkItemModalProps> = ({
                 Create New Work Item
               </DialogTitle>
               <p className="text-sm text-gray-600 mt-1">
-                Add a new item to your team's backlog. It will be automatically prioritized and ready for planning.
+                Add a new item to your team's backlog. It will be automatically
+                prioritized and ready for planning.
               </p>
             </div>
             <Button
@@ -78,7 +79,7 @@ export const CreateWorkItemModal: React.FC<CreateWorkItemModalProps> = ({
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default CreateWorkItemModal;
+export default CreateWorkItemModal

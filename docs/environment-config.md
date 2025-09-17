@@ -206,7 +206,7 @@ The CI pipeline validates configuration by:
 **Development:**
 - Use `LOG_LEVEL=DEBUG` for detailed logging
 - Enable FastAPI docs at `/docs` and `/redoc`
-- Use local Supabase Studio at http://127.0.0.1:54323
+- Use local Supabase Studio at <http://127.0.0.1:54323>
 
 **Staging:**
 - Monitor GitHub Actions logs for deployment issues

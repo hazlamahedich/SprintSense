@@ -1,21 +1,22 @@
-import React from 'react';
-import { Button } from '../../ui/button';
-import { Plus, Sparkles } from 'lucide-react';
+import React from 'react'
+import { Button } from '../../ui/button'
+import { Plus, Sparkles } from 'lucide-react'
 
 interface CreateWorkItemButtonProps {
-  onClick: () => void;
-  disabled?: boolean;
-  variant?: 'floating' | 'header' | 'inline';
-  className?: string;
+  onClick: () => void
+  disabled?: boolean
+  variant?: 'floating' | 'header' | 'inline'
+  className?: string
 }
 
 export const CreateWorkItemButton: React.FC<CreateWorkItemButtonProps> = ({
   onClick,
   disabled = false,
   variant = 'header',
-  className = ''
+  className = '',
 }) => {
-  const baseClasses = "relative overflow-hidden transition-all duration-200 font-medium";
+  const baseClasses =
+    'relative overflow-hidden transition-all duration-200 font-medium'
 
   const variantClasses = {
     floating: `
@@ -32,8 +33,8 @@ export const CreateWorkItemButton: React.FC<CreateWorkItemButtonProps> = ({
       h-9 px-3 rounded-md
       bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800
       text-white border-0 hover:shadow-md
-    `
-  };
+    `,
+  }
 
   const content = {
     floating: (
@@ -55,14 +56,14 @@ export const CreateWorkItemButton: React.FC<CreateWorkItemButtonProps> = ({
         <Plus className="w-4 h-4" />
         <span>Add Item</span>
       </div>
-    )
-  };
+    ),
+  }
 
   const ariaLabels = {
-    floating: "Create new work item (floating button)",
-    header: "Create new work item",
-    inline: "Add new work item"
-  };
+    floating: 'Create new work item (floating button)',
+    header: 'Create new work item',
+    inline: 'Add new work item',
+  }
 
   return (
     <Button
@@ -87,9 +88,7 @@ export const CreateWorkItemButton: React.FC<CreateWorkItemButtonProps> = ({
       />
 
       {/* Button content */}
-      <div className="relative z-10">
-        {content[variant]}
-      </div>
+      <div className="relative z-10">{content[variant]}</div>
 
       {/* Tooltip for floating variant */}
       {variant === 'floating' && (
@@ -101,7 +100,7 @@ export const CreateWorkItemButton: React.FC<CreateWorkItemButtonProps> = ({
         </div>
       )}
     </Button>
-  );
-};
+  )
+}
 
-export default CreateWorkItemButton;
+export default CreateWorkItemButton

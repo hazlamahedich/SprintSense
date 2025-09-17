@@ -1,22 +1,24 @@
-import React from 'react';
-import { Button } from '../ui/button';
-import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group';
+import React from 'react'
+import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group'
 import {
   ListBulletIcon,
   Squares2X2Icon,
-  TableCellsIcon
-} from '@heroicons/react/24/outline';
+  TableCellsIcon,
+} from '@heroicons/react/24/outline'
 
-export enum ViewMode {
-  LIST = 'list',
-  KANBAN = 'kanban',
-  TABLE = 'table'
-}
+const ViewMode = {
+  LIST: 'list',
+  KANBAN: 'kanban',
+  TABLE: 'table',
+} as const
+
+export type ViewMode = (typeof ViewMode)[keyof typeof ViewMode]
+export { ViewMode }
 
 interface ViewModeToggleProps {
-  viewMode: ViewMode;
-  onViewModeChange: (mode: ViewMode) => void;
-  className?: string;
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
+  className?: string
 }
 
 const VIEW_MODE_OPTIONS = [
@@ -24,26 +26,26 @@ const VIEW_MODE_OPTIONS = [
     value: ViewMode.LIST,
     label: 'List View',
     icon: ListBulletIcon,
-    description: 'View work items in a vertical list format'
+    description: 'View work items in a vertical list format',
   },
   {
     value: ViewMode.KANBAN,
     label: 'Kanban Board',
     icon: Squares2X2Icon,
-    description: 'View work items in a kanban board organized by status'
+    description: 'View work items in a kanban board organized by status',
   },
   {
     value: ViewMode.TABLE,
     label: 'Table View',
     icon: TableCellsIcon,
-    description: 'View work items in a structured table format'
-  }
-];
+    description: 'View work items in a structured table format',
+  },
+]
 
 export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
   viewMode,
   onViewModeChange,
-  className = ''
+  className = '',
 }) => {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
@@ -54,13 +56,13 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
         value={viewMode}
         onValueChange={(value) => {
           if (value && Object.values(ViewMode).includes(value as ViewMode)) {
-            onViewModeChange(value as ViewMode);
+            onViewModeChange(value as ViewMode)
           }
         }}
         className="bg-gray-100 p-1 rounded-md"
       >
         {VIEW_MODE_OPTIONS.map((option) => {
-          const IconComponent = option.icon;
+          const IconComponent = option.icon
           return (
             <ToggleGroupItem
               key={option.value}
@@ -72,11 +74,11 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
               <IconComponent className="w-4 h-4" />
               <span className="hidden sm:inline">{option.label}</span>
             </ToggleGroupItem>
-          );
+          )
         })}
       </ToggleGroup>
     </div>
-  );
-};
+  )
+}
 
-export default ViewModeToggle;
+export default ViewModeToggle

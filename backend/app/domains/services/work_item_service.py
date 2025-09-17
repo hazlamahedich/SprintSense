@@ -6,6 +6,11 @@ from typing import Optional
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import (
+    AuthorizationError,
+    DatabaseError,
+)
+from app.core.performance import measure_performance, monitor_performance
 from app.domains.models.team import TeamMember
 from app.domains.models.work_item import WorkItem, WorkItemStatus
 from app.domains.schemas.work_item import (
@@ -14,12 +19,6 @@ from app.domains.schemas.work_item import (
     WorkItemResponse,
     WorkItemUpdateRequest,
 )
-from app.core.exceptions import (
-    AuthorizationError,
-    DatabaseError,
-    ValidationError,
-)
-from app.core.performance import measure_performance, monitor_performance
 
 
 class WorkItemService:
@@ -204,7 +203,9 @@ class WorkItemService:
                     elif "constraint" in str(e).lower():
                         raise DatabaseError.constraint_violation(str(e)) from e
                     else:
-                        raise DatabaseError.priority_calculation_failed(max_retries) from e
+                        raise DatabaseError.priority_calculation_failed(
+                            max_retries
+                        ) from e
                 # Retry for race conditions
                 continue
 
