@@ -58,6 +58,16 @@ SprintSense moves beyond traditional project management tools by providing:
 
 ### Development Setup
 
+**Prerequisites for Development**
+```bash
+# Install pre-commit hooks (required for all contributors)
+pip install pre-commit  # or: brew install pre-commit
+pre-commit install
+
+# Verify pre-commit setup
+pre-commit --version
+```
+
 **Backend Development**
 ```bash
 cd backend
@@ -79,6 +89,12 @@ cd backend && poetry run pytest
 
 # Frontend tests  
 cd frontend && npm run test
+
+# Full pre-commit checks (run this before pushing)
+pre-commit run --all-files
+
+# Run ALL quality checks (same as CI pipeline)
+./scripts/lint-all.sh
 ```
 
 ## 🏗 Architecture

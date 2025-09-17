@@ -40,7 +40,9 @@ describe('PendingInvitations', () => {
   })
 
   it('renders loading state initially', () => {
-    mockInvitationsApi.getTeamInvitations.mockImplementation(() => new Promise(() => {}))
+    mockInvitationsApi.getTeamInvitations.mockImplementation(
+      () => new Promise(() => {})
+    )
 
     render(<PendingInvitations teamId="team-123" />)
 
@@ -50,7 +52,7 @@ describe('PendingInvitations', () => {
 
   it('renders invitations list when data is loaded', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
     render(<PendingInvitations teamId="team-123" />)
@@ -71,7 +73,7 @@ describe('PendingInvitations', () => {
 
   it('renders empty state when no invitations exist', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: []
+      invitations: [],
     })
 
     render(<PendingInvitations teamId="team-123" />)
@@ -80,13 +82,15 @@ describe('PendingInvitations', () => {
       expect(screen.getByText('No pending invitations')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Sent invitations will appear here')).toBeInTheDocument()
+    expect(
+      screen.getByText('Sent invitations will appear here')
+    ).toBeInTheDocument()
     expect(screen.getByText('0')).toBeInTheDocument() // Count badge
   })
 
   it('displays correct role chips for different roles', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
     render(<PendingInvitations teamId="team-123" />)
@@ -99,20 +103,26 @@ describe('PendingInvitations', () => {
 
   it('formats dates correctly', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
     render(<PendingInvitations teamId="team-123" />)
 
     await waitFor(() => {
       // Check that formatted dates are present (exact format may vary by locale)
-      expect(screen.getByText(/Jan \d+, \d+:\d+ [AP]M/)).toBeInTheDocument()
+      // Use getAllByText when multiple elements are expected
+      const dateElements = screen.getAllByText(/Jan \d+, \d+:\d+ [AP]M/)
+      expect(dateElements).toHaveLength(2) // Assert expected count for 2 invitations
+      // Verify both dates are present
+      dateElements.forEach((element) => {
+        expect(element).toBeInTheDocument()
+      })
     })
   })
 
   it('displays status chips correctly', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
     render(<PendingInvitations teamId="team-123" />)
@@ -125,30 +135,36 @@ describe('PendingInvitations', () => {
   })
 
   it('handles API error gracefully', async () => {
-    mockInvitationsApi.getTeamInvitations.mockRejectedValue(new Error('Network error'))
+    mockInvitationsApi.getTeamInvitations.mockRejectedValue(
+      new Error('Network error')
+    )
 
     render(<PendingInvitations teamId="team-123" />)
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to load invitations/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/failed to load invitations/i)
+      ).toBeInTheDocument()
     })
   })
 
   it('handles 403 authorization error', async () => {
     mockInvitationsApi.getTeamInvitations.mockRejectedValue({
-      response: { status: 403 }
+      response: { status: 403 },
     })
 
     render(<PendingInvitations teamId="team-123" />)
 
     await waitFor(() => {
-      expect(screen.getByText(/you do not have permission to view team invitations/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/you do not have permission to view team invitations/i)
+      ).toBeInTheDocument()
     })
   })
 
   it('handles 404 team not found error', async () => {
     mockInvitationsApi.getTeamInvitations.mockRejectedValue({
-      response: { status: 404 }
+      response: { status: 404 },
     })
 
     render(<PendingInvitations teamId="team-123" />)
@@ -160,10 +176,12 @@ describe('PendingInvitations', () => {
 
   it('refetches data when refreshTrigger changes', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
-    const { rerender } = render(<PendingInvitations teamId="team-123" refreshTrigger={0} />)
+    const { rerender } = render(
+      <PendingInvitations teamId="team-123" refreshTrigger={0} />
+    )
 
     await waitFor(() => {
       expect(mockInvitationsApi.getTeamInvitations).toHaveBeenCalledTimes(1)
@@ -179,20 +197,24 @@ describe('PendingInvitations', () => {
 
   it('refetches data when teamId changes', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
     const { rerender } = render(<PendingInvitations teamId="team-123" />)
 
     await waitFor(() => {
-      expect(mockInvitationsApi.getTeamInvitations).toHaveBeenCalledWith('team-123')
+      expect(mockInvitationsApi.getTeamInvitations).toHaveBeenCalledWith(
+        'team-123'
+      )
     })
 
     // Change team ID
     rerender(<PendingInvitations teamId="team-456" />)
 
     await waitFor(() => {
-      expect(mockInvitationsApi.getTeamInvitations).toHaveBeenCalledWith('team-456')
+      expect(mockInvitationsApi.getTeamInvitations).toHaveBeenCalledWith(
+        'team-456'
+      )
       expect(mockInvitationsApi.getTeamInvitations).toHaveBeenCalledTimes(2)
     })
   })
@@ -205,34 +227,41 @@ describe('PendingInvitations', () => {
 
   it('shows helpful information about invitation expiry', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
     render(<PendingInvitations teamId="team-123" />)
 
     await waitFor(() => {
-      expect(screen.getByText(/invitations expire after 7 days/i)).toBeInTheDocument()
-      expect(screen.getByText(/users will need to register or log in to accept invitations/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/invitations expire after 7 days/i)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          /users will need to register or log in to accept invitations/i
+        )
+      ).toBeInTheDocument()
     })
   })
 
   it('renders invitation avatars', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
     render(<PendingInvitations teamId="team-123" />)
 
     await waitFor(() => {
       // Should have avatars for each invitation (by checking for email icons)
-      const avatars = screen.getAllByTestId('EmailIcon') || screen.getAllByLabelText(/email/i)
+      const avatars =
+        screen.getAllByTestId('EmailIcon') || screen.getAllByLabelText(/email/i)
       expect(avatars.length).toBeGreaterThan(0)
     })
   })
 
   it('applies hover effects to invitation items', async () => {
     mockInvitationsApi.getTeamInvitations.mockResolvedValue({
-      invitations: mockInvitations
+      invitations: mockInvitations,
     })
 
     render(<PendingInvitations teamId="team-123" />)
@@ -242,7 +271,7 @@ describe('PendingInvitations', () => {
       expect(listItems.length).toBe(2)
 
       // Check that list items have the expected structure
-      listItems.forEach(item => {
+      listItems.forEach((item) => {
         expect(item).toBeInTheDocument()
       })
     })

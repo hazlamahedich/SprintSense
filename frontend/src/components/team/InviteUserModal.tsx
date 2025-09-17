@@ -19,7 +19,10 @@ import {
 import { Close as CloseIcon } from '@mui/icons-material'
 import { useForm, Controller } from 'react-hook-form'
 import { invitationsApi } from '../../services/api'
-import type { InvitationFormData, InvitationError } from '../../types/invitations'
+import type {
+  InvitationFormData,
+  InvitationError,
+} from '../../types/invitations'
 
 interface InviteUserModalProps {
   open: boolean
@@ -88,7 +91,9 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
       console.error('Failed to send invitation:', err)
 
       // Cast error to handle response properties
-      const error = err as { response?: { status?: number; data?: { detail?: string } } }
+      const error = err as {
+        response?: { status?: number; data?: { detail?: string } }
+      }
 
       // Handle different error scenarios
       if (error.response?.status === 409) {
@@ -137,7 +142,7 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
       maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 2 }
+        sx: { borderRadius: 2 },
       }}
     >
       <DialogTitle>
@@ -161,26 +166,19 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
         <DialogContent>
           <Box sx={{ mb: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              Send an invitation to join your team. The user will receive access based on their assigned role.
+              Send an invitation to join your team. The user will receive access
+              based on their assigned role.
             </Typography>
           </Box>
 
           {success && (
-            <Alert
-              severity="success"
-              sx={{ mb: 2 }}
-              variant="filled"
-            >
+            <Alert severity="success" sx={{ mb: 2 }} variant="filled">
               Invitation sent successfully!
             </Alert>
           )}
 
           {error && (
-            <Alert
-              severity="error"
-              sx={{ mb: 2 }}
-              variant="outlined"
-            >
+            <Alert severity="error" sx={{ mb: 2 }} variant="outlined">
               {error.message}
             </Alert>
           )}
@@ -224,11 +222,7 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
               render={({ field }) => (
                 <FormControl fullWidth variant="outlined" disabled={isLoading}>
                   <InputLabel>Role</InputLabel>
-                  <Select
-                    {...field}
-                    label="Role"
-                    error={!!errors.role}
-                  >
+                  <Select {...field} label="Role" error={!!errors.role}>
                     <MenuItem value="member">
                       <Box>
                         <Typography variant="body1">Member</Typography>
@@ -247,7 +241,11 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
                     </MenuItem>
                   </Select>
                   {errors.role && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1 }}>
+                    <Typography
+                      variant="caption"
+                      color="error"
+                      sx={{ mt: 0.5, ml: 1 }}
+                    >
                       {errors.role.message}
                     </Typography>
                   )}
@@ -258,11 +256,7 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
         </DialogContent>
 
         <DialogActions sx={{ p: 2, pt: 1 }}>
-          <Button
-            onClick={handleClose}
-            disabled={isLoading}
-            color="inherit"
-          >
+          <Button onClick={handleClose} disabled={isLoading} color="inherit">
             Cancel
           </Button>
           <Button

@@ -111,11 +111,17 @@ export const teamsApi = {
 
 export const invitationsApi = {
   // Create a new team invitation
-  createInvitation: async (teamId: string, invitationData: {
-    email: string
-    role: 'owner' | 'member'
-  }) => {
-    const response = await api.post(`/api/v1/teams/${teamId}/invitations`, invitationData)
+  createInvitation: async (
+    teamId: string,
+    invitationData: {
+      email: string
+      role: 'owner' | 'member'
+    }
+  ) => {
+    const response = await api.post(
+      `/api/v1/teams/${teamId}/invitations`,
+      invitationData
+    )
     return response.data
   },
 

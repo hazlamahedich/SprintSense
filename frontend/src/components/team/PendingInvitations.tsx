@@ -90,14 +90,23 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
   }
 
   const getRoleIcon = (role: string) => {
-    return role === 'owner' ? <PersonIcon fontSize="small" /> : <PersonIcon fontSize="small" />
+    return role === 'owner' ? (
+      <PersonIcon fontSize="small" />
+    ) : (
+      <PersonIcon fontSize="small" />
+    )
   }
 
   if (isLoading) {
     return (
       <Card sx={{ mt: 2 }}>
         <CardContent>
-          <Box display="flex" alignItems="center" justifyContent="center" py={3}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            py={3}
+          >
             <CircularProgress size={24} sx={{ mr: 2 }} />
             <Typography variant="body2" color="text.secondary">
               Loading invitations...
@@ -146,7 +155,7 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
               backgroundColor: 'grey.50',
               borderRadius: 1,
               border: '1px dashed',
-              borderColor: 'grey.300'
+              borderColor: 'grey.300',
             }}
           >
             <EmailIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
@@ -173,7 +182,9 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
                   }}
                 >
                   <Box sx={{ mr: 2 }}>
-                    <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.light' }}>
+                    <Avatar
+                      sx={{ width: 40, height: 40, bgcolor: 'primary.light' }}
+                    >
                       <EmailIcon />
                     </Avatar>
                   </Box>
@@ -194,12 +205,23 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
                       </Box>
                     }
                     secondary={
-                      <Box display="flex" flexDirection="column" gap={0.5} mt={0.5}>
+                      <Box
+                        display="flex"
+                        flexDirection="column"
+                        gap={0.5}
+                        mt={0.5}
+                      >
                         <Typography variant="caption" color="text.secondary">
                           Invited by {invitation.inviter_name}
                         </Typography>
                         <Box display="flex" alignItems="center">
-                          <TimeIcon sx={{ fontSize: 14, mr: 0.5, color: 'text.secondary' }} />
+                          <TimeIcon
+                            sx={{
+                              fontSize: 14,
+                              mr: 0.5,
+                              color: 'text.secondary',
+                            }}
+                          />
                           <Typography variant="caption" color="text.secondary">
                             {formatDate(invitation.created_at)}
                           </Typography>
@@ -213,7 +235,11 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
                       <Chip
                         label={invitation.status}
                         size="small"
-                        color={invitation.status === 'pending' ? 'warning' : 'default'}
+                        color={
+                          invitation.status === 'pending'
+                            ? 'warning'
+                            : 'default'
+                        }
                         sx={{
                           textTransform: 'capitalize',
                           minWidth: 70,
@@ -230,7 +256,8 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
         {invitations.length > 0 && (
           <Box mt={2}>
             <Typography variant="caption" color="text.secondary">
-              Invitations expire after 7 days. Users will need to register or log in to accept invitations.
+              Invitations expire after 7 days. Users will need to register or
+              log in to accept invitations.
             </Typography>
           </Box>
         )}

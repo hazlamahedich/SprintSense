@@ -88,7 +88,7 @@ export const TeamDashboardPage: React.FC = () => {
 
   const handleInvitationSent = () => {
     // Trigger refresh of pending invitations
-    setRefreshTrigger(prev => prev + 1)
+    setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleBackToDashboard = () => {
@@ -171,7 +171,7 @@ export const TeamDashboardPage: React.FC = () => {
                 sx={{
                   color: 'white',
                   mr: 2,
-                  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                 }}
               >
                 <ArrowBackIcon />
@@ -180,7 +180,11 @@ export const TeamDashboardPage: React.FC = () => {
               <GroupsIcon sx={{ fontSize: 32, mr: 2 }} />
 
               <Box>
-                <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  sx={{ fontWeight: 'bold' }}
+                >
                   {team.name}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
@@ -194,7 +198,7 @@ export const TeamDashboardPage: React.FC = () => {
                 <IconButton
                   sx={{
                     color: 'white',
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                   }}
                 >
                   <SettingsIcon />
@@ -216,7 +220,11 @@ export const TeamDashboardPage: React.FC = () => {
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
                       Team Name
                     </Typography>
                     <Typography variant="h6" color="primary">
@@ -225,7 +233,11 @@ export const TeamDashboardPage: React.FC = () => {
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
                       Created
                     </Typography>
                     <Typography variant="body1">
@@ -233,13 +245,17 @@ export const TeamDashboardPage: React.FC = () => {
                         weekday: 'long',
                         year: 'numeric',
                         month: 'long',
-                        day: 'numeric'
+                        day: 'numeric',
                       })}
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
                       Your Role
                     </Typography>
                     <Chip
@@ -306,21 +322,27 @@ export const TeamDashboardPage: React.FC = () => {
                 </Typography>
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
                     <Typography variant="body2" color="text.secondary">
                       Team Members
                     </Typography>
                     <Chip label="1" size="small" color="primary" />
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
                     <Typography variant="body2" color="text.secondary">
                       Active Projects
                     </Typography>
                     <Chip label="0" size="small" />
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
                     <Typography variant="body2" color="text.secondary">
                       Pending Invitations
                     </Typography>
@@ -337,7 +359,8 @@ export const TeamDashboardPage: React.FC = () => {
                   🚀 Coming Soon
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Sprint planning, task management, and team analytics features will be available in upcoming releases.
+                  Sprint planning, task management, and team analytics features
+                  will be available in upcoming releases.
                 </Typography>
               </CardContent>
             </Card>
@@ -345,10 +368,7 @@ export const TeamDashboardPage: React.FC = () => {
         </Grid>
 
         {/* Pending Invitations Section */}
-        <PendingInvitations
-          teamId={team.id}
-          refreshTrigger={refreshTrigger}
-        />
+        <PendingInvitations teamId={team.id} refreshTrigger={refreshTrigger} />
 
         {/* Invite User Modal */}
         <InviteUserModal

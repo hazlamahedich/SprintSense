@@ -255,7 +255,7 @@ describe('CreateTeamPage', () => {
         await new Promise((resolve) => setTimeout(resolve, 2100))
       })
 
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
+      expect(mockNavigate).toHaveBeenCalledWith('/teams/456', { replace: true })
     })
 
     it('should trim whitespace from team name before submission', async () => {

@@ -190,7 +190,8 @@ export const DashboardPage: React.FC = () => {
                   borderRadius: 2,
                   px: 3,
                   py: 1,
-                  background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                  background:
+                    'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
                   '&:hover': {
                     background:
                       'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%)',

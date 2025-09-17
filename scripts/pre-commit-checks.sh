@@ -47,20 +47,20 @@ print_separator
 if [[ -d "backend" ]]; then
     print_status "Running Backend Quality Checks..."
     cd backend
-    
+
     # Check if poetry is available
     if ! command -v poetry &> /dev/null; then
         print_error "Poetry is not installed. Please install poetry first."
         exit 1
     fi
-    
+
     # Install dependencies if needed
     print_status "Ensuring backend dependencies are installed..."
     poetry install || {
         print_error "Failed to install backend dependencies"
         exit 1
     }
-    
+
     # 1. Black formatting check
     print_status "Checking Python code formatting (Black)..."
     if poetry run black --check app tests migrations; then
@@ -69,7 +69,7 @@ if [[ -d "backend" ]]; then
         print_error "Black formatting issues found. Run: cd backend && poetry run black app tests migrations"
         exit 1
     fi
-    
+
     # 2. Import sorting check
     print_status "Checking import sorting (isort)..."
     if poetry run isort --check-only app tests migrations --profile black; then
@@ -78,7 +78,7 @@ if [[ -d "backend" ]]; then
         print_error "Import sorting issues found. Run: cd backend && poetry run isort app tests migrations --profile black"
         exit 1
     fi
-    
+
     # 3. Flake8 linting
     print_status "Running Python linting (Flake8)..."
     if poetry run flake8 app tests --max-line-length=88 --extend-ignore=E203,W503,E501; then
@@ -87,7 +87,7 @@ if [[ -d "backend" ]]; then
         print_error "Flake8 linting issues found"
         exit 1
     fi
-    
+
     # 4. MyPy type checking
     print_status "Running type checking (MyPy)..."
     if poetry run mypy app --ignore-missing-imports; then
@@ -96,7 +96,7 @@ if [[ -d "backend" ]]; then
         print_error "MyPy type checking issues found"
         exit 1
     fi
-    
+
     # 5. Security check
     print_status "Running security check (Bandit)..."
     if poetry run bandit -r app -f json > /dev/null 2>&1; then
@@ -104,7 +104,7 @@ if [[ -d "backend" ]]; then
     else
         print_warning "Security check found potential issues (check manually if needed)"
     fi
-    
+
     # 6. Backend tests
     print_status "Running backend tests..."
     if poetry run pytest tests/ -q; then
@@ -113,7 +113,7 @@ if [[ -d "backend" ]]; then
         print_error "Backend tests failed"
         exit 1
     fi
-    
+
     cd ..
 fi
 
@@ -121,20 +121,20 @@ fi
 if [[ -d "frontend" ]]; then
     print_status "Running Frontend Quality Checks..."
     cd frontend
-    
+
     # Check if npm is available
     if ! command -v npm &> /dev/null; then
         print_error "npm is not installed. Please install Node.js and npm first."
         exit 1
     fi
-    
+
     # Install dependencies if needed
     print_status "Ensuring frontend dependencies are installed..."
     npm ci || {
         print_error "Failed to install frontend dependencies"
         exit 1
     }
-    
+
     # 1. TypeScript type checking
     print_status "Running TypeScript type checking..."
     if npm run type-check; then
@@ -143,7 +143,7 @@ if [[ -d "frontend" ]]; then
         print_error "TypeScript type checking failed"
         exit 1
     fi
-    
+
     # 2. ESLint checking
     print_status "Running ESLint checking..."
     if npm run lint; then
@@ -152,7 +152,7 @@ if [[ -d "frontend" ]]; then
         print_error "ESLint issues found. Run: cd frontend && npm run lint:fix"
         exit 1
     fi
-    
+
     # 3. Prettier formatting check
     print_status "Checking code formatting (Prettier)..."
     if npm run format:check; then
@@ -161,7 +161,7 @@ if [[ -d "frontend" ]]; then
         print_error "Prettier formatting issues found. Run: cd frontend && npm run format"
         exit 1
     fi
-    
+
     # 4. Frontend tests
     print_status "Running frontend tests..."
     if npm run test:run; then
@@ -170,7 +170,7 @@ if [[ -d "frontend" ]]; then
         print_error "Frontend tests failed"
         exit 1
     fi
-    
+
     cd ..
 fi
 
