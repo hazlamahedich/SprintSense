@@ -345,9 +345,10 @@ async def get_team_work_items(
     team_id: str,
     limit: int = Query(50, ge=1, le=50, description="Items per page"),
     offset: int = Query(0, ge=0, description="Items to skip for pagination"),
-    status: Optional[str] = Query(
+    status_filter: Optional[str] = Query(
         None,
         description="Filter by status (backlog, todo, in_progress, done)",
+        alias="status",
     ),
     search: Optional[str] = Query(
         None,
@@ -387,7 +388,7 @@ async def get_team_work_items(
             user_id=current_user.id,
             limit=limit,
             offset=offset,
-            status=status,
+            status=status_filter,
             search=search,
             sort_by=sort_by,
             sort_order=sort_order,
