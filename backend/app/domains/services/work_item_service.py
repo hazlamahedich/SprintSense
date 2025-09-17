@@ -6,10 +6,7 @@ from typing import Optional
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import (
-    AuthorizationError,
-    DatabaseError,
-)
+from app.core.exceptions import AuthorizationError, DatabaseError
 from app.core.performance import measure_performance, monitor_performance
 from app.domains.models.team import TeamMember
 from app.domains.models.work_item import WorkItem, WorkItemStatus

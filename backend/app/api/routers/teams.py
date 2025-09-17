@@ -16,10 +16,7 @@ from app.core.exceptions import (
     get_http_status_for_error_code,
 )
 from app.domains.models.user import User
-from app.domains.schemas.work_item import (
-    WorkItemCreateRequest,
-    WorkItemResponse,
-)
+from app.domains.schemas.work_item import WorkItemCreateRequest, WorkItemResponse
 from app.domains.services.work_item_service import WorkItemService
 from app.infra.db import get_session
 
