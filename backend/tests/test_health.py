@@ -36,5 +36,7 @@ async def test_detailed_health_check(async_client: AsyncClient):
     data = response.json()
     assert data["status"] == "OK"
     assert data["service"] == "SprintSense Backend"
-    assert "database" in data
+    assert "checks" in data
+    assert "database" in data["checks"]
+    assert data["checks"]["database"]["status"] == "healthy"
     assert data["version"] == "0.1.0"

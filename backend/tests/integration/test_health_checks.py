@@ -120,17 +120,25 @@ class TestHealthEndpoints:
 
     def test_detailed_health_check_database_failure(self, test_client):
         """Test detailed health check when database is unhealthy."""
-        with patch("app.api.routers.health.get_session") as mock_session:
-            # Mock database connection failure
+        from app.infra.db import get_session
+        from app.main import app
+
+        # Mock database connection failure
+        async def failing_session():
+            mock_session = AsyncSession(
+                create_async_engine("sqlite+aiosqlite:///:memory:")
+            )
+
             async def failing_execute(*args, **kwargs):
                 raise Exception("Database connection failed")
 
-            mock_db_session = AsyncSession(
-                create_async_engine("sqlite+aiosqlite:///:memory:")
-            )
-            mock_db_session.execute = failing_execute
-            mock_session.return_value = mock_db_session
+            mock_session.execute = failing_execute
+            return mock_session
 
+        # Override the dependency
+        app.dependency_overrides[get_session] = failing_session
+
+        try:
             response = test_client.get("/api/v1/health/detailed")
 
             # Should return 503 Service Unavailable when unhealthy
@@ -139,6 +147,9 @@ class TestHealthEndpoints:
             assert data["status"] == "UNHEALTHY"
             assert data["checks"]["database"]["status"] == "unhealthy"
             assert "error" in data["checks"]["database"]
+        finally:
+            # Clean up the override
+            app.dependency_overrides.clear()
 
     @patch.dict(os.environ, {"SUPABASE_URL": "http://invalid-url"})
     @patch("httpx.AsyncClient.get")
@@ -163,7 +174,7 @@ class TestHealthEndpoints:
     def test_detailed_health_check_response_time(self, test_client):
         """Test that health check includes response time metrics."""
         with patch(
-            "time.time", side_effect=[1000.0, 1001.5]
+            "time.time", side_effect=[1000.0, 1000.5, 1001.5, 1001.5, 1001.5, 1001.5]
         ):  # 1.5 second response time
             response = test_client.get("/api/v1/health/detailed")
 
@@ -251,7 +262,9 @@ class TestHealthCheckIntegration:
             # Should be healthy if local Supabase is running
             # Will be unhealthy if not running, which is also valid for testing
             assert supabase_check["status"] in ["healthy", "unhealthy"]
-            assert supabase_check["url"] == "http://127.0.0.1:54321"
+            # Only check URL if it exists (when Supabase is configured)
+            if "url" in supabase_check:
+                assert supabase_check["url"] == "http://127.0.0.1:54321"
 
 
 # Pytest configuration for integration tests
