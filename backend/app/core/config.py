@@ -79,6 +79,12 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
 
+    # Supabase settings
+    SUPABASE_URL: str = "http://127.0.0.1:54321"
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+    SUPABASE_JWT_SECRET: str = ""
+
     # OpenTelemetry settings
     OTEL_SERVICE_NAME: str = "sprintsense-backend"
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"
