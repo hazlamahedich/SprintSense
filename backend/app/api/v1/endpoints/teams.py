@@ -1,7 +1,10 @@
 """Teams endpoints for team creation and management."""
 
+import uuid
+from typing import Optional
+
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
@@ -12,8 +15,14 @@ from app.domains.schemas.invitation import (
     InvitationListResponse,
 )
 from app.domains.schemas.team import TeamCreateRequest, TeamCreateResponse
+from app.domains.schemas.work_item import (
+    WorkItemCreateRequest,
+    WorkItemListResponse,
+    WorkItemResponse,
+)
 from app.domains.services.invitation_service import InvitationService
 from app.domains.services.team_service import TeamService
+from app.domains.services.work_item_service import WorkItemService
 from app.infra.db import get_session
 
 logger = structlog.get_logger(__name__)
@@ -31,6 +40,13 @@ async def get_invitation_service(
 ) -> InvitationService:
     """Dependency to get invitation service with database session."""
     return InvitationService(db)
+
+
+async def get_work_item_service(
+    db: AsyncSession = Depends(get_session),
+) -> WorkItemService:
+    """Dependency to get work item service with database session."""
+    return WorkItemService(db)
 
 
 @router.post(
@@ -318,4 +334,183 @@ async def list_team_invitations(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error during invitation list retrieval",
+        )
+
+
+# Work Items Endpoints
+
+
+@router.get("/{team_id}/work-items", response_model=WorkItemListResponse)
+async def get_team_work_items(
+    team_id: str,
+    limit: int = Query(50, ge=1, le=50, description="Items per page"),
+    offset: int = Query(0, ge=0, description="Items to skip for pagination"),
+    status: Optional[str] = Query(
+        None,
+        description="Filter by status (backlog, todo, in_progress, done)",
+    ),
+    search: Optional[str] = Query(
+        None,
+        min_length=2,
+        description="Search in title and description (minimum 2 characters)",
+    ),
+    sort_by: str = Query(
+        "priority",
+        description="Sort field (priority, created_at, story_points, title)",
+    ),
+    sort_order: str = Query(
+        "asc",
+        regex="^(asc|desc)$",
+        description="Sort direction (asc, desc)",
+    ),
+    current_user: User = Depends(get_current_user),
+    work_item_service: WorkItemService = Depends(get_work_item_service),
+) -> WorkItemListResponse:
+    """
+    Get work items for a team with filtering, sorting, and pagination.
+
+    **Authorization:** User must be a team member.
+    **Pagination:** Maximum 50 items per page.
+    **Filtering:** By status and text search (min 2 chars).
+    **Sorting:** By priority, created_at, story_points, or title.
+    """
+    logger.info(
+        "Work items list request",
+        team_id=team_id,
+        user_id=str(current_user.id),
+    )
+
+    try:
+        team_uuid = uuid.UUID(team_id)
+        return await work_item_service.get_work_items(
+            team_id=team_uuid,
+            user_id=current_user.id,
+            limit=limit,
+            offset=offset,
+            status=status,
+            search=search,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
+    except ValueError as e:
+        if "not a member" in str(e):
+            logger.warning(
+                "Unauthorized work items access - user not team member",
+                team_id=team_id,
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "error": "access_denied",
+                    "message": "Not a team member",
+                },
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": "invalid_parameter",
+                    "message": str(e),
+                },
+            )
+    except Exception as e:
+        logger.error(
+            "Work items list failed - unexpected error",
+            error=str(e),
+            team_id=team_id,
+            user_id=str(current_user.id),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "server_error",
+                "message": "Please try again later",
+            },
+        )
+
+
+@router.post("/{team_id}/work-items", response_model=WorkItemResponse)
+async def create_team_work_item(
+    team_id: str,
+    work_item_data: WorkItemCreateRequest,
+    current_user: User = Depends(get_current_user),
+    work_item_service: WorkItemService = Depends(get_work_item_service),
+) -> WorkItemResponse:
+    """
+    Create a new work item for a team.
+
+    **Authorization:** User must be a team member.
+    """
+    logger.info(
+        "Work item creation attempt",
+        team_id=team_id,
+        user_id=str(current_user.id),
+        title=work_item_data.title,
+    )
+
+    try:
+        team_uuid = uuid.UUID(team_id)
+
+        # Ensure team_id in URL matches team_id in body
+        if work_item_data.team_id != team_uuid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": "team_id_mismatch",
+                    "message": "Team ID in URL must match team ID in body",
+                },
+            )
+
+        work_item = await work_item_service.create_work_item(
+            work_item_data=work_item_data,
+            author_id=current_user.id,
+        )
+
+        logger.info(
+            "Work item creation successful",
+            work_item_id=str(work_item.id),
+            team_id=team_id,
+            user_id=str(current_user.id),
+        )
+
+        return work_item
+
+    except ValueError as e:
+        if "not a member" in str(e):
+            logger.warning(
+                "Unauthorized work item creation - user not team member",
+                team_id=team_id,
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "error": "access_denied",
+                    "message": "Not a team member",
+                },
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": "validation_error",
+                    "message": str(e),
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            "Work item creation failed - unexpected error",
+            error=str(e),
+            team_id=team_id,
+            user_id=str(current_user.id),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "server_error",
+                "message": "Please try again later",
+            },
         )

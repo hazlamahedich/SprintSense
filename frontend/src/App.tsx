@@ -13,6 +13,7 @@ import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { CreateTeamPage } from './pages/CreateTeamPage'
 import { TeamDashboardPage } from './pages/TeamDashboardPage'
+import { BacklogPage } from './pages/BacklogPage'
 import { useAppStore } from './store/appStore'
 import { baseTheme } from './theme'
 
@@ -84,6 +85,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <TeamDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teams/:teamId/backlog"
+            element={
+              <ProtectedRoute>
+                <BacklogPage />
               </ProtectedRoute>
             }
           />
