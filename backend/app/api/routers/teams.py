@@ -27,7 +27,9 @@ logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/teams", tags=["teams"])
 
 
-async def get_work_item_service(db: AsyncSession = Depends(get_session)) -> WorkItemService:
+async def get_work_item_service(
+    db: AsyncSession = Depends(get_session),
+) -> WorkItemService:
     """Dependency to get work item service with database session."""
     return WorkItemService(db)
 

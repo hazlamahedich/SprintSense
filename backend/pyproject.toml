@@ -76,3 +76,6 @@ addopts = "-ra -q --strict-markers"
 testpaths = [
     "tests",
 ]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m 'not integration'')",
+]

@@ -1,8 +1,12 @@
-import React from 'react';
-import { WorkItem, WorkItemType, WorkItemStatus, WorkItemPriority } from '../../types/workItem.types';
-import { Card, CardHeader, CardContent, CardFooter } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
+import React from 'react'
+import {
+  WorkItem,
+  WorkItemType,
+  WorkItemStatus,
+} from '../../types/workItem.types'
+import { Card, CardHeader, CardContent, CardFooter } from '../ui/card'
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
 import {
   CalendarIcon,
   UserIcon,
@@ -10,16 +14,16 @@ import {
   ArrowDownIcon,
   MinusIcon,
   PencilIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline';
+  TrashIcon,
+} from '@heroicons/react/24/outline'
 
 interface BacklogItemProps {
-  workItem: WorkItem;
-  onEdit: (workItem: WorkItem) => void;
-  onDelete: (id: string) => void;
-  onMove?: (id: string, direction: 'up' | 'down') => void;
-  showMoveButtons?: boolean;
-  className?: string;
+  workItem: WorkItem
+  onEdit: (workItem: WorkItem) => void
+  onDelete: (id: string) => void
+  onMove?: (id: string, direction: 'up' | 'down') => void
+  showMoveButtons?: boolean
+  className?: string
 }
 
 const TYPE_COLORS: Record<WorkItemType, string> = {
@@ -28,29 +32,35 @@ const TYPE_COLORS: Record<WorkItemType, string> = {
   [WorkItemType.USER_STORY]: 'bg-green-100 text-green-800',
   [WorkItemType.TASK]: 'bg-yellow-100 text-yellow-800',
   [WorkItemType.BUG]: 'bg-red-100 text-red-800',
-  [WorkItemType.TECHNICAL_DEBT]: 'bg-gray-100 text-gray-800'
-};
+  [WorkItemType.TECHNICAL_DEBT]: 'bg-gray-100 text-gray-800',
+}
 
 const STATUS_COLORS: Record<WorkItemStatus, string> = {
   [WorkItemStatus.NEW]: 'bg-slate-100 text-slate-800',
   [WorkItemStatus.APPROVED]: 'bg-cyan-100 text-cyan-800',
   [WorkItemStatus.COMMITTED]: 'bg-blue-100 text-blue-800',
-  [WorkItemStatus.DONE]: 'bg-green-100 text-green-800'
-};
+  [WorkItemStatus.DONE]: 'bg-green-100 text-green-800',
+}
 
-const PRIORITY_COLORS: Record<WorkItemPriority, string> = {
-  [WorkItemPriority.LOW]: 'bg-gray-100 text-gray-600',
-  [WorkItemPriority.MEDIUM]: 'bg-yellow-100 text-yellow-600',
-  [WorkItemPriority.HIGH]: 'bg-orange-100 text-orange-600',
-  [WorkItemPriority.CRITICAL]: 'bg-red-100 text-red-600'
-};
+// Priority is a numeric value from backend, we'll create utility functions for display
+const getPriorityColor = (priority: number): string => {
+  if (priority >= 7) return 'bg-red-100 text-red-600' // Critical
+  if (priority >= 5) return 'bg-orange-100 text-orange-600' // High
+  if (priority >= 3) return 'bg-yellow-100 text-yellow-600' // Medium
+  return 'bg-gray-100 text-gray-600' // Low
+}
 
-const PRIORITY_ICONS = {
-  [WorkItemPriority.LOW]: MinusIcon,
-  [WorkItemPriority.MEDIUM]: MinusIcon,
-  [WorkItemPriority.HIGH]: ArrowUpIcon,
-  [WorkItemPriority.CRITICAL]: ArrowUpIcon
-};
+const getPriorityIcon = (priority: number) => {
+  if (priority >= 5) return ArrowUpIcon // High/Critical
+  return MinusIcon // Low/Medium
+}
+
+const getPriorityLabel = (priority: number): string => {
+  if (priority >= 7) return 'Critical'
+  if (priority >= 5) return 'High'
+  if (priority >= 3) return 'Medium'
+  return 'Low'
+}
 
 export const BacklogItem: React.FC<BacklogItemProps> = ({
   workItem,
@@ -58,25 +68,25 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
   onDelete,
   onMove,
   showMoveButtons = false,
-  className = ''
+  className = '',
 }) => {
-  const PriorityIcon = PRIORITY_ICONS[workItem.priority];
+  const PriorityIcon = getPriorityIcon(workItem.priority)
 
   const handleEdit = () => {
-    onEdit(workItem);
-  };
+    onEdit(workItem)
+  }
 
   const handleDelete = () => {
-    onDelete(workItem.id);
-  };
+    onDelete(workItem.id)
+  }
 
   const handleMoveUp = () => {
-    onMove?.(workItem.id, 'up');
-  };
+    onMove?.(workItem.id, 'up')
+  }
 
   const handleMoveDown = () => {
-    onMove?.(workItem.id, 'down');
-  };
+    onMove?.(workItem.id, 'down')
+  }
 
   return (
     <Card className={`hover:shadow-md transition-shadow ${className}`}>
@@ -89,9 +99,11 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
             <Badge className={STATUS_COLORS[workItem.status]}>
               {workItem.status}
             </Badge>
-            <Badge className={`${PRIORITY_COLORS[workItem.priority]} flex items-center gap-1`}>
+            <Badge
+              className={`${getPriorityColor(workItem.priority)} flex items-center gap-1`}
+            >
               <PriorityIcon className="w-3 h-3" />
-              {workItem.priority}
+              {getPriorityLabel(workItem.priority)}
             </Badge>
           </div>
           <div className="flex items-center gap-1">
@@ -149,16 +161,10 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
           </p>
         )}
         <div className="flex items-center gap-4 text-sm text-gray-500">
-          {workItem.assigneeId && (
+          {workItem.assignee_id && (
             <div className="flex items-center gap-1">
               <UserIcon className="w-4 h-4" />
-              <span>Assignee: {workItem.assigneeId}</span>
-            </div>
-          )}
-          {workItem.dueDate && (
-            <div className="flex items-center gap-1">
-              <CalendarIcon className="w-4 h-4" />
-              <span>Due: {new Date(workItem.dueDate).toLocaleDateString()}</span>
+              <span>Assignee: {workItem.assignee_id}</span>
             </div>
           )}
         </div>
@@ -168,15 +174,17 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
         <div className="flex justify-between items-center w-full text-xs text-gray-500">
           <span>ID: {workItem.id.slice(0, 8)}</span>
           <div className="flex items-center gap-4">
-            {workItem.storyPoints && (
-              <span>Story Points: {workItem.storyPoints}</span>
+            {workItem.story_points && (
+              <span>Story Points: {workItem.story_points}</span>
             )}
-            <span>Created: {new Date(workItem.createdAt).toLocaleDateString()}</span>
+            <span>
+              Created: {new Date(workItem.created_at).toLocaleDateString()}
+            </span>
           </div>
         </div>
       </CardFooter>
     </Card>
-  );
-};
+  )
+}
 
-export default BacklogItem;
+export default BacklogItem

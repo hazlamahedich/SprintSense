@@ -1,33 +1,37 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import BacklogItem from '../BacklogItem';
-import { WorkItem, WorkItemType, WorkItemStatus, WorkItemPriority } from '../../../types/workItem.types';
+import React from 'react'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import BacklogItem from '../BacklogItem'
+import {
+  WorkItem,
+  WorkItemType,
+  WorkItemStatus,
+} from '../../../types/workItem.types'
 
 // Mock work item for testing
 const mockWorkItem: WorkItem = {
   id: '1',
-  teamId: 'team-1',
+  team_id: 'team-1',
+  author_id: 'user-author',
   title: 'Test Work Item',
   description: 'This is a test work item',
   type: WorkItemType.TASK,
-  status: WorkItemStatus.NEW,
-  priority: WorkItemPriority.MEDIUM,
-  createdAt: new Date('2023-01-01'),
-  updatedAt: new Date('2023-01-01'),
-  storyPoints: 5,
-  assigneeId: 'user-1',
-  dueDate: new Date('2023-12-31')
-};
+  status: WorkItemStatus.BACKLOG,
+  priority: 3.0,
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+  story_points: 5,
+  assignee_id: 'user-1',
+}
 
 describe('BacklogItem', () => {
-  const mockOnEdit = vi.fn();
-  const mockOnDelete = vi.fn();
-  const mockOnMove = vi.fn();
+  const mockOnEdit = vi.fn()
+  const mockOnDelete = vi.fn()
+  const mockOnMove = vi.fn()
 
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   it('renders work item information correctly', () => {
     render(
@@ -36,23 +40,23 @@ describe('BacklogItem', () => {
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
-    );
+    )
 
     // Check if title is rendered
-    expect(screen.getByText('Test Work Item')).toBeInTheDocument();
+    expect(screen.getByText('Test Work Item')).toBeInTheDocument()
 
     // Check if description is rendered
-    expect(screen.getByText('This is a test work item')).toBeInTheDocument();
+    expect(screen.getByText('This is a test work item')).toBeInTheDocument()
 
     // Check if type badge is rendered
-    expect(screen.getByText('TASK')).toBeInTheDocument();
+    expect(screen.getByText('task')).toBeInTheDocument()
 
     // Check if status badge is rendered
-    expect(screen.getByText('NEW')).toBeInTheDocument();
+    expect(screen.getByText('backlog')).toBeInTheDocument()
 
-    // Check if priority badge is rendered
-    expect(screen.getByText('MEDIUM')).toBeInTheDocument();
-  });
+    // Check if priority badge is rendered (should show "Medium" label for priority 3.0)
+    expect(screen.getByText('Medium')).toBeInTheDocument()
+  })
 
   it('calls onEdit when edit button is clicked', () => {
     render(
@@ -61,13 +65,13 @@ describe('BacklogItem', () => {
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
-    );
+    )
 
-    const editButton = screen.getByTitle('Edit');
-    fireEvent.click(editButton);
+    const editButton = screen.getByTitle('Edit')
+    fireEvent.click(editButton)
 
-    expect(mockOnEdit).toHaveBeenCalledWith(mockWorkItem);
-  });
+    expect(mockOnEdit).toHaveBeenCalledWith(mockWorkItem)
+  })
 
   it('calls onDelete when delete button is clicked', () => {
     render(
@@ -76,13 +80,13 @@ describe('BacklogItem', () => {
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
-    );
+    )
 
-    const deleteButton = screen.getByTitle('Delete');
-    fireEvent.click(deleteButton);
+    const deleteButton = screen.getByTitle('Delete')
+    fireEvent.click(deleteButton)
 
-    expect(mockOnDelete).toHaveBeenCalledWith(mockWorkItem.id);
-  });
+    expect(mockOnDelete).toHaveBeenCalledWith(mockWorkItem.id)
+  })
 
   it('shows move buttons when showMoveButtons is true', () => {
     render(
@@ -93,11 +97,11 @@ describe('BacklogItem', () => {
         onMove={mockOnMove}
         showMoveButtons={true}
       />
-    );
+    )
 
-    expect(screen.getByTitle('Move up')).toBeInTheDocument();
-    expect(screen.getByTitle('Move down')).toBeInTheDocument();
-  });
+    expect(screen.getByTitle('Move up')).toBeInTheDocument()
+    expect(screen.getByTitle('Move down')).toBeInTheDocument()
+  })
 
   it('hides move buttons when showMoveButtons is false', () => {
     render(
@@ -108,11 +112,11 @@ describe('BacklogItem', () => {
         onMove={mockOnMove}
         showMoveButtons={false}
       />
-    );
+    )
 
-    expect(screen.queryByTitle('Move up')).not.toBeInTheDocument();
-    expect(screen.queryByTitle('Move down')).not.toBeInTheDocument();
-  });
+    expect(screen.queryByTitle('Move up')).not.toBeInTheDocument()
+    expect(screen.queryByTitle('Move down')).not.toBeInTheDocument()
+  })
 
   it('displays assignee information when available', () => {
     render(
@@ -121,22 +125,12 @@ describe('BacklogItem', () => {
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
-    );
+    )
 
-    expect(screen.getByText(/Assignee: user-1/)).toBeInTheDocument();
-  });
+    expect(screen.getByText(/Assignee: user-1/)).toBeInTheDocument()
+  })
 
-  it('displays due date when available', () => {
-    render(
-      <BacklogItem
-        workItem={mockWorkItem}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    expect(screen.getByText(/Due: 12\/31\/2023/)).toBeInTheDocument();
-  });
+  // Due date test removed as it's not part of current WorkItem interface
 
   it('displays story points when available', () => {
     render(
@@ -145,8 +139,8 @@ describe('BacklogItem', () => {
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
-    );
+    )
 
-    expect(screen.getByText(/Story Points: 5/)).toBeInTheDocument();
-  });
-});
+    expect(screen.getByText(/Story Points: 5/)).toBeInTheDocument()
+  })
+})

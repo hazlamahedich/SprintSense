@@ -5,7 +5,6 @@ import {
   UpdateWorkItemRequest,
   WorkItemType,
   WorkItemStatus,
-  WorkItemPriority,
 } from '../../types/workItem.types'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -39,26 +38,24 @@ interface WorkItemFormProps {
 }
 
 const TYPE_OPTIONS = [
-  { value: WorkItemType.EPIC, label: 'Epic' },
-  { value: WorkItemType.FEATURE, label: 'Feature' },
-  { value: WorkItemType.USER_STORY, label: 'User Story' },
+  { value: WorkItemType.STORY, label: 'Story' },
   { value: WorkItemType.TASK, label: 'Task' },
   { value: WorkItemType.BUG, label: 'Bug' },
-  { value: WorkItemType.TECHNICAL_DEBT, label: 'Technical Debt' },
 ]
 
 const STATUS_OPTIONS = [
-  { value: WorkItemStatus.NEW, label: 'New' },
-  { value: WorkItemStatus.APPROVED, label: 'Approved' },
-  { value: WorkItemStatus.COMMITTED, label: 'Committed' },
+  { value: WorkItemStatus.BACKLOG, label: 'Backlog' },
+  { value: WorkItemStatus.TODO, label: 'Todo' },
+  { value: WorkItemStatus.IN_PROGRESS, label: 'In Progress' },
   { value: WorkItemStatus.DONE, label: 'Done' },
+  { value: WorkItemStatus.ARCHIVED, label: 'Archived' },
 ]
 
 const PRIORITY_OPTIONS = [
-  { value: WorkItemPriority.LOW, label: 'Low' },
-  { value: WorkItemPriority.MEDIUM, label: 'Medium' },
-  { value: WorkItemPriority.HIGH, label: 'High' },
-  { value: WorkItemPriority.CRITICAL, label: 'Critical' },
+  { value: '1', label: 'Low' },
+  { value: '3', label: 'Medium' },
+  { value: '5', label: 'High' },
+  { value: '7', label: 'Critical' },
 ]
 
 interface FormData {
@@ -66,7 +63,7 @@ interface FormData {
   description: string
   type: WorkItemType
   status: WorkItemStatus
-  priority: WorkItemPriority
+  priority: string
   assigneeId: string
   dueDate: string
   storyPoints: string
@@ -78,8 +75,8 @@ const initialFormData: FormData = {
   title: '',
   description: '',
   type: WorkItemType.TASK,
-  status: WorkItemStatus.NEW,
-  priority: WorkItemPriority.MEDIUM,
+  status: WorkItemStatus.BACKLOG,
+  priority: '3',
   assigneeId: '',
   dueDate: '',
   storyPoints: '',
@@ -110,7 +107,7 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
           description: workItem.description || '',
           type: workItem.type,
           status: workItem.status,
-          priority: workItem.priority,
+          priority: workItem.priority.toString(),
           assigneeId: workItem.assigneeId || '',
           dueDate: workItem.dueDate
             ? new Date(workItem.dueDate).toISOString().split('T')[0]
@@ -164,7 +161,7 @@ export const WorkItemForm: React.FC<WorkItemFormProps> = ({
           description: formData.description.trim() || undefined,
           type: formData.type,
           status: formData.status,
-          priority: formData.priority,
+          priority: parseFloat(formData.priority),
           assigneeId: formData.assigneeId.trim() || undefined,
           dueDate: formData.dueDate
             ? new Date(formData.dueDate).toISOString()

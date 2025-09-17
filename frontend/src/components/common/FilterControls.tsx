@@ -1,12 +1,11 @@
-import React, { useCallback } from 'react';
+import React, { useCallback } from 'react'
 import {
   WorkItemType,
   WorkItemStatus,
-  WorkItemPriority,
-  WorkItemFilters
-} from '../../types/workItem.types';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
+  WorkItemFilters,
+} from '../../types/workItem.types'
+import { Button } from '../ui/button'
+import { Badge } from '../ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,19 +13,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import { Input } from '../ui/input';
+} from '../ui/dropdown-menu'
+import { Input } from '../ui/input'
 import {
   FunnelIcon,
   XMarkIcon,
-  MagnifyingGlassIcon
-} from '@heroicons/react/24/outline';
+  MagnifyingGlassIcon,
+} from '@heroicons/react/24/outline'
 
 interface FilterControlsProps {
-  filters: WorkItemFilters;
-  onFiltersChange: (filters: WorkItemFilters) => void;
-  onClearFilters: () => void;
-  className?: string;
+  filters: WorkItemFilters
+  onFiltersChange: (filters: WorkItemFilters) => void
+  onClearFilters: () => void
+  className?: string
 }
 
 const TYPE_LABELS: Record<WorkItemType, string> = {
@@ -35,88 +34,85 @@ const TYPE_LABELS: Record<WorkItemType, string> = {
   [WorkItemType.USER_STORY]: 'User Story',
   [WorkItemType.TASK]: 'Task',
   [WorkItemType.BUG]: 'Bug',
-  [WorkItemType.TECHNICAL_DEBT]: 'Technical Debt'
-};
+  [WorkItemType.TECHNICAL_DEBT]: 'Technical Debt',
+}
 
 const STATUS_LABELS: Record<WorkItemStatus, string> = {
   [WorkItemStatus.NEW]: 'New',
   [WorkItemStatus.APPROVED]: 'Approved',
   [WorkItemStatus.COMMITTED]: 'Committed',
-  [WorkItemStatus.DONE]: 'Done'
-};
+  [WorkItemStatus.DONE]: 'Done',
+}
 
-const PRIORITY_LABELS: Record<WorkItemPriority, string> = {
-  [WorkItemPriority.LOW]: 'Low',
-  [WorkItemPriority.MEDIUM]: 'Medium',
-  [WorkItemPriority.HIGH]: 'High',
-  [WorkItemPriority.CRITICAL]: 'Critical'
-};
+// For now, we'll remove priority filtering since backend uses numeric priority
+// This can be re-implemented with numeric ranges if needed in the future
 
 export const FilterControls: React.FC<FilterControlsProps> = ({
   filters,
   onFiltersChange,
   onClearFilters,
-  className = ''
+  className = '',
 }) => {
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    onFiltersChange({
-      ...filters,
-      search: e.target.value
-    });
-  }, [filters, onFiltersChange]);
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onFiltersChange({
+        ...filters,
+        search: e.target.value,
+      })
+    },
+    [filters, onFiltersChange]
+  )
 
-  const handleTypeToggle = useCallback((type: WorkItemType) => {
-    const currentTypes = filters.types || [];
-    const newTypes = currentTypes.includes(type)
-      ? currentTypes.filter(t => t !== type)
-      : [...currentTypes, type];
+  const handleTypeToggle = useCallback(
+    (type: WorkItemType) => {
+      const currentTypes = filters.types || []
+      const newTypes = currentTypes.includes(type)
+        ? currentTypes.filter((t) => t !== type)
+        : [...currentTypes, type]
 
-    onFiltersChange({
-      ...filters,
-      types: newTypes
-    });
-  }, [filters, onFiltersChange]);
+      onFiltersChange({
+        ...filters,
+        types: newTypes,
+      })
+    },
+    [filters, onFiltersChange]
+  )
 
-  const handleStatusToggle = useCallback((status: WorkItemStatus) => {
-    const currentStatuses = filters.statuses || [];
-    const newStatuses = currentStatuses.includes(status)
-      ? currentStatuses.filter(s => s !== status)
-      : [...currentStatuses, status];
+  const handleStatusToggle = useCallback(
+    (status: WorkItemStatus) => {
+      const currentStatuses = filters.statuses || []
+      const newStatuses = currentStatuses.includes(status)
+        ? currentStatuses.filter((s) => s !== status)
+        : [...currentStatuses, status]
 
-    onFiltersChange({
-      ...filters,
-      statuses: newStatuses
-    });
-  }, [filters, onFiltersChange]);
+      onFiltersChange({
+        ...filters,
+        statuses: newStatuses,
+      })
+    },
+    [filters, onFiltersChange]
+  )
 
-  const handlePriorityToggle = useCallback((priority: WorkItemPriority) => {
-    const currentPriorities = filters.priorities || [];
-    const newPriorities = currentPriorities.includes(priority)
-      ? currentPriorities.filter(p => p !== priority)
-      : [...currentPriorities, priority];
+  // Priority filtering removed - backend uses numeric priority values
 
-    onFiltersChange({
-      ...filters,
-      priorities: newPriorities
-    });
-  }, [filters, onFiltersChange]);
-
-  const handleAssigneeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    onFiltersChange({
-      ...filters,
-      assigneeId: e.target.value || undefined
-    });
-  }, [filters, onFiltersChange]);
+  const handleAssigneeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onFiltersChange({
+        ...filters,
+        assigneeId: e.target.value || undefined,
+      })
+    },
+    [filters, onFiltersChange]
+  )
 
   const activeFiltersCount = [
     filters.search,
     filters.types?.length,
     filters.statuses?.length,
-    filters.priorities?.length,
-    filters.assigneeId
-  ].filter(Boolean).length;
+    filters.assigneeId,
+  ].filter(Boolean).length
 
-  const hasActiveFilters = activeFiltersCount > 0;
+  const hasActiveFilters = activeFiltersCount > 0
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -154,7 +150,11 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
         {/* Type Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
               <FunnelIcon className="w-4 h-4" />
               Type
               {filters.types && filters.types.length > 0 && (
@@ -182,7 +182,11 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
         {/* Status Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
               Status
               {filters.statuses && filters.statuses.length > 0 && (
                 <Badge variant="secondary" className="text-xs">
@@ -197,8 +201,12 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             {Object.entries(STATUS_LABELS).map(([status, label]) => (
               <DropdownMenuCheckboxItem
                 key={status}
-                checked={filters.statuses?.includes(status as WorkItemStatus) || false}
-                onCheckedChange={() => handleStatusToggle(status as WorkItemStatus)}
+                checked={
+                  filters.statuses?.includes(status as WorkItemStatus) || false
+                }
+                onCheckedChange={() =>
+                  handleStatusToggle(status as WorkItemStatus)
+                }
               >
                 {label}
               </DropdownMenuCheckboxItem>
@@ -206,32 +214,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Priority Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              Priority
-              {filters.priorities && filters.priorities.length > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {filters.priorities.length}
-                </Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuLabel>Priority</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {Object.entries(PRIORITY_LABELS).map(([priority, label]) => (
-              <DropdownMenuCheckboxItem
-                key={priority}
-                checked={filters.priorities?.includes(priority as WorkItemPriority) || false}
-                onCheckedChange={() => handlePriorityToggle(priority as WorkItemPriority)}
-              >
-                {label}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Priority Filter - Temporarily removed, will be re-implemented with numeric ranges */}
 
         {/* Assignee Filter */}
         <div className="flex items-center gap-2">
@@ -252,13 +235,19 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
               Search: "{filters.search}"
               <XMarkIcon
                 className="w-3 h-3 cursor-pointer hover:text-red-600"
-                onClick={() => onFiltersChange({ ...filters, search: undefined })}
+                onClick={() =>
+                  onFiltersChange({ ...filters, search: undefined })
+                }
               />
             </Badge>
           )}
 
-          {filters.types?.map(type => (
-            <Badge key={type} variant="outline" className="flex items-center gap-1">
+          {filters.types?.map((type) => (
+            <Badge
+              key={type}
+              variant="outline"
+              className="flex items-center gap-1"
+            >
               {TYPE_LABELS[type]}
               <XMarkIcon
                 className="w-3 h-3 cursor-pointer hover:text-red-600"
@@ -267,8 +256,12 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             </Badge>
           ))}
 
-          {filters.statuses?.map(status => (
-            <Badge key={status} variant="outline" className="flex items-center gap-1">
+          {filters.statuses?.map((status) => (
+            <Badge
+              key={status}
+              variant="outline"
+              className="flex items-center gap-1"
+            >
               {STATUS_LABELS[status]}
               <XMarkIcon
                 className="w-3 h-3 cursor-pointer hover:text-red-600"
@@ -277,29 +270,23 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             </Badge>
           ))}
 
-          {filters.priorities?.map(priority => (
-            <Badge key={priority} variant="outline" className="flex items-center gap-1">
-              {PRIORITY_LABELS[priority]}
-              <XMarkIcon
-                className="w-3 h-3 cursor-pointer hover:text-red-600"
-                onClick={() => handlePriorityToggle(priority)}
-              />
-            </Badge>
-          ))}
+          {/* Priority badges removed - using numeric priority now */}
 
           {filters.assigneeId && (
             <Badge variant="outline" className="flex items-center gap-1">
               Assignee: {filters.assigneeId}
               <XMarkIcon
                 className="w-3 h-3 cursor-pointer hover:text-red-600"
-                onClick={() => onFiltersChange({ ...filters, assigneeId: undefined })}
+                onClick={() =>
+                  onFiltersChange({ ...filters, assigneeId: undefined })
+                }
               />
             </Badge>
           )}
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default FilterControls;
+export default FilterControls
