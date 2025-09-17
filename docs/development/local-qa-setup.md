@@ -85,31 +85,37 @@ Automatically run when you commit or push:
 ### Backend (Python) Checks
 
 1. **Black Formatting**
+
    ```bash
    cd backend && poetry run black app tests migrations
    ```
 
 2. **Import Sorting (isort)**
+
    ```bash
    cd backend && poetry run isort app tests migrations --profile black
    ```
 
 3. **Linting (Flake8)**
+
    ```bash
    cd backend && poetry run flake8 app tests --max-line-length=88
    ```
 
 4. **Type Checking (MyPy)**
+
    ```bash
    cd backend && poetry run mypy app --ignore-missing-imports
    ```
 
 5. **Security Scanning (Bandit)**
+
    ```bash
    cd backend && poetry run bandit -r app
    ```
 
 6. **Tests (Pytest)**
+
    ```bash
    cd backend && poetry run pytest tests/
    ```
@@ -117,23 +123,27 @@ Automatically run when you commit or push:
 ### Frontend (TypeScript/React) Checks
 
 1. **TypeScript Type Checking**
+
    ```bash
    cd frontend && npm run type-check
    ```
 
 2. **Linting (ESLint)**
+
    ```bash
    cd frontend && npm run lint
    # Auto-fix: npm run lint:fix
    ```
 
 3. **Formatting (Prettier)**
+
    ```bash
    cd frontend && npm run format:check
    # Auto-fix: npm run format
    ```
 
 4. **Tests (Vitest)**
+
    ```bash
    cd frontend && npm run test:run
    ```
@@ -143,18 +153,21 @@ Automatically run when you commit or push:
 ### Backend Issues
 
 **Black formatting errors:**
+
 ```bash
 make backend-format
 # Or: cd backend && poetry run black app tests migrations
 ```
 
 **MyPy type errors:**
+
 ```bash
 cd backend && poetry run mypy app --ignore-missing-imports
 # Fix type annotations in the reported files
 ```
 
 **Import sorting issues:**
+
 ```bash
 cd backend && poetry run isort app tests migrations --profile black
 ```
@@ -162,18 +175,21 @@ cd backend && poetry run isort app tests migrations --profile black
 ### Frontend Issues
 
 **ESLint errors:**
+
 ```bash
 make frontend-format
 # Or: cd frontend && npm run lint:fix
 ```
 
 **TypeScript errors:**
+
 ```bash
 cd frontend && npm run type-check
 # Fix type errors in the reported files
 ```
 
 **Prettier formatting:**
+
 ```bash
 cd frontend && npm run format
 ```
@@ -181,11 +197,13 @@ cd frontend && npm run format
 ### Git Issues
 
 **Trailing whitespace or line endings:**
+
 ```bash
 make fix  # Automatically fixes these issues
 ```
 
 **Large files:**
+
 - Consider using Git LFS for files > 1MB
 - Exclude build artifacts in `.gitignore`
 
@@ -239,6 +257,7 @@ make ci-check
 ```
 
 This runs:
+
 1. Install dependencies
 2. Format all code
 3. Run all linting checks  
@@ -292,26 +311,31 @@ pre-commit run --all-files
 ## Best Practices
 
 1. **Before starting work:**
+
    ```bash
    make deps          # Ensure dependencies are current
    ```
 
 2. **During development:**
+
    ```bash
    make fix           # Fix issues as you go
    ```
 
 3. **Before committing:**
+
    ```bash
    make pre-commit    # Comprehensive check
    ```
 
 4. **Before pushing:**
+
    ```bash
    make ci-check      # Ensure CI will pass
    ```
 
 5. **Regular maintenance:**
+
    ```bash
    make clean         # Clean build artifacts
    pre-commit autoupdate  # Update hook versions

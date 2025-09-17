@@ -114,8 +114,10 @@ repos:
         files: ^frontend/src/.*\.(ts|tsx)$
         pass_filenames: false
 
-      # Temporarily disabled due to Rollup dependency issue
-      # TODO: Re-enable after fixing @rollup/rollup-darwin-x64 vs darwin-arm64 conflict
+      # Vitest Tests temporarily disabled in pre-commit due to platform detection issue
+      # Tests work fine when run directly: cd frontend && npm run test:run
+      # Issue: pre-commit environment causes Rollup to detect wrong platform (x64 vs arm64)
+      # TODO: Investigate pre-commit Node.js environment isolation
       # - id: vitest-frontend
       #   name: Vitest Tests (frontend)
       #   entry: bash -c 'cd frontend && npm run test:run'

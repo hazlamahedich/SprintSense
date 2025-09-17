@@ -23,7 +23,6 @@
     "@hookform/resolvers": "^5.2.2",
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.18.0",
-    "@rollup/rollup-darwin-arm64": "^4.50.2",
     "axios": "^1.12.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

@@ -14,6 +14,12 @@ from .team import (
     TeamResponse,
 )
 from .user import UserCreate, UserInDB, UserRead
+from .work_item import (
+    WorkItemCreateRequest,
+    WorkItemListResponse,
+    WorkItemResponse,
+    WorkItemUpdateRequest,
+)
 
 __all__ = [
     "UserCreate",
@@ -28,4 +34,8 @@ __all__ = [
     "InvitationCreateResponse",
     "InvitationListItem",
     "InvitationListResponse",
+    "WorkItemCreateRequest",
+    "WorkItemUpdateRequest",
+    "WorkItemResponse",
+    "WorkItemListResponse",
 ]

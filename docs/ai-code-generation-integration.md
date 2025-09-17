@@ -7,12 +7,15 @@ This guide explains how to integrate the [Coding Standards](./architecture/codin
 ## Quick Start
 
 ### For AI Agents (Dev Persona)
+
 When generating code, **ALWAYS** reference these documents in order:
+
 1. **[`docs/architecture/coding-standards.md`](./architecture/coding-standards.md)** - Complete linting rules and patterns
 2. **[`claude_suggestions.md`](../claude_suggestions.md)** - Quality and creativity guidelines  
 3. **Current story requirements** - Feature specifications
 
 ### Post-Generation Validation Workflow
+
 ```bash
 # 1. Generate code following standards
 # 2. Auto-format
@@ -37,6 +40,7 @@ cd backend && poetry run mypy app/  # Python type check
 The dev agent should now:
 
 1. **On Activation**: Auto-load coding standards document
+
    ```yaml
    devLoadAlwaysFiles:
      - docs/architecture/coding-standards.md  # ← ADDED
@@ -200,6 +204,7 @@ Track these metrics to measure improvement:
 1. **Verify standards document is loaded** in dev agent session
 2. **Check rule coverage** - may need to update standards doc  
 3. **Run emergency fix commands**:
+
    ```bash
    cd frontend && npm run lint:fix && npm run format
    cd backend && poetry run black . && poetry run isort .

@@ -3,6 +3,7 @@
 ## Purpose & Scope
 
 This document establishes comprehensive coding standards for the SprintSense project to ensure:
+
 - **Consistent code quality** across frontend (TypeScript/React) and backend (Python/FastAPI) components
 - **Zero linting errors** in AI-generated code
 - **Reduced iteration cycles** during development and PR reviews
@@ -30,6 +31,7 @@ This document works in conjunction with [`claude_suggestions.md`](../../claude_s
 #### ✅ **DO: Use Proper Dependency Injection**
 
 **Frontend (React):**
+
 ```tsx
 // ✅ GOOD: Context + custom hooks
 const useUserStore = () => {
@@ -48,6 +50,7 @@ const UserProfile: React.FC = () => {
 ```
 
 **Backend (FastAPI):**
+
 ```python
 # ✅ GOOD: Dependency injection with FastAPI Depends
 from fastapi import Depends
@@ -91,6 +94,7 @@ def get_user_data():  # Missing type hints: mypy error
 ### Error Handling Strategy
 
 #### Frontend Error Handling
+
 ```tsx
 // ✅ GOOD: Typed error boundaries and error states
 interface ApiError {
@@ -122,6 +126,7 @@ const useApiCall = <T>(apiCall: () => Promise<T>) => {
 ```
 
 #### Backend Error Handling
+
 ```python
 # ✅ GOOD: Custom exceptions with proper types
 from typing import Dict, Any
@@ -155,11 +160,13 @@ async def get_user(user_id: int) -> UserResponse:
 ### Testing Requirements
 
 #### Minimum Coverage & Structure
+
 - **Backend**: 80% test coverage (pytest-cov)
 - **Frontend**: 70% test coverage (vitest)
 - **Test file naming**: `test_*.py` (backend), `*.test.ts[x]` (frontend)
 
 #### Testing Patterns
+
 ```python
 # ✅ GOOD: Backend test structure
 import pytest
@@ -202,6 +209,7 @@ describe('UserProfile', () => {
 ### Security Best Practices
 
 #### SQL Injection Prevention
+
 ```python
 # ✅ GOOD: Parameterized queries with SQLAlchemy
 from sqlalchemy import text
@@ -213,6 +221,7 @@ async def get_users_by_status(db: AsyncSession, status: str) -> List[User]:
 ```
 
 #### Secrets Management
+
 ```python
 # ✅ GOOD: Environment-based configuration
 from pydantic_settings import BaseSettings
@@ -248,6 +257,7 @@ src/
 ```
 
 #### File Naming Rules
+
 - **Components**: PascalCase (`UserProfile.tsx`)
 - **Hooks**: camelCase starting with "use" (`useUserData.ts`)
 - **Utilities**: camelCase (`formatDate.ts`)
@@ -256,6 +266,7 @@ src/
 ### Strict TypeScript Rules
 
 #### Type Safety (ESLint: `@typescript-eslint/no-explicit-any`)
+
 ```tsx
 // ❌ AVOID: Using 'any'
 const processData = (data: any) => {
@@ -286,6 +297,7 @@ const fetchData = async <T>(url: string): Promise<ApiResponse<T>> => {
 ```
 
 #### Strict Null Checks
+
 ```tsx
 // ✅ GOOD: Proper null handling
 const UserCard: React.FC<{ user?: User }> = ({ user }) => {
@@ -305,6 +317,7 @@ const UserCard: React.FC<{ user?: User }> = ({ user }) => {
 ### React Component Patterns
 
 #### Function Components Only (ESLint: `react/prefer-stateless-function`)
+
 ```tsx
 // ❌ AVOID: Class components
 class UserProfile extends React.Component {
@@ -322,6 +335,7 @@ const UserProfile: React.FC = () => {
 ```
 
 #### Hook Rules (ESLint: `react-hooks/rules-of-hooks`)
+
 ```tsx
 // ✅ GOOD: Custom hook pattern
 const useUserData = (userId: number) => {
@@ -352,6 +366,7 @@ const useUserData = (userId: number) => {
 ### Anti-Generic UI Patterns (from claude_suggestions.md)
 
 #### ✅ **Creative UI Requirements**
+
 ```tsx
 // ✅ GOOD: Custom color palette and animations
 const theme = createTheme({
@@ -400,6 +415,7 @@ const AnimatedCard: React.FC = ({ children }) => {
 ```
 
 #### ❌ **Forbidden Generic Patterns**
+
 ```tsx
 // ❌ AVOID: Generic Bootstrap/MUI defaults
 const GenericCard = () => (
@@ -427,6 +443,7 @@ const theme = createTheme({
 ### Pydantic Models & Type Annotations
 
 #### Strict Type Annotations (mypy: `disallow_untyped_defs`)
+
 ```python
 # ✅ GOOD: Complete type annotations
 from typing import Optional, List, Dict, Any
@@ -462,6 +479,7 @@ class UserService:
 ```
 
 #### Router Organization & Dependency Injection
+
 ```python
 # ✅ GOOD: Structured router with dependencies
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -494,6 +512,7 @@ async def create_user(
 ### Async Best Practices
 
 #### Database Interactions
+
 ```python
 # ✅ GOOD: Proper async/await with connection management
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -515,6 +534,7 @@ class UserRepository:
 ```
 
 #### Background Tasks
+
 ```python
 # ✅ GOOD: Background task structure
 from fastapi import BackgroundTasks
@@ -544,11 +564,13 @@ async def create_user(
 ### Formatting & Linting Rules
 
 #### Black Formatting (Enforced)
+
 - **Line length**: 88 characters
 - **String quotes**: Double quotes preferred
 - **Trailing commas**: In multi-line collections
 
 #### isort Import Organization
+
 ```python
 # ✅ GOOD: Import order (isort profile="black")
 # 1. Standard library
@@ -568,6 +590,7 @@ from app.schemas.user import UserResponse
 ```
 
 #### Common flake8 Rules to Avoid
+
 - **E501**: Line too long (>88 chars) - Use Black formatter
 - **F401**: Module imported but unused - Remove unused imports
 - **F841**: Local variable assigned but never used - Remove or prefix with `_`
@@ -592,6 +615,7 @@ user_data = {
 ### Pre-commit Hooks Configuration
 
 Your `.pre-commit-config.yaml` runs:
+
 1. **Basic checks**: trailing whitespace, file endings, YAML syntax
 2. **Python**: Black → isort → flake8 → mypy (in that order)
 3. **Frontend**: ESLint + Prettier (via npm scripts)
@@ -599,6 +623,7 @@ Your `.pre-commit-config.yaml` runs:
 ### Local Development Scripts
 
 #### Frontend Linting
+
 ```bash
 # Check only
 npm run lint                    # ESLint check
@@ -610,6 +635,7 @@ npm run format                 # Prettier auto-format
 ```
 
 #### Backend Linting
+
 ```bash
 # Individual tools
 poetry run black .             # Format code
@@ -624,6 +650,7 @@ poetry run pre-commit run --all-files
 ### CI Pipeline Integration
 
 Your `.github/workflows/ci.yml` includes:
+
 1. **Frontend**: `npm run lint` and `npm run format:check`
 2. **Backend**: `poetry run flake8` and type checking
 3. **Tests**: Both frontend and backend test suites
@@ -631,10 +658,11 @@ Your `.github/workflows/ci.yml` includes:
 
 ### AI Agent Integration Workflow
 
-#### For AI Code Generation:
+#### For AI Code Generation
+
 1. **Generate code** following these standards
 2. **Auto-format**: Run `npm run format` (frontend) or `poetry run black . && poetry run isort .` (backend)
-3. **Lint check**: Run `npm run lint` (frontend) or `poetry run flake8` (backend) 
+3. **Lint check**: Run `npm run lint` (frontend) or `poetry run flake8` (backend)
 4. **Type check**: Run `npm run type-check` (frontend) or `poetry run mypy` (backend)
 5. **Only commit** if all checks pass
 
@@ -686,6 +714,7 @@ Before accepting AI-generated code, verify:
 ### Frontend Examples
 
 #### ✅ Compliant Component Example
+
 ```tsx
 import React, { useCallback, useState } from 'react'
 import { 
@@ -804,6 +833,7 @@ export const UserCard: React.FC<UserCardProps> = ({
 ```
 
 #### ❌ Non-Compliant Example (Multiple Issues)
+
 ```tsx
 // ❌ Multiple violations - DO NOT USE
 import * as React from 'react'  // ❌ Should use named imports
@@ -845,6 +875,7 @@ export default UserCard  // ❌ Default export for component
 ### Backend Examples
 
 #### ✅ Compliant API Handler Example
+
 ```python
 """User management API endpoints."""
 
@@ -993,6 +1024,7 @@ async def get_user(
 ```
 
 #### ❌ Non-Compliant Example (Multiple Issues)
+
 ```python
 # ❌ Multiple violations - DO NOT USE
 
@@ -1024,7 +1056,9 @@ very_long_variable_name_that_exceeds_the_maximum_line_length = "This line is way
 This document works in conjunction with [`claude_suggestions.md`](../../claude_suggestions.md):
 
 ### **Quality Validation Integration**
+
 The AI generation process should follow:
+
 1. **Code Generation** → Follow patterns in this document
 2. **Linting Check** → Pass all rules defined here  
 3. **Creative Validation** → Meet creativity standards (frontend only)
@@ -1032,11 +1066,13 @@ The AI generation process should follow:
 5. **Integration Testing** → Ensure compatibility
 
 ### **Creativity Requirements** (Frontend)
+
 - **Anti-Generic Patterns**: Avoid Bootstrap defaults, standard color schemes
 - **Brand Integration**: Custom themes, micro-interactions, asymmetrical layouts
 - **Target Score**: Minimum 8/10 creativity score per `claude_suggestions.md`
 
 ### **Cross-Reference Rules**
+
 - **Forbidden Generic Patterns**: Enforced through linting + creative review
 - **Quality Standards**: Automated via CI pipeline
 - **Anti-Patterns**: Explicitly defined in code sample sections above
@@ -1046,12 +1082,14 @@ The AI generation process should follow:
 ## Quick Reference & Checklist
 
 ### Pre-Generation Checklist
+
 - [ ] Read this document completely
 - [ ] Review [`claude_suggestions.md`](../../claude_suggestions.md) creativity guidelines  
 - [ ] Understand target feature requirements
 - [ ] Check existing code patterns in the relevant module
 
 ### Post-Generation Validation
+
 - [ ] **Syntax**: Code compiles/transpiles without errors
 - [ ] **Linting**: ESLint (frontend) and flake8 (backend) pass
 - [ ] **Formatting**: Prettier (frontend) and Black (backend) applied
@@ -1062,6 +1100,7 @@ The AI generation process should follow:
 - [ ] **Performance**: No obvious performance anti-patterns
 
 ### Emergency Lint Fix Commands
+
 ```bash
 # Frontend emergency fixes
 cd frontend && npm run lint:fix && npm run format
@@ -1075,6 +1114,7 @@ cd backend && poetry run black . && poetry run isort . && poetry run flake8 app/
 ## Further Reading
 
 ### Configuration Files Reference
+
 - **Frontend ESLint**: `frontend/.eslintrc.json` & `frontend/eslint.config.js`
 - **Frontend Prettier**: `frontend/.prettierrc.json`
 - **Backend Python**: `backend/pyproject.toml` (Black, isort, mypy config)
@@ -1082,6 +1122,7 @@ cd backend && poetry run black . && poetry run isort . && poetry run flake8 app/
 - **Pre-commit**: `backend/.pre-commit-config.yaml`
 
 ### External Documentation
+
 - [TypeScript ESLint Rules](https://typescript-eslint.io/rules/)
 - [React ESLint Plugin](https://github.com/jsx-eslint/eslint-plugin-react)
 - [Python Black Code Style](https://black.readthedocs.io/en/stable/)

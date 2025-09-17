@@ -25,13 +25,16 @@
 **SprintSense** is an open-source, AI-powered agile project management platform designed to enhance team collaboration through intelligent automation while prioritizing human agency and data privacy.
 
 ### 🎯 Mission
+
 Transform reactive project management into proactive, intelligent workflow optimization for development teams.
 
 ### 👥 Target Users
+
 - **Primary:** Development teams (10-50 members) in tech companies
 - **Secondary:** Remote-first organizations seeking enhanced collaboration
 
 ### 💡 Key Value Propositions
+
 - ✨ **AI-Augmented Sprint Planning** with predictive insights
 - 🔒 **Privacy-First Architecture** with self-hosting capabilities
 - 🎯 **Smart Backlog Prioritization** using multi-criteria decision analysis
@@ -39,6 +42,7 @@ Transform reactive project management into proactive, intelligent workflow optim
 - 📊 **Probabilistic Sprint Forecasting** with Monte Carlo simulations
 
 ### 📈 Current Status
+
 - **Phase:** MVP Development (Foundation & Core Features)
 - **Version:** Development (Pre-release)
 - **Target:** 10 pilot teams within 4 months
@@ -49,17 +53,20 @@ Transform reactive project management into proactive, intelligent workflow optim
 ## ⚡ Quick Navigation
 
 ### 🗺️ **Core Documentation**
+
 - [📋 Product Requirements Document](./docs/prd.md) - Complete PRD with epics and user stories
 - [🏗️ Architecture Overview](./docs/architecture.md) - Full system architecture documentation
 - [📐 Frontend Specification](./docs/front-end-spec.md) - UI/UX guidelines and component specs
 - [📝 Project Brief](./docs/brief.md) - Executive summary and project context
 
 ### 🛠️ **Development Resources**
+
 - [🤖 BMAD Core Workflows](./.bmad-core/) - AI-assisted development methodology
 - [🎨 AI Code Quality Guidelines](./claude_suggestions.md) - Claude optimization strategies
 - [📊 Web Bundles](./web-bundles/) - BMAD agent configurations and teams
 
 ### 🚀 **Quick Actions**
+
 - **Start Development:** Follow [Getting Started](#-getting-started) guide
 - **Review Architecture:** Jump to [Technical Stack](#️-technical-stack)
 - **Contribute:** See [Development Workflows](#-development-workflows)
@@ -70,6 +77,7 @@ Transform reactive project management into proactive, intelligent workflow optim
 ## 🏗️ Technical Stack
 
 ### 🎯 **Architecture Pattern**
+
 **Modular Monolith** with strict internal boundaries, deployed via Docker containers
 
 ### 💻 **Core Technologies**
@@ -88,6 +96,7 @@ Transform reactive project management into proactive, intelligent workflow optim
 | 🚀 **Deployment** | Docker Compose | Latest | Container orchestration |
 
 ### 🛠️ **Development Tools**
+
 - **Package Manager:** npm workspaces (monorepo)
 - **Type Generation:** openapi-typescript-codegen
 - **Testing:** Jest (planned), Pytest (planned)
@@ -96,6 +105,7 @@ Transform reactive project management into proactive, intelligent workflow optim
 - **CI/CD:** GitHub Actions
 
 ### 🏛️ **High-Level Architecture**
+
 ```
 ┌─────────────────┐    ┌──────────────────────┐
 │   React SPA     │────│   FastAPI Backend    │
@@ -191,16 +201,19 @@ SprintSense/
 Based on `claude_suggestions.md`:
 
 #### 🏗️ **Architectural Compliance**
+
 - Always reference current system architecture
 - Maintain consistent naming conventions
 - Include proper error handling and separation of concerns
 
 #### 🎨 **Creative Frontend Development**
+
 - **Forbidden:** Generic blue/white/gray schemes, Bootstrap defaults
 - **Required:** Unique color palettes, innovative navigation, custom animations
 - **Target:** 8/10+ creativity score for all UI components
 
 #### 🔍 **Quality Validation Pipeline**
+
 1. **Syntax & Standards** - Language compliance, coding standards
 2. **Architecture Compliance** - Design patterns, dependency injection
 3. **Integration Readiness** - API contracts, database alignment
@@ -241,6 +254,7 @@ find docs -type f -name "*.md" \
 #### 🎯 **Use Cases for Flattened Codebase**
 
 1. **🤖 AI Code Review**
+
    ```bash
    # Generate flattened codebase for AI analysis
    ./scripts/flatten-codebase.sh --type=code --output=ai_review.txt
@@ -248,18 +262,21 @@ find docs -type f -name "*.md" \
    ```
 
 2. **📊 Architecture Analysis**
+
    ```bash
    # Include architecture docs with code
    ./scripts/flatten-codebase.sh --type=full --include-docs --output=arch_analysis.txt
    ```
 
 3. **🔍 Debugging & Troubleshooting**
+
    ```bash
    # Focus on specific modules
    ./scripts/flatten-codebase.sh --filter="backend|frontend" --output=debug.txt
    ```
 
 4. **📝 Documentation Generation**
+
    ```bash
    # Extract all documentation for AI-powered doc generation
    ./scripts/flatten-codebase.sh --type=docs --output=doc_source.txt
@@ -287,6 +304,7 @@ Create `scripts/flatten-codebase.sh`:
 ```
 
 ### ⚡ **Quick Commands**
+
 ```bash
 # Development setup (planned)
 make dev              # Start development environment
@@ -311,6 +329,7 @@ bmad flatten-context  # Generate AI context from codebase
 ## 📚 Documentation Index
 
 ### 📋 **Product Documentation**
+
 - [📋 Product Requirements Document](./docs/prd.md) - Master PRD
   - [🎯 Goals & Background](./docs/prd/1-goals-and-background-context.md)
   - [📝 Requirements](./docs/prd/2-requirements.md)
@@ -321,6 +340,7 @@ bmad flatten-context  # Generate AI context from codebase
 - [📝 Project Brief](./docs/brief.md) - Executive overview
 
 ### 🏗️ **Architecture Documentation**
+
 - [🏗️ System Architecture](./docs/architecture.md) - Master architecture
   - [👋 Introduction](./docs/architecture/1-introduction.md)
   - [🔝 High-Level Architecture](./docs/architecture/2-high-level-architecture.md)
@@ -336,13 +356,16 @@ bmad flatten-context  # Generate AI context from codebase
   - [🚀 Deployment Architecture](./docs/architecture/12-deployment-architecture.md)
 
 ### 🎨 **Frontend Documentation**
+
 - [📐 Frontend Specification](./docs/front-end-spec.md) - UI/UX guidelines
 
 ### 🤖 **BMAD Documentation**
+
 <details>
 <summary>Click to expand BMAD framework details</summary>
 
 #### 🎭 **Agent Definitions** (`.bmad-core/agents/`)
+
 - `bmad-master.md` - Master orchestrator agent
 - `architect.md` - Technical architecture agent
 - `po.md` - Product owner agent
@@ -352,6 +375,7 @@ bmad flatten-context  # Generate AI context from codebase
 - `analyst.md` - Business analyst agent
 
 #### 📋 **Task Templates** (`.bmad-core/tasks/`)
+
 - `document-project.md` - Project documentation tasks
 - `create-next-story.md` - User story generation
 - `qa-gate.md` - Quality assurance gates
@@ -359,6 +383,7 @@ bmad flatten-context  # Generate AI context from codebase
 - `nfr-assess.md` - Non-functional requirements
 
 #### ✅ **Quality Checklists** (`.bmad-core/checklists/`)
+
 - `story-dod-checklist.md` - Definition of done
 - `architect-checklist.md` - Architecture review
 - `po-master-checklist.md` - Product owner checklist
@@ -366,6 +391,7 @@ bmad flatten-context  # Generate AI context from codebase
 </details>
 
 ### 🎨 **AI Development Guidelines**
+
 - [🤖 Claude Optimization Strategies](./claude_suggestions.md) - Comprehensive AI development guide
 
 ---
@@ -392,6 +418,7 @@ open docs/prd.md
 ```
 
 **📖 Essential Reading:**
+
 1. [🏗️ System Architecture](./docs/architecture.md) - Understand the technical foundation
 2. [📋 Epic Details](./docs/prd/6-epic-details.md) - Current development priorities
 3. [🤖 AI Guidelines](./claude_suggestions.md) - AI-assisted development practices
@@ -412,6 +439,7 @@ open docs/prd/6-epic-details.md
 ```
 
 **🎯 Key Focus Areas:**
+
 - [📋 Goals & Background](./docs/prd/1-goals-and-background-context.md)
 - [🎨 UI Design Goals](./docs/prd/3-user-interface-design-goals.md)
 - [📊 Epic List](./docs/prd/5-epic-list.md)
@@ -433,6 +461,7 @@ open tasks/document-project.md
 ```
 
 **🔧 Configuration:**
+
 - **BMAD Version:** 4.43.1
 - **IDE Setup:** Claude, Gemini, Roo integrations
 - **Type:** Full installation with expansion packs
@@ -472,6 +501,7 @@ When you request a persona switch, the AI will:
 Once switched to a persona, all commands use the `*` prefix:
 
 #### 💻 **Dev Agent (James) Commands**
+
 ```bash
 *help              # Show available commands
 *develop-story     # Implement user story tasks sequentially
@@ -482,6 +512,7 @@ Once switched to a persona, all commands use the `*` prefix:
 ```
 
 #### 🏗️ **Architect Agent (Sarah) Commands**
+
 ```bash
 *help              # Show available commands
 *review-architecture  # Analyze current architecture
@@ -492,6 +523,7 @@ Once switched to a persona, all commands use the `*` prefix:
 ```
 
 #### 📋 **Product Owner (Alex) Commands**
+
 ```bash
 *help              # Show available commands
 *create-story      # Generate new user stories
@@ -541,6 +573,7 @@ Each persona is defined by:
 ### 🚀 **Quick Start Examples**
 
 #### 🔨 **Development Work**
+
 ```
 User: "switch to dev"
 James: "Hello! I'm James 💻, your Full Stack Developer. *help to see commands."
@@ -549,6 +582,7 @@ James: "Reading current story requirements and implementing tasks..."
 ```
 
 #### 📋 **Story Creation**
+
 ```
 User: "switch to po" 
 Alex: "Hi! I'm Alex 📋, your Product Owner. *help for my commands."
@@ -557,6 +591,7 @@ Alex: "Let me generate a new user story based on our backlog..."
 ```
 
 #### 🏗️ **Architecture Review**
+
 ```
 User: "switch to architect"
 Sarah: "Greetings! I'm Sarah 🏗️, your Technical Architect. *help for options."
@@ -642,12 +677,14 @@ find .bmad-core -name "*.md" -exec echo "=== {} ===" \; -exec cat {} \; > bmad_c
 From `claude_suggestions.md`:
 
 #### 🏗️ **Code Generation**
+
 - **Architectural Context** - Always reference system architecture
 - **Quality Standards** - Follow established patterns
 - **Validation Criteria** - Define acceptance criteria
 - **Anti-Patterns** - Avoid common pitfalls
 
 #### 🎨 **Creative Frontend Standards**
+
 - **Minimum Creativity Score:** 8/10
 - **Forbidden Patterns:** Generic admin layouts, Bootstrap defaults
 - **Required Elements:** Custom animations, unique color palettes
@@ -711,6 +748,7 @@ docker-compose up db    # Database only
 ### 🎯 **Good First Issues**
 
 Look for issues labeled:
+
 - `good-first-issue` - Beginner-friendly
 - `documentation` - Documentation improvements
 - `ai-assisted` - AI development opportunities
@@ -729,11 +767,11 @@ Look for issues labeled:
 
 ### 🔗 **External Resources**
 
-- **FastAPI Documentation** - https://fastapi.tiangolo.com/
-- **React Documentation** - https://react.dev/
-- **Material-UI Documentation** - https://mui.com/
-- **PostgreSQL Documentation** - https://www.postgresql.org/docs/
-- **Docker Documentation** - https://docs.docker.com/
+- **FastAPI Documentation** - <https://fastapi.tiangolo.com/>
+- **React Documentation** - <https://react.dev/>
+- **Material-UI Documentation** - <https://mui.com/>
+- **PostgreSQL Documentation** - <https://www.postgresql.org/docs/>
+- **Docker Documentation** - <https://docs.docker.com/>
 
 ---
 

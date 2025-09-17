@@ -104,7 +104,7 @@ Guide for prioritizing test scenarios based on risk, criticality, and business i
 
 ## Risk-Based Priority Adjustments
 
-### Increase Priority When:
+### Increase Priority When
 
 - High user impact (affects >50% of users)
 - High financial impact (>$10K potential loss)
@@ -114,7 +114,7 @@ Guide for prioritizing test scenarios based on risk, criticality, and business i
 - Complex implementation (>500 LOC)
 - Multiple system dependencies
 
-### Decrease Priority When:
+### Decrease Priority When
 
 - Feature flag protected
 - Gradual rollout planned

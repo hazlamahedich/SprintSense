@@ -1,6 +1,7 @@
 # 7. Core Workflows
 
 ### 1. New User Registration and Team Creation (with Transaction)
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -20,6 +21,7 @@ sequenceDiagram
 ```
 
 ### 2. AI Backlog Prioritization Suggestion (Asynchronous)
+
 ```mermaid
 sequenceDiagram
     participant User

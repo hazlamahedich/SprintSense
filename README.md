@@ -40,25 +40,28 @@ SprintSense moves beyond traditional project management tools by providing:
 ### Quick Start
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/sprintsense/sprintsense.git
    cd sprintsense
    ```
 
 2. **Start with Docker Compose**
+
    ```bash
    cd ops
    docker-compose up -d
    ```
 
 3. **Access the application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:8000
-   - API Docs: http://localhost:8000/docs
+   - Frontend: <http://localhost:5173>
+   - Backend API: <http://localhost:8000>
+   - API Docs: <http://localhost:8000/docs>
 
 ### Development Setup
 
 **Prerequisites for Development**
+
 ```bash
 # Install pre-commit hooks (required for all contributors)
 pip install pre-commit  # or: brew install pre-commit
@@ -69,13 +72,15 @@ pre-commit --version
 ```
 
 **Backend Development**
+
 ```bash
 cd backend
 poetry install
 poetry run uvicorn app.main:app --reload
 ```
 
-**Frontend Development** 
+**Frontend Development**
+
 ```bash
 cd frontend
 npm install
@@ -83,6 +88,7 @@ npm run dev
 ```
 
 **Run Tests**
+
 ```bash
 # Backend tests
 cd backend && poetry run pytest
@@ -171,17 +177,20 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ## 📈 Roadmap
 
 ### Version 0.1 (Current)
+
 - [x] Project initialization and CI/CD
 - [x] Basic health monitoring
 - [ ] User authentication and team management
 - [ ] Basic backlog management
 
 ### Version 0.2 (Next)
+
 - [ ] AI-powered backlog prioritization
 - [ ] Sprint planning and execution
 - [ ] Basic reporting dashboard
 
 ### Version 0.3 (Future)
+
 - [ ] Predictive sprint planning
 - [ ] AI retrospective analysis
 - [ ] Advanced analytics
@@ -193,7 +202,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links
 
 - **Documentation**: [docs/](docs/)
-- **API Documentation**: http://localhost:8000/docs (when running)
+- **API Documentation**: <http://localhost:8000/docs> (when running)
 - **Issues**: [GitHub Issues](https://github.com/sprintsense/sprintsense/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/sprintsense/sprintsense/discussions)
 
