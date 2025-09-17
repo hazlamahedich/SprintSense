@@ -14,22 +14,32 @@ interface UseCreateWorkItemReturn {
   reset: () => void
 }
 
-interface CreateWorkItemError {
-  message: string
-  details?: {
-    field?: string
-    code?: string
-  }
+// Error structure interfaces for better typing
+interface ValidationErrorDetail {
+  msg: string
+  loc: string[]
 }
 
-const parseErrorMessage = (error: any): string => {
+interface ErrorResponse {
+  response?: {
+    status?: number
+    data?: {
+      detail?: string | ValidationErrorDetail[]
+      message?: string
+    }
+  }
+  code?: string
+  message?: string
+}
+
+const parseErrorMessage = (error: ErrorResponse): string => {
   // Handle different error response formats
   if (error?.response?.data) {
     const data = error.response.data
 
     // Handle validation errors
     if (data.detail && Array.isArray(data.detail)) {
-      const messages = data.detail.map((err: any) => {
+      const messages = data.detail.map((err: ValidationErrorDetail) => {
         if (err.msg && err.loc) {
           const field = err.loc[err.loc.length - 1]
           return `${field}: ${err.msg}`
@@ -127,8 +137,8 @@ export const useCreateWorkItem = (): UseCreateWorkItemReturn => {
         )
 
         return workItem
-      } catch (err: any) {
-        const errorMessage = parseErrorMessage(err)
+      } catch (err: unknown) {
+        const errorMessage = parseErrorMessage(err as ErrorResponse)
         setError(errorMessage)
 
         // Re-throw the error so the caller can handle it if needed

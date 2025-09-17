@@ -18,39 +18,54 @@ vi.mock('react-router-dom', async () => {
 vi.mock('../../hooks/useWorkItems')
 
 // Mock UI components
+interface MockProps {
+  children?: React.ReactNode
+  [key: string]: unknown
+}
+
 vi.mock('../../components/ui/button', () => ({
-  Button: ({ children, ...props }: any) => (
+  Button: ({ children, ...props }: MockProps) => (
     <button {...props}>{children}</button>
   ),
 }))
 
 vi.mock('../../components/ui/card', () => ({
-  Card: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  Card: ({ children, ...props }: MockProps) => <div {...props}>{children}</div>,
 }))
 
 vi.mock('../../components/ui/alert', () => ({
-  Alert: ({ children, ...props }: any) => (
+  Alert: ({ children, ...props }: MockProps) => (
     <div role="alert" {...props}>
       {children}
     </div>
   ),
-  AlertDescription: ({ children, ...props }: any) => (
+  AlertDescription: ({ children, ...props }: MockProps) => (
     <div {...props}>{children}</div>
   ),
 }))
 
 // Mock Heroicons
+interface IconProps {
+  [key: string]: unknown
+}
+
 vi.mock('@heroicons/react/24/outline', () => ({
-  PlusIcon: (props: any) => <svg {...props} data-testid="plus-icon" />,
-  ExclamationTriangleIcon: (props: any) => (
+  PlusIcon: (props: IconProps) => <svg {...props} data-testid="plus-icon" />,
+  ExclamationTriangleIcon: (props: IconProps) => (
     <svg {...props} data-testid="exclamation-triangle-icon" />
   ),
-  RefreshCwIcon: (props: any) => <svg {...props} data-testid="refresh-icon" />,
+  RefreshCwIcon: (props: IconProps) => (
+    <svg {...props} data-testid="refresh-icon" />
+  ),
 }))
 
 // Mock the child components
+interface BacklogListProps {
+  emptyMessage?: string
+}
+
 vi.mock('../../components/common/BacklogList', () => ({
-  default: ({ emptyMessage }: any) => (
+  default: ({ emptyMessage }: BacklogListProps) => (
     <div data-testid="backlog-list">{emptyMessage}</div>
   ),
 }))
