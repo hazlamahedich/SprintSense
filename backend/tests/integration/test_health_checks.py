@@ -173,18 +173,22 @@ class TestHealthEndpoints:
 
     def test_detailed_health_check_response_time(self, test_client):
         """Test that health check includes response time metrics."""
-        call_count = 0
+        # Mock time to show 1.5 second response time
+        # We need to ensure start_time and end_time are exactly 1.5 seconds apart
+
+        call_count = [0]  # Use list to allow mutation in nested function
 
         def mock_time():
-            nonlocal call_count
-            call_count += 1
-            # First call is start_time, second could be timestamp, third is end_time
-            if call_count == 1:
-                return 1000.0  # start_time
-            elif call_count <= 10:  # Allow multiple calls for logging/etc
-                return 1000.5  # intermediate calls (timestamp, logging, etc)
+            call_count[0] += 1
+            if call_count[0] == 1:
+                # First call: start_time
+                return 1000.0
+            elif call_count[0] <= 3:
+                # Intermediate calls (timestamp, logging, etc.)
+                return 1000.5
             else:
-                return 1001.5  # end_time for response_time calculation
+                # All subsequent calls (including final response_time calculation)
+                return 1001.5
 
         with patch("time.time", side_effect=mock_time):
             response = test_client.get("/api/v1/health/detailed")
