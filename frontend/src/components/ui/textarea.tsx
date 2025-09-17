@@ -1,1 +1,1 @@
-export { Textarea } from './index';
+export { Textarea } from './index'

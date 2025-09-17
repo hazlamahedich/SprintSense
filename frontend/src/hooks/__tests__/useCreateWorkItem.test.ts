@@ -2,7 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useCreateWorkItem } from '../useCreateWorkItem'
 import { workItemService } from '../../services/workItemService'
-import { WorkItemType } from '../../types/workItem.types'
+import { WorkItemType, WorkItem } from '../../types/workItem.types'
 
 // Mock the work item service
 vi.mock('../../services/workItemService', () => ({
@@ -11,7 +11,11 @@ vi.mock('../../services/workItemService', () => ({
   },
 }))
 
-const mockWorkItemService = workItemService as any
+interface MockWorkItemService {
+  createWorkItem: ReturnType<typeof vi.fn>
+}
+
+const mockWorkItemService = workItemService as MockWorkItemService
 
 describe('useCreateWorkItem', () => {
   beforeEach(() => {
@@ -66,7 +70,7 @@ describe('useCreateWorkItem', () => {
     await act(async () => {
       try {
         await result.current.createWorkItem('team-1', { title: '' })
-      } catch (error) {
+      } catch {
         // Expected to throw
       }
     })
@@ -83,7 +87,7 @@ describe('useCreateWorkItem', () => {
     await act(async () => {
       try {
         await result.current.createWorkItem('team-1', { title: longTitle })
-      } catch (error) {
+      } catch {
         // Expected to throw
       }
     })
@@ -103,7 +107,7 @@ describe('useCreateWorkItem', () => {
           title: 'Valid title',
           description: longDescription,
         })
-      } catch (error) {
+      } catch {
         // Expected to throw
       }
     })
@@ -131,7 +135,7 @@ describe('useCreateWorkItem', () => {
 
     const { result } = renderHook(() => useCreateWorkItem())
 
-    let returnedWorkItem: any
+    let returnedWorkItem: WorkItem
 
     await act(async () => {
       returnedWorkItem = await result.current.createWorkItem('team-1', {
@@ -195,7 +199,7 @@ describe('useCreateWorkItem', () => {
         await result.current.createWorkItem('team-1', {
           title: 'Test Work Item',
         })
-      } catch (error) {
+      } catch {
         // Expected to throw
       }
     })
@@ -235,7 +239,7 @@ describe('useCreateWorkItem', () => {
         await result.current.createWorkItem('team-1', {
           title: 'Test Work Item',
         })
-      } catch (error) {
+      } catch {
         // Expected to throw
       }
     })
@@ -261,7 +265,7 @@ describe('useCreateWorkItem', () => {
         await result.current.createWorkItem('team-1', {
           title: 'Test Work Item',
         })
-      } catch (error) {
+      } catch {
         // Expected to throw
       }
     })
@@ -300,7 +304,7 @@ describe('useCreateWorkItem', () => {
           await result.current.createWorkItem('team-1', {
             title: 'Test Work Item',
           })
-        } catch (error) {
+        } catch {
           // Expected to throw
         }
       })
@@ -329,7 +333,7 @@ describe('useCreateWorkItem', () => {
     await act(async () => {
       try {
         await result.current.createWorkItem('team-1', { title: '' })
-      } catch (error) {
+      } catch {
         // Expected error
       }
     })

@@ -1,1 +1,1 @@
-export { Badge } from './index';
+export { Badge } from './index'

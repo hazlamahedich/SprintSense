@@ -6,5 +6,5 @@ export {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem
-} from './index';
+  DropdownMenuRadioItem,
+} from './index'

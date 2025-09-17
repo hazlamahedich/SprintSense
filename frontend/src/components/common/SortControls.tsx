@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
-import { WorkItemSort, SortOrder } from '../../types/workItem.types';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
+import React, { useCallback } from 'react'
+import { WorkItemSort, SortOrder } from '../../types/workItem.types'
+import { Button } from '../ui/button'
+import { Badge } from '../ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,64 +10,71 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from '../ui/dropdown-menu'
 import {
   ArrowsUpDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  Bars3BottomLeftIcon
-} from '@heroicons/react/24/outline';
+  Bars3BottomLeftIcon,
+} from '@heroicons/react/24/outline'
 
 interface SortControlsProps {
-  sort: WorkItemSort;
-  onSortChange: (sort: WorkItemSort) => void;
-  className?: string;
+  sort: WorkItemSort
+  onSortChange: (sort: WorkItemSort) => void
+  className?: string
 }
 
 const SORT_FIELD_LABELS: Record<string, string> = {
-  'createdAt': 'Created Date',
-  'updatedAt': 'Updated Date',
-  'title': 'Title',
-  'priority': 'Priority',
-  'status': 'Status',
-  'type': 'Type',
-  'dueDate': 'Due Date',
-  'storyPoints': 'Story Points'
-};
+  createdAt: 'Created Date',
+  updatedAt: 'Updated Date',
+  title: 'Title',
+  priority: 'Priority',
+  status: 'Status',
+  type: 'Type',
+  dueDate: 'Due Date',
+  storyPoints: 'Story Points',
+}
 
 const SORT_ORDER_LABELS: Record<SortOrder, string> = {
   [SortOrder.ASC]: 'Ascending',
-  [SortOrder.DESC]: 'Descending'
-};
+  [SortOrder.DESC]: 'Descending',
+}
 
 export const SortControls: React.FC<SortControlsProps> = ({
   sort,
   onSortChange,
-  className = ''
+  className = '',
 }) => {
-  const handleFieldChange = useCallback((field: string) => {
-    onSortChange({
-      ...sort,
-      field
-    });
-  }, [sort, onSortChange]);
+  const handleFieldChange = useCallback(
+    (field: string) => {
+      onSortChange({
+        ...sort,
+        field,
+      })
+    },
+    [sort, onSortChange]
+  )
 
   const handleOrderToggle = useCallback(() => {
     onSortChange({
       ...sort,
-      order: sort.order === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC
-    });
-  }, [sort, onSortChange]);
+      order: sort.order === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC,
+    })
+  }, [sort, onSortChange])
 
-  const currentFieldLabel = SORT_FIELD_LABELS[sort.field] || sort.field;
-  const currentOrderLabel = SORT_ORDER_LABELS[sort.order];
+  const currentFieldLabel = SORT_FIELD_LABELS[sort.field] || sort.field
+  const currentOrderLabel = SORT_ORDER_LABELS[sort.order]
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {/* Sort Field Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
             <Bars3BottomLeftIcon className="w-4 h-4" />
             Sort by: {currentFieldLabel}
           </Button>
@@ -110,7 +117,7 @@ export const SortControls: React.FC<SortControlsProps> = ({
         {currentFieldLabel} ({sort.order === SortOrder.ASC ? '↑' : '↓'})
       </Badge>
     </div>
-  );
-};
+  )
+}
 
-export default SortControls;
+export default SortControls

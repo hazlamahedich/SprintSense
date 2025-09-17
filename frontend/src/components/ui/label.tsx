@@ -1,1 +1,1 @@
-export { Label } from './index';
+export { Label } from './index'

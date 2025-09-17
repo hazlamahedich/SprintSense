@@ -1,1 +1,1 @@
-export { Button } from './index';
+export { Button } from './index'

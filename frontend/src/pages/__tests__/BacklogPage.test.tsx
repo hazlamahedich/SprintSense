@@ -1,69 +1,81 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Routes, Route, useParams } from 'react-router-dom';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import BacklogPage from '../BacklogPage';
-import { useWorkItems } from '../../hooks/useWorkItems';
+import React from 'react'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter, Routes, Route, useParams } from 'react-router-dom'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import BacklogPage from '../BacklogPage'
+import { useWorkItems } from '../../hooks/useWorkItems'
 
 // Mock react-router-dom useParams
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
-    useParams: vi.fn()
-  };
-});
+    useParams: vi.fn(),
+  }
+})
 
 // Mock the custom hook
-vi.mock('../../hooks/useWorkItems');
+vi.mock('../../hooks/useWorkItems')
 
 // Mock UI components
 vi.mock('../../components/ui/button', () => ({
-  Button: ({ children, ...props }: any) => <button {...props}>{children}</button>
-}));
+  Button: ({ children, ...props }: any) => (
+    <button {...props}>{children}</button>
+  ),
+}))
 
 vi.mock('../../components/ui/card', () => ({
-  Card: ({ children, ...props }: any) => <div {...props}>{children}</div>
-}));
+  Card: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+}))
 
 vi.mock('../../components/ui/alert', () => ({
-  Alert: ({ children, ...props }: any) => <div role="alert" {...props}>{children}</div>,
-  AlertDescription: ({ children, ...props }: any) => <div {...props}>{children}</div>
-}));
+  Alert: ({ children, ...props }: any) => (
+    <div role="alert" {...props}>
+      {children}
+    </div>
+  ),
+  AlertDescription: ({ children, ...props }: any) => (
+    <div {...props}>{children}</div>
+  ),
+}))
 
 // Mock Heroicons
 vi.mock('@heroicons/react/24/outline', () => ({
   PlusIcon: (props: any) => <svg {...props} data-testid="plus-icon" />,
-  ExclamationTriangleIcon: (props: any) => <svg {...props} data-testid="exclamation-triangle-icon" />,
-  RefreshCwIcon: (props: any) => <svg {...props} data-testid="refresh-icon" />
-}));
+  ExclamationTriangleIcon: (props: any) => (
+    <svg {...props} data-testid="exclamation-triangle-icon" />
+  ),
+  RefreshCwIcon: (props: any) => <svg {...props} data-testid="refresh-icon" />,
+}))
 
 // Mock the child components
 vi.mock('../../components/common/BacklogList', () => ({
-  default: ({ emptyMessage }: any) => <div data-testid="backlog-list">{emptyMessage}</div>
-}));
+  default: ({ emptyMessage }: any) => (
+    <div data-testid="backlog-list">{emptyMessage}</div>
+  ),
+}))
 
 vi.mock('../../components/common/FilterControls', () => ({
-  default: () => <div data-testid="filter-controls">Filter Controls</div>
-}));
+  default: () => <div data-testid="filter-controls">Filter Controls</div>,
+}))
 
 vi.mock('../../components/common/SortControls', () => ({
-  default: () => <div data-testid="sort-controls">Sort Controls</div>
-}));
+  default: () => <div data-testid="sort-controls">Sort Controls</div>,
+}))
 
 vi.mock('../../components/common/ViewModeToggle', () => ({
   __esModule: true,
   default: () => <div data-testid="view-mode-toggle">View Mode Toggle</div>,
-  ViewMode: { LIST: 'list', KANBAN: 'kanban', TABLE: 'table' }
-}));
+  ViewMode: { LIST: 'list', KANBAN: 'kanban', TABLE: 'table' },
+}))
 
 vi.mock('../../components/common/Pagination', () => ({
-  default: () => <div data-testid="pagination">Pagination</div>
-}));
+  default: () => <div data-testid="pagination">Pagination</div>,
+}))
 
 vi.mock('../../components/common/WorkItemForm', () => ({
-  default: () => <div data-testid="work-item-form">Work Item Form</div>
-}));
+  default: () => <div data-testid="work-item-form">Work Item Form</div>,
+}))
 
 describe('BacklogPage', () => {
   const mockHookReturn = {
@@ -82,94 +94,96 @@ describe('BacklogPage', () => {
     refreshWorkItems: vi.fn(),
     createWorkItem: vi.fn(),
     updateWorkItem: vi.fn(),
-    deleteWorkItem: vi.fn()
-  };
+    deleteWorkItem: vi.fn(),
+  }
 
-  const mockUseWorkItems = vi.mocked(useWorkItems);
-  const mockUseParams = vi.mocked(useParams);
+  const mockUseWorkItems = vi.mocked(useWorkItems)
+  const mockUseParams = vi.mocked(useParams)
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockUseWorkItems.mockReturnValue(mockHookReturn);
+    vi.clearAllMocks()
+    mockUseWorkItems.mockReturnValue(mockHookReturn)
     // Default to having a teamId
-    mockUseParams.mockReturnValue({ teamId: 'team-123' });
-  });
+    mockUseParams.mockReturnValue({ teamId: 'team-123' })
+  })
 
   const renderBacklogPage = (teamId = 'team-123') => {
-    const route = `/teams/${teamId}/backlog`;
+    const route = `/teams/${teamId}/backlog`
     return render(
       <MemoryRouter initialEntries={[route]}>
         <Routes>
           <Route path="/teams/:teamId/backlog" element={<BacklogPage />} />
         </Routes>
       </MemoryRouter>
-    );
-  };
+    )
+  }
 
   it('renders without team ID and shows error', () => {
     // Mock useParams to return undefined teamId
-    mockUseParams.mockReturnValue({ teamId: undefined });
+    mockUseParams.mockReturnValue({ teamId: undefined })
 
     mockUseWorkItems.mockReturnValue({
-      ...mockHookReturn
-    });
+      ...mockHookReturn,
+    })
 
-    render(<BacklogPage />);
+    render(<BacklogPage />)
 
-    expect(screen.getByText(/No team ID provided/)).toBeInTheDocument();
-  });
+    expect(screen.getByText(/No team ID provided/)).toBeInTheDocument()
+  })
 
   it('renders page header correctly', () => {
-    renderBacklogPage();
+    renderBacklogPage()
 
-    expect(screen.getByText('Team Backlog')).toBeInTheDocument();
-    expect(screen.getByText('Manage and prioritize your team\'s work items')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Team Backlog')).toBeInTheDocument()
+    expect(
+      screen.getByText("Manage and prioritize your team's work items")
+    ).toBeInTheDocument()
+  })
 
   it('renders main action buttons', () => {
-    renderBacklogPage();
+    renderBacklogPage()
 
-    expect(screen.getByText('Refresh')).toBeInTheDocument();
-    expect(screen.getByText('Add Work Item')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Refresh')).toBeInTheDocument()
+    expect(screen.getByText('Add Work Item')).toBeInTheDocument()
+  })
 
   it('renders all control components', () => {
-    renderBacklogPage();
+    renderBacklogPage()
 
-    expect(screen.getByTestId('view-mode-toggle')).toBeInTheDocument();
-    expect(screen.getByTestId('sort-controls')).toBeInTheDocument();
-    expect(screen.getByTestId('filter-controls')).toBeInTheDocument();
-  });
+    expect(screen.getByTestId('view-mode-toggle')).toBeInTheDocument()
+    expect(screen.getByTestId('sort-controls')).toBeInTheDocument()
+    expect(screen.getByTestId('filter-controls')).toBeInTheDocument()
+  })
 
   it('renders backlog list in LIST view mode', () => {
-    renderBacklogPage();
+    renderBacklogPage()
 
-    expect(screen.getByTestId('backlog-list')).toBeInTheDocument();
-  });
+    expect(screen.getByTestId('backlog-list')).toBeInTheDocument()
+  })
 
   it('shows loading state', () => {
     mockUseWorkItems.mockReturnValue({
       ...mockHookReturn,
-      loading: true
-    });
+      loading: true,
+    })
 
-    renderBacklogPage();
+    renderBacklogPage()
 
     // The loading state would be handled by child components
-    expect(screen.getByTestId('backlog-list')).toBeInTheDocument();
-  });
+    expect(screen.getByTestId('backlog-list')).toBeInTheDocument()
+  })
 
   it('shows error state', () => {
-    const error = new Error('Failed to load work items');
+    const error = new Error('Failed to load work items')
     mockUseWorkItems.mockReturnValue({
       ...mockHookReturn,
-      error
-    });
+      error,
+    })
 
-    renderBacklogPage();
+    renderBacklogPage()
 
-    expect(screen.getByText(error.message)).toBeInTheDocument();
-  });
+    expect(screen.getByText(error.message)).toBeInTheDocument()
+  })
 
   it('shows pagination when totalCount > 0', () => {
     mockUseWorkItems.mockReturnValue({
@@ -184,25 +198,25 @@ describe('BacklogPage', () => {
           status: 'NEW',
           priority: 'MEDIUM',
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ]
-    });
+          updatedAt: new Date(),
+        },
+      ],
+    })
 
-    renderBacklogPage();
+    renderBacklogPage()
 
-    expect(screen.getByTestId('pagination')).toBeInTheDocument();
-  });
+    expect(screen.getByTestId('pagination')).toBeInTheDocument()
+  })
 
   it('calls loadWorkItems on mount', () => {
-    const mockLoadWorkItems = vi.fn();
+    const mockLoadWorkItems = vi.fn()
     mockUseWorkItems.mockReturnValue({
       ...mockHookReturn,
-      loadWorkItems: mockLoadWorkItems
-    });
+      loadWorkItems: mockLoadWorkItems,
+    })
 
-    renderBacklogPage();
+    renderBacklogPage()
 
-    expect(mockLoadWorkItems).toHaveBeenCalled();
-  });
-});
+    expect(mockLoadWorkItems).toHaveBeenCalled()
+  })
+})

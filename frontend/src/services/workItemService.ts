@@ -3,7 +3,7 @@
  * Implements API calls for work item operations.
  */
 
-import axios from 'axios';
+import axios from 'axios'
 import {
   WorkItem,
   CreateWorkItemRequest,
@@ -11,18 +11,18 @@ import {
   WorkItemFilters,
   WorkItemSort,
   GetWorkItemsResponse,
-  SortOrder
-} from '../types/workItem.types';
+  SortOrder,
+} from '../types/workItem.types'
 
 interface GetWorkItemsOptions {
-  filters?: WorkItemFilters;
-  sort?: WorkItemSort;
-  page?: number;
-  size?: number;
+  filters?: WorkItemFilters
+  sort?: WorkItemSort
+  page?: number
+  size?: number
 }
 
 class WorkItemServiceClass {
-  private baseUrl = '/api/v1/teams';
+  private baseUrl = '/api/v1/teams'
 
   /**
    * Get work items for a team with filtering, sorting, and pagination.
@@ -31,60 +31,66 @@ class WorkItemServiceClass {
     teamId: string,
     options: GetWorkItemsOptions = {}
   ): Promise<GetWorkItemsResponse> {
-    const { filters = {}, sort, page = 1, size = 20 } = options;
+    const { filters = {}, sort, page = 1, size = 20 } = options
 
     const params: any = {
       page,
-      size
-    };
+      size,
+    }
 
     // Add filters
     if (filters.search) {
-      params.search = filters.search;
+      params.search = filters.search
     }
 
     if (filters.types && filters.types.length > 0) {
-      params.types = filters.types.length === 1 ? filters.types[0] : filters.types.join(',');
+      params.types =
+        filters.types.length === 1 ? filters.types[0] : filters.types.join(',')
     }
 
     if (filters.statuses && filters.statuses.length > 0) {
-      params.statuses = filters.statuses.join(',');
+      params.statuses = filters.statuses.join(',')
     }
 
     if (filters.priorities && filters.priorities.length > 0) {
-      params.priorities = filters.priorities.length === 1 ? filters.priorities[0] : filters.priorities.join(',');
+      params.priorities =
+        filters.priorities.length === 1
+          ? filters.priorities[0]
+          : filters.priorities.join(',')
     }
 
     if (filters.assigneeId) {
-      params.assigneeId = filters.assigneeId;
+      params.assigneeId = filters.assigneeId
     }
 
     // Add sorting
     if (sort) {
-      params.sortField = sort.field;
-      params.sortOrder = sort.order === SortOrder.ASC ? 'asc' : 'desc';
+      params.sortField = sort.field
+      params.sortOrder = sort.order === SortOrder.ASC ? 'asc' : 'desc'
     }
 
     const response = await axios.get(`${this.baseUrl}/${teamId}/work-items`, {
-      params
-    });
+      params,
+    })
 
     // Transform response to match expected format
-    const data = response.data;
+    const data = response.data
     return {
       items: data.items || data.workItems || [],
       total: data.total || 0,
       page: data.page || 1,
-      size: data.size || 20
-    };
+      size: data.size || 20,
+    }
   }
 
   /**
    * Get a single work item by ID.
    */
   async getWorkItem(teamId: string, workItemId: string): Promise<WorkItem> {
-    const response = await axios.get(`${this.baseUrl}/${teamId}/work-items/${workItemId}`);
-    return response.data;
+    const response = await axios.get(
+      `${this.baseUrl}/${teamId}/work-items/${workItemId}`
+    )
+    return response.data
   }
 
   /**
@@ -94,8 +100,11 @@ class WorkItemServiceClass {
     teamId: string,
     workItemData: CreateWorkItemRequest
   ): Promise<WorkItem> {
-    const response = await axios.post(`${this.baseUrl}/${teamId}/work-items`, workItemData);
-    return response.data;
+    const response = await axios.post(
+      `${this.baseUrl}/${teamId}/work-items`,
+      workItemData
+    )
+    return response.data
   }
 
   /**
@@ -106,18 +115,21 @@ class WorkItemServiceClass {
     workItemId: string,
     workItemData: UpdateWorkItemRequest
   ): Promise<WorkItem> {
-    const response = await axios.patch(`${this.baseUrl}/${teamId}/work-items/${workItemId}`, workItemData);
-    return response.data;
+    const response = await axios.patch(
+      `${this.baseUrl}/${teamId}/work-items/${workItemId}`,
+      workItemData
+    )
+    return response.data
   }
 
   /**
    * Delete a work item.
    */
   async deleteWorkItem(teamId: string, workItemId: string): Promise<void> {
-    await axios.delete(`${this.baseUrl}/${teamId}/work-items/${workItemId}`);
+    await axios.delete(`${this.baseUrl}/${teamId}/work-items/${workItemId}`)
   }
 }
 
 // Export singleton instance
-export const workItemService = new WorkItemServiceClass();
-export default workItemService;
+export const workItemService = new WorkItemServiceClass()
+export default workItemService

@@ -1,1 +1,7 @@
-export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './index';
+export {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from './index'

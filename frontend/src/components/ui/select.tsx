@@ -1,1 +1,7 @@
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './index';
+export {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './index'

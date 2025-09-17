@@ -1,22 +1,22 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { WorkItem } from '../../types/workItem.types';
-import BacklogItem from './BacklogItem';
-import { Button } from '../ui/button';
-import { RefreshCwIcon } from '@heroicons/react/24/outline';
+import React, { useCallback, useEffect, useRef } from 'react'
+import { WorkItem } from '../../types/workItem.types'
+import BacklogItem from './BacklogItem'
+import { Button } from '../ui/button'
+import { RefreshCwIcon } from '@heroicons/react/24/outline'
 
 interface BacklogListProps {
-  workItems: WorkItem[];
-  loading: boolean;
-  hasMore: boolean;
-  onLoadMore: () => void;
-  onEdit: (workItem: WorkItem) => void;
-  onDelete: (id: string) => void;
-  onMove?: (id: string, direction: 'up' | 'down') => void;
-  onRefresh?: () => void;
-  showMoveButtons?: boolean;
-  className?: string;
-  emptyMessage?: string;
-  emptyDescription?: string;
+  workItems: WorkItem[]
+  loading: boolean
+  hasMore: boolean
+  onLoadMore: () => void
+  onEdit: (workItem: WorkItem) => void
+  onDelete: (id: string) => void
+  onMove?: (id: string, direction: 'up' | 'down') => void
+  onRefresh?: () => void
+  showMoveButtons?: boolean
+  className?: string
+  emptyMessage?: string
+  emptyDescription?: string
 }
 
 export const BacklogList: React.FC<BacklogListProps> = ({
@@ -31,55 +31,55 @@ export const BacklogList: React.FC<BacklogListProps> = ({
   showMoveButtons = false,
   className = '',
   emptyMessage = 'No work items found',
-  emptyDescription = 'Try adjusting your filters or create a new work item to get started.'
+  emptyDescription = 'Try adjusting your filters or create a new work item to get started.',
 }) => {
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null)
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
-    if (!hasMore || loading) return;
+    if (!hasMore || loading) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const first = entries[0];
+        const first = entries[0]
         if (first.isIntersecting) {
-          onLoadMore();
+          onLoadMore()
         }
       },
       {
         threshold: 0.1,
-        rootMargin: '100px' // Load more items 100px before reaching the bottom
+        rootMargin: '100px', // Load more items 100px before reaching the bottom
       }
-    );
+    )
 
-    const currentRef = loadMoreRef.current;
+    const currentRef = loadMoreRef.current
     if (currentRef) {
-      observer.observe(currentRef);
+      observer.observe(currentRef)
     }
 
     return () => {
       if (currentRef) {
-        observer.unobserve(currentRef);
+        observer.unobserve(currentRef)
       }
-    };
-  }, [hasMore, loading, onLoadMore]);
+    }
+  }, [hasMore, loading, onLoadMore])
 
   const handleRefresh = useCallback(() => {
-    onRefresh?.();
-  }, [onRefresh]);
+    onRefresh?.()
+  }, [onRefresh])
 
   // Show empty state when no items and not loading
   if (!loading && workItems.length === 0) {
     return (
-      <div className={`flex flex-col items-center justify-center py-12 ${className}`}>
+      <div
+        className={`flex flex-col items-center justify-center py-12 ${className}`}
+      >
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">📋</div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             {emptyMessage}
           </h3>
-          <p className="text-gray-600 mb-6">
-            {emptyDescription}
-          </p>
+          <p className="text-gray-600 mb-6">{emptyDescription}</p>
           {onRefresh && (
             <Button
               onClick={handleRefresh}
@@ -92,7 +92,7 @@ export const BacklogList: React.FC<BacklogListProps> = ({
           )}
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -129,10 +129,7 @@ export const BacklogList: React.FC<BacklogListProps> = ({
         <div className="space-y-3">
           {/* Skeleton loading states */}
           {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={index}
-              className="border rounded-lg p-4 animate-pulse"
-            >
+            <div key={index} className="border rounded-lg p-4 animate-pulse">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-16 bg-gray-200 rounded"></div>
@@ -194,7 +191,7 @@ export const BacklogList: React.FC<BacklogListProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default BacklogList;
+export default BacklogList
