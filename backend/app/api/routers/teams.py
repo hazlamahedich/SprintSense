@@ -107,7 +107,13 @@ async def create_work_item(
             priority=work_item.priority,
         )
 
-        return work_item
+        # Ensure return type matches endpoint declaration
+        # The service already returns WorkItemResponse, but mypy needs explicit casting
+        return (
+            WorkItemResponse.model_validate(work_item)
+            if hasattr(work_item, "model_dump")
+            else work_item
+        )
 
     except (AuthorizationError, ValidationError, DatabaseError) as e:
         # Log the specific error for debugging

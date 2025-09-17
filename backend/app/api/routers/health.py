@@ -42,7 +42,7 @@ async def detailed_health_check(
         Dict with detailed service status
     """
     start_time = time.time()
-    health_status = {
+    health_status: Dict[str, Any] = {
         "status": "OK",
         "service": "SprintSense Backend",
         "version": "0.1.0",
@@ -65,14 +65,18 @@ async def detailed_health_check(
         )
         table_exists = result.fetchone() is not None
 
-        health_status["checks"]["database"] = {
-            "status": "healthy",
-            "connection": "connected",
-            "tables_accessible": table_exists,
-        }
+        checks = health_status["checks"]
+        if isinstance(checks, dict):
+            checks["database"] = {
+                "status": "healthy",
+                "connection": "connected",
+                "tables_accessible": table_exists,
+            }
         logger.info("Health check - database connected and tables accessible")
     except Exception as e:
-        health_status["checks"]["database"] = {"status": "unhealthy", "error": str(e)}
+        checks = health_status["checks"]
+        if isinstance(checks, dict):
+            checks["database"] = {"status": "unhealthy", "error": str(e)}
         health_status["status"] = "DEGRADED"
         logger.error("Health check - database connection failed", error=str(e))
 
@@ -83,23 +87,31 @@ async def detailed_health_check(
             async with httpx.AsyncClient(timeout=5.0) as client:
                 # Check Supabase REST API health
                 response = await client.get(f"{supabase_url}/health")
-                health_status["checks"]["supabase_api"] = {
-                    "status": "healthy" if response.status_code == 200 else "unhealthy",
-                    "url": supabase_url,
-                    "response_code": response.status_code,
-                }
+                checks = health_status["checks"]
+                if isinstance(checks, dict):
+                    checks["supabase_api"] = {
+                        "status": (
+                            "healthy" if response.status_code == 200 else "unhealthy"
+                        ),
+                        "url": supabase_url,
+                        "response_code": response.status_code,
+                    }
         except Exception as e:
-            health_status["checks"]["supabase_api"] = {
-                "status": "unhealthy",
-                "error": str(e),
-            }
+            checks = health_status["checks"]
+            if isinstance(checks, dict):
+                checks["supabase_api"] = {
+                    "status": "unhealthy",
+                    "error": str(e),
+                }
             health_status["status"] = "DEGRADED"
             logger.error("Health check - Supabase API check failed", error=str(e))
     else:
-        health_status["checks"]["supabase_api"] = {
-            "status": "not_configured",
-            "message": "SUPABASE_URL not set",
-        }
+        checks = health_status["checks"]
+        if isinstance(checks, dict):
+            checks["supabase_api"] = {
+                "status": "not_configured",
+                "message": "SUPABASE_URL not set",
+            }
 
     # Response time check
     response_time = time.time() - start_time
@@ -110,11 +122,14 @@ async def detailed_health_check(
         logger.warning("Health check - slow response time", response_time=response_time)
 
     # Overall status determination
-    unhealthy_checks = [
-        check
-        for check in health_status["checks"].values()
-        if check.get("status") == "unhealthy"
-    ]
+    checks = health_status["checks"]
+    unhealthy_checks = []
+    if isinstance(checks, dict):
+        unhealthy_checks = [
+            check
+            for check in checks.values()
+            if isinstance(check, dict) and check.get("status") == "unhealthy"
+        ]
 
     if unhealthy_checks:
         health_status["status"] = "UNHEALTHY"

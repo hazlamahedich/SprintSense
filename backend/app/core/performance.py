@@ -29,7 +29,7 @@ class PerformanceMetrics:
 class PerformanceMonitor:
     """Performance monitoring and validation system."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.metrics: list[PerformanceMetrics] = []
         self.thresholds = {
             "work_item_creation": 1000,  # 1 second threshold
@@ -116,12 +116,14 @@ async def measure_performance(
         performance_monitor.record_metric(metric)
 
 
-def monitor_performance(operation: str, metadata: Optional[Dict[str, Any]] = None):
+def monitor_performance(
+    operation: str, metadata: Optional[Dict[str, Any]] = None
+) -> Callable:
     """Decorator for monitoring async function performance."""
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             async with measure_performance(operation, metadata):
                 return await func(*args, **kwargs)
 
@@ -159,15 +161,17 @@ class PerformanceValidator:
 
         # Get operation-specific summaries
         operations = set(m.operation for m in performance_monitor.metrics)
-        for op in operations:
-            report["operations"][op] = performance_monitor.get_metrics_summary(op)
+        operations_dict = report["operations"]
+        if isinstance(operations_dict, dict):
+            for op in operations:
+                operations_dict[op] = performance_monitor.get_metrics_summary(op)
 
         return report
 
 
 # Performance testing utilities
 async def benchmark_work_item_creation(
-    service, team_id: str, author_id: str, num_iterations: int = 10
+    service: Any, team_id: str, author_id: str, num_iterations: int = 10
 ) -> Dict[str, Any]:
     """Benchmark work item creation performance."""
 
@@ -178,11 +182,13 @@ async def benchmark_work_item_creation(
         try:
             async with measure_performance("benchmark_work_item_creation") as metric:
                 # Create test work item
+                from uuid import UUID
+
                 from app.domains.models.work_item import WorkItemType
                 from app.domains.schemas.work_item import WorkItemCreateRequest
 
                 request = WorkItemCreateRequest(
-                    team_id=team_id,
+                    team_id=UUID(team_id),
                     title=f"Benchmark Work Item {i}",
                     description="Performance test work item",
                     type=WorkItemType.TASK,
@@ -224,14 +230,16 @@ async def run_performance_validation() -> Dict[str, Any]:
         max_meets_threshold = summary["max_duration_ms"] < 2000  # Allow some outliers
         success_rate_acceptable = summary["success_rate"] > 95
 
-        validation_results["validations"]["work_item_creation"] = {
-            "avg_response_time_ok": avg_meets_threshold,
-            "max_response_time_ok": max_meets_threshold,
-            "success_rate_ok": success_rate_acceptable,
-            "avg_duration_ms": summary["avg_duration_ms"],
-            "max_duration_ms": summary["max_duration_ms"],
-            "success_rate": summary["success_rate"],
-        }
+        validations_dict = validation_results["validations"]
+        if isinstance(validations_dict, dict):
+            validations_dict["work_item_creation"] = {
+                "avg_response_time_ok": avg_meets_threshold,
+                "max_response_time_ok": max_meets_threshold,
+                "success_rate_ok": success_rate_acceptable,
+                "avg_duration_ms": summary["avg_duration_ms"],
+                "max_duration_ms": summary["max_duration_ms"],
+                "success_rate": summary["success_rate"],
+            }
 
         if not all([avg_meets_threshold, max_meets_threshold, success_rate_acceptable]):
             validation_results["overall_passed"] = False
@@ -243,10 +251,10 @@ async def run_performance_validation() -> Dict[str, Any]:
 class PerformanceMiddleware:
     """Middleware to automatically monitor API endpoint performance."""
 
-    def __init__(self, app):
+    def __init__(self, app: Any) -> None:
         self.app = app
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Dict[str, Any], receive: Any, send: Any) -> None:
         if scope["type"] == "http":
             path = scope.get("path", "")
             method = scope.get("method", "")

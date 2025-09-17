@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { CreateWorkItemForm } from '../CreateWorkItemForm'
+import { WorkItemType } from '../../../../types/workItem.types'
 
 // Mock the UI components
 vi.mock('../../../ui/button', () => ({
