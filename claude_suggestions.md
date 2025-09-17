@@ -38,7 +38,7 @@ Before accepting generated code, verify:
 
 #### Component Generation Template
 
-```
+```text
 Generate a [COMPONENT_TYPE] that:
 1. Follows [ARCHITECTURE_PATTERN] pattern
 2. Implements [SPECIFIC_INTERFACE] interface
@@ -93,7 +93,7 @@ Before accepting frontend designs, verify:
 
 #### Brand Context Template
 
-```
+```text
 Design a [COMPONENT] with these brand characteristics:
 - Brand Personality: [DESCRIBE_BRAND_TRAITS]
 - Target Audience: [USER_DEMOGRAPHICS]

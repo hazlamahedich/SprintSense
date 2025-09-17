@@ -109,7 +109,7 @@ SprintSense follows a **modular monolith** architecture for the MVP, providing c
 
 ### High-Level Structure
 
-```
+```text
 sprintsense/
 ├── backend/           # FastAPI application
 │   ├── app/

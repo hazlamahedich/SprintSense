@@ -1,6 +1,6 @@
 # 🚀 SprintSense Warp Drive Index
 
-*Your comprehensive navigation hub for the SprintSense AI-powered agile project management platform*
+## Your comprehensive navigation hub for the SprintSense AI-powered agile project management platform
 
 ---
 
@@ -106,7 +106,7 @@ Transform reactive project management into proactive, intelligent workflow optim
 
 ### 🏛️ **High-Level Architecture**
 
-```
+```text
 ┌─────────────────┐    ┌──────────────────────┐
 │   React SPA     │────│   FastAPI Backend    │
 │  (TypeScript)   │    │     (Python)         │
@@ -124,7 +124,7 @@ Transform reactive project management into proactive, intelligent workflow optim
 
 ## 📁 Directory Structure
 
-```
+```text
 SprintSense/
 ├── 📚 docs/                    # Comprehensive documentation
 │   ├── 📋 prd.md              # Product Requirements (sharded)
@@ -172,7 +172,7 @@ SprintSense/
 
 ### 🤖 **BMAD-Powered Development Cycle**
 
-```
+```text
 💡 Idea → 📝 Spec Shard → 👩‍💻 Code Shard → ✅ Quality Gate → 🚀 Deploy
 ```
 
@@ -557,7 +557,7 @@ Type `switch to bmad-orchestrator` for the ultimate multi-agent experience:
 
 Each persona is defined by:
 
-```
+```text
 .bmad-core/agents/
 ├── dev.md                 # 💻 James - Full Stack Developer
 ├── architect.md           # 🏗️ Sarah - Technical Architect  
@@ -574,7 +574,7 @@ Each persona is defined by:
 
 #### 🔨 **Development Work**
 
-```
+```text
 User: "switch to dev"
 James: "Hello! I'm James 💻, your Full Stack Developer. *help to see commands."
 User: "*develop-story"
@@ -583,7 +583,7 @@ James: "Reading current story requirements and implementing tasks..."
 
 #### 📋 **Story Creation**
 
-```
+```text
 User: "switch to po" 
 Alex: "Hi! I'm Alex 📋, your Product Owner. *help for my commands."
 User: "*create-story"
@@ -592,7 +592,7 @@ Alex: "Let me generate a new user story based on our backlog..."
 
 #### 🏗️ **Architecture Review**
 
-```
+```text
 User: "switch to architect"
 Sarah: "Greetings! I'm Sarah 🏗️, your Technical Architect. *help for options."
 User: "*review-architecture"
@@ -775,7 +775,7 @@ Look for issues labeled:
 
 ---
 
-*🌟 Built with BMAD™ - Business-focused, AI-Enhanced Agile Development*
+## 🌟 Built with BMAD™ - Business-focused, AI-Enhanced Agile Development
 
 **Last Updated:** September 15, 2025  
 **BMAD Version:** 4.43.1  
