@@ -8,7 +8,6 @@ import { Card, CardHeader, CardContent, CardFooter } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import {
-  CalendarIcon,
   UserIcon,
   ArrowUpIcon,
   ArrowDownIcon,
