@@ -21,6 +21,18 @@ interface GetWorkItemsOptions {
   size?: number
 }
 
+interface QueryParams {
+  page: number
+  size: number
+  search?: string
+  types?: string
+  statuses?: string
+  priorities?: string
+  assigneeId?: string
+  sortField?: string
+  sortOrder?: string
+}
+
 class WorkItemServiceClass {
   private baseUrl = '/api/v1/teams'
 
@@ -33,7 +45,7 @@ class WorkItemServiceClass {
   ): Promise<GetWorkItemsResponse> {
     const { filters = {}, sort, page = 1, size = 20 } = options
 
-    const params: any = {
+    const params: QueryParams = {
       page,
       size,
     }
