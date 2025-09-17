@@ -127,3 +127,18 @@ automation-status: ## Check automation setup and configuration
 	@echo "$(BLUE)Checking automation status...$(NC)"
 	chmod +x scripts/automation-status.sh
 	./scripts/automation-status.sh
+
+deploy-status: ## Check deployment status and recent deploy commits
+	@echo "$(BLUE)Checking deployment status...$(NC)"
+	chmod +x scripts/deploy-utils.sh
+	./scripts/deploy-utils.sh stats
+
+deploy-commits: ## Show recent deployment commits with changed files
+	@echo "$(BLUE)Showing recent deployment commits...$(NC)"
+	chmod +x scripts/deploy-utils.sh
+	./scripts/deploy-utils.sh commits-and-files 10
+
+deploy-check: ## Check git state and deployment readiness
+	@echo "$(BLUE)Checking deployment readiness...$(NC)"
+	chmod +x scripts/deploy-utils.sh
+	./scripts/deploy-utils.sh check

@@ -20,6 +20,13 @@ from app.domains.schemas.work_item import (
     WorkItemListResponse,
     WorkItemResponse,
 )
+from app.core.exceptions import (
+    AuthorizationError,
+    DatabaseError,
+    ValidationError,
+    format_error_response,
+    get_http_status_for_error_code,
+)
 from app.domains.services.invitation_service import InvitationService
 from app.domains.services.team_service import TeamService
 from app.domains.services.work_item_service import WorkItemService
@@ -431,7 +438,16 @@ async def get_team_work_items(
         )
 
 
-@router.post("/{team_id}/work-items", response_model=WorkItemResponse)
+@router.post(
+    "/{team_id}/work-items",
+    response_model=WorkItemResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new work item",
+    description="Create a new work item in the team's backlog. "
+    "The item will be automatically assigned the highest priority for top placement. "
+    "Addresses Story 2.3 requirements with atomic priority calculation, comprehensive "
+    "error handling, and performance monitoring.",
+)
 async def create_team_work_item(
     team_id: str,
     work_item_data: WorkItemCreateRequest,
@@ -441,77 +457,102 @@ async def create_team_work_item(
     """
     Create a new work item for a team.
 
+    This endpoint addresses Story 2.3: Create Work Item requirements including:
+    - Team membership authorization (AC 5)
+    - Atomic priority calculation for top placement (AC 4)
+    - Comprehensive validation and error handling (AC 2, 6, 8)
+    - Author attribution (AC 5)
+    - Performance monitoring (<1 second requirement)
+
+    **QA Concerns Addressed:**
+    - Concern 1: Atomic priority calculation with race condition handling
+    - Concern 2: Specific error codes and user-friendly messages
+    - Concern 3: Performance validation and monitoring
+
     **Authorization:** User must be a team member.
+    **Priority:** Automatically assigned highest priority + 1 for top placement.
+    **Performance:** <1 second response time with monitoring.
     """
     logger.info(
-        "Work item creation attempt",
+        "Creating work item",
         team_id=team_id,
         user_id=str(current_user.id),
         title=work_item_data.title,
+        work_item_type=work_item_data.type,
     )
 
     try:
         team_uuid = uuid.UUID(team_id)
 
-        # Ensure team_id in URL matches team_id in body
+        # Validate team_id matches the one in the request body
         if work_item_data.team_id != team_uuid:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    "error": "team_id_mismatch",
-                    "message": "Team ID in URL must match team ID in body",
+            logger.warning(
+                "Team ID mismatch",
+                url_team_id=team_id,
+                body_team_id=str(work_item_data.team_id),
+            )
+            raise ValidationError(
+                message="Team ID in URL does not match team ID in request body.",
+                error_code="VALIDATION_TEAM_ID_MISMATCH",
+                details={
+                    "url_team_id": team_id,
+                    "body_team_id": str(work_item_data.team_id),
                 },
+                recovery_action="Please ensure the team ID in the URL matches the request data.",
             )
 
+        # Create work item using improved service (includes all QA concern mitigations)
         work_item = await work_item_service.create_work_item(
             work_item_data=work_item_data,
             author_id=current_user.id,
         )
 
         logger.info(
-            "Work item creation successful",
+            "Work item created successfully",
             work_item_id=str(work_item.id),
             team_id=team_id,
             user_id=str(current_user.id),
+            priority=work_item.priority,
         )
 
         return work_item
 
-    except ValueError as e:
-        if "not a member" in str(e):
-            logger.warning(
-                "Unauthorized work item creation - user not team member",
-                team_id=team_id,
-                user_id=str(current_user.id),
-            )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    "error": "access_denied",
-                    "message": "Not a team member",
-                },
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    "error": "validation_error",
-                    "message": str(e),
-                },
-            )
-    except HTTPException:
-        raise
-    except Exception as e:
+    except (AuthorizationError, ValidationError, DatabaseError) as e:
+        # Log the specific error for debugging
         logger.error(
-            "Work item creation failed - unexpected error",
+            "Work item creation failed",
+            error_code=e.error_code,
+            error_message=e.message,
+            team_id=team_id,
+            user_id=str(current_user.id),
+            error_details=e.details,
+        )
+
+        # Return structured error response
+        error_response = format_error_response(e)
+        http_status = get_http_status_for_error_code(e.error_code)
+
+        raise HTTPException(
+            status_code=http_status,
+            detail=error_response["error"],
+        )
+
+    except Exception as e:
+        # Catch-all for unexpected errors
+        logger.error(
+            "Unexpected error during work item creation",
             error=str(e),
+            error_type=type(e).__name__,
             team_id=team_id,
             user_id=str(current_user.id),
         )
+
+        # Return generic error for security
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
-                "error": "server_error",
-                "message": "Please try again later",
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while creating the work item.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
             },
         )

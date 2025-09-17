@@ -3,7 +3,7 @@
 import uuid
 from typing import Optional
 
-from sqlalchemy import and_, desc, or_, select
+from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.models.team import TeamMember
@@ -14,6 +14,12 @@ from app.domains.schemas.work_item import (
     WorkItemResponse,
     WorkItemUpdateRequest,
 )
+from app.core.exceptions import (
+    AuthorizationError,
+    DatabaseError,
+    ValidationError,
+)
+from app.core.performance import measure_performance, monitor_performance
 
 
 class WorkItemService:
@@ -122,13 +128,14 @@ class WorkItemService:
             size=len(items),
         )
 
+    @monitor_performance("work_item_creation")
     async def create_work_item(
         self,
         work_item_data: WorkItemCreateRequest,
         author_id: uuid.UUID,
     ) -> WorkItemResponse:
         """
-        Create a new work item.
+        Create a new work item with atomic priority calculation.
 
         Args:
             work_item_data: Work item creation data
@@ -138,29 +145,71 @@ class WorkItemService:
             WorkItemResponse: Created work item
 
         Raises:
-            ValueError: If user is not a team member
+            ValueError: If user is not a team member or validation fails
+            RuntimeError: If priority calculation fails after retries
         """
-        # Verify user is team member
+        # Verify user is team member with specific error handling
         if not await self._is_team_member(work_item_data.team_id, author_id):
-            raise ValueError("User is not a member of this team")
+            raise AuthorizationError.not_team_member(
+                str(work_item_data.team_id), str(author_id)
+            )
 
-        # Create new work item
-        work_item = WorkItem(
-            team_id=work_item_data.team_id,
-            author_id=author_id,
-            assignee_id=work_item_data.assignee_id,
-            type=work_item_data.type,
-            title=work_item_data.title,
-            description=work_item_data.description,
-            priority=work_item_data.priority,
-            story_points=work_item_data.story_points,
-        )
+        # Calculate priority atomically with retry logic for race conditions
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                async with self.db.begin():
+                    # Determine priority: use provided value or auto-calculate
+                    if work_item_data.priority is not None:
+                        # User-provided priority
+                        new_priority = work_item_data.priority
+                    else:
+                        # Auto-calculate priority with performance monitoring
+                        async with measure_performance("priority_calculation"):
+                            highest_priority = await self._get_highest_priority(
+                                work_item_data.team_id
+                            )
+                        # Calculate new priority (highest + 1 for top placement)
+                        new_priority = highest_priority + 1.0
 
-        self.db.add(work_item)
-        await self.db.commit()
-        await self.db.refresh(work_item)
+                    # Create work item with calculated/provided priority
+                    work_item = WorkItem(
+                        team_id=work_item_data.team_id,
+                        author_id=author_id,
+                        assignee_id=work_item_data.assignee_id,
+                        type=work_item_data.type,
+                        title=work_item_data.title,
+                        description=work_item_data.description,
+                        priority=new_priority,
+                        story_points=work_item_data.story_points,
+                        # Default values for new backlog items
+                        status=WorkItemStatus.BACKLOG,
+                        sprint_id=None,  # New items go to backlog
+                        completed_at=None,
+                        source_sprint_id_for_action_item=None,
+                    )
 
-        return WorkItemResponse.model_validate(work_item)
+                    self.db.add(work_item)
+                    # Transaction commits automatically at end of async with block
+
+                # Refresh to get updated timestamps
+                await self.db.refresh(work_item)
+                return WorkItemResponse.model_validate(work_item)
+
+            except Exception as e:
+                # Handle database constraint violations or race conditions
+                if attempt == max_retries - 1:
+                    if "connection" in str(e).lower():
+                        raise DatabaseError.connection_error() from e
+                    elif "constraint" in str(e).lower():
+                        raise DatabaseError.constraint_violation(str(e)) from e
+                    else:
+                        raise DatabaseError.priority_calculation_failed(max_retries) from e
+                # Retry for race conditions
+                continue
+
+        # This should never be reached, but satisfy type checker
+        raise DatabaseError.priority_calculation_failed(max_retries)
 
     async def update_work_item(
         self,
@@ -259,3 +308,24 @@ class WorkItemService:
         )
         result = await self.db.execute(query)
         return result.scalar_one_or_none() is not None
+
+    async def _get_highest_priority(self, team_id: uuid.UUID) -> float:
+        """
+        Get the highest priority value for work items in a team.
+        Uses database-level MAX function for atomicity.
+
+        Args:
+            team_id: Team UUID to query
+
+        Returns:
+            float: Highest priority value, or 0.0 if no items exist
+        """
+        query = select(func.max(WorkItem.priority)).where(
+            and_(
+                WorkItem.team_id == team_id,
+                WorkItem.status != WorkItemStatus.ARCHIVED,  # Exclude archived items
+            )
+        )
+        result = await self.db.execute(query)
+        max_priority = result.scalar()
+        return max_priority if max_priority is not None else 0.0

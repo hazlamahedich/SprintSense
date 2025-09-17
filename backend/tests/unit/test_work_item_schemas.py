@@ -71,7 +71,7 @@ class TestWorkItemCreateRequest:
         assert request.title == "Default Work Item"
         assert request.description is None
         assert request.type == WorkItemType.STORY  # Default
-        assert request.priority == 0.0  # Default
+        assert request.priority is None  # Default - auto-calculated
         assert request.story_points is None
         assert request.assignee_id is None
 
@@ -106,7 +106,7 @@ class TestWorkItemCreateRequest:
     def test_create_request_long_title_fails(self):
         """Test that overly long title raises validation error."""
         team_id = uuid.uuid4()
-        long_title = "x" * 256  # 256 characters, exceeds 255 limit
+        long_title = "x" * 201  # 201 characters, exceeds 200 limit
 
         with pytest.raises(ValidationError) as exc_info:
             WorkItemCreateRequest(
@@ -116,7 +116,7 @@ class TestWorkItemCreateRequest:
 
         errors = exc_info.value.errors()
         assert len(errors) == 1
-        assert "Title cannot exceed 255 characters" in str(errors[0]["msg"])
+        assert "Title cannot exceed 200 characters" in str(errors[0]["msg"])
 
     def test_create_request_negative_priority_fails(self):
         """Test that negative priority raises validation error."""

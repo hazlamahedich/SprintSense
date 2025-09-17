@@ -69,7 +69,14 @@ class WorkItemServiceClass {
       params
     });
 
-    return response.data;
+    // Transform response to match expected format
+    const data = response.data;
+    return {
+      items: data.items || data.workItems || [],
+      total: data.total || 0,
+      page: data.page || 1,
+      size: data.size || 20
+    };
   }
 
   /**

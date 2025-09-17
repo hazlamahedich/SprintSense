@@ -103,10 +103,15 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
-      - name: Run tests with coverage
+      - name: Run unit tests with coverage
         env:
           DATABASE_URL: postgresql://sprintsense:sprintsense@localhost:5432/sprintsense_test
-        run: poetry run pytest --cov=app --cov-report=term --cov-report=xml
+        run: poetry run pytest tests/unit --cov=app --cov-report=term --cov-report=xml
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://sprintsense:sprintsense@localhost:5432/sprintsense_test
+        run: poetry run pytest tests/integration -v
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4

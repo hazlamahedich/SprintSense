@@ -45,11 +45,52 @@ class WorkItemBase(BaseModel):
         return v
 
 
-class WorkItemCreateRequest(WorkItemBase):
+class WorkItemCreateRequest(BaseModel):
     """Schema for work item creation request."""
 
     team_id: uuid.UUID
+    title: str
+    description: Optional[str] = None
+    type: WorkItemType = WorkItemType.STORY
+    priority: Optional[float] = None  # If provided, used; otherwise auto-calculated
+    story_points: Optional[int] = None
     assignee_id: Optional[uuid.UUID] = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, v: str) -> str:
+        """Validate title meets requirements."""
+        if not v or not v.strip():
+            raise ValueError("Title cannot be empty")
+        if len(v.strip()) > 200:  # Match story requirements
+            raise ValueError("Title cannot exceed 200 characters")
+        return v.strip()
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, v: Optional[str]) -> Optional[str]:
+        """Validate description meets requirements."""
+        if v is not None:
+            if len(v.strip()) > 2000:  # Match story requirements
+                raise ValueError("Description cannot exceed 2000 characters")
+            return v.strip() if v.strip() else None
+        return v
+
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, v: Optional[float]) -> Optional[float]:
+        """Validate priority if provided."""
+        if v is not None and v < 0:
+            raise ValueError("Priority cannot be negative")
+        return v
+
+    @field_validator("story_points")
+    @classmethod
+    def validate_story_points(cls, v: Optional[int]) -> Optional[int]:
+        """Validate story points if provided."""
+        if v is not None and v < 0:
+            raise ValueError("Story points cannot be negative")
+        return v
 
 
 class WorkItemUpdateRequest(BaseModel):
