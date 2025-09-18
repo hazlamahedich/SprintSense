@@ -1,0 +1,209 @@
+name: CodeRabbit Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/**'
+      - 'docs/**'
+      - '**/*.py'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.js'
+      - '**/*.jsx'
+
+# Prevent concurrent runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  # Code Rabbit automated review
+  coderabbit-review:
+    name: CodeRabbit AI Review
+    runs-on: ubuntu-latest
+
+    # Skip draft PRs and when no relevant files changed
+    if: >
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      repository-projects: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for better context in reviews
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            backend/**
+            frontend/**
+            .github/workflows/**
+            docs/**
+            **/*.py
+            **/*.ts
+            **/*.tsx
+            **/*.js
+            **/*.jsx
+            **/*.yml
+            **/*.yaml
+            **/*.json
+            **/*.md
+
+      - name: CodeRabbit Review
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: coderabbitai/coderabbit-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # You'll need to add this to your repository secrets
+          coderabbit-api-token: ${{ secrets.CODERABBIT_API_TOKEN }}
+
+          # Configure review behavior
+          review-level: 'detailed'
+          include-line-numbers: true
+
+          # Focus on changed files only for PRs
+          files: ${{ steps.changed-files.outputs.all_changed_files }}
+
+          # Custom prompts for SprintSense context
+          system-message: |
+            You are reviewing code for SprintSense, a sprint management application.
+
+            Key context:
+            - Backend: FastAPI with Python, using Poetry for dependencies
+            - Frontend: React/TypeScript with Vite
+            - Database: PostgreSQL with Alembic migrations
+            - Authentication: Supabase Auth
+            - Deployment: Docker containers
+
+            Focus on:
+            - Code quality and maintainability
+            - Security best practices
+            - Performance implications
+            - API design consistency
+            - Type safety (Python type hints, TypeScript)
+            - Error handling patterns
+            - Database query optimization
+            - Docker and deployment concerns
+
+            Reference project coding standards from docs/architecture.md
+            Consider suggestions from claude_suggestions.md
+
+          # Additional configuration
+          exclude-patterns: |
+            **/.venv/**
+            **/node_modules/**
+            **/__pycache__/**
+            **/dist/**
+            **/build/**
+            **/*.pyc
+            **/coverage/**
+            **/.pytest_cache/**
+            .bmad-core/**
+
+          # Fail on critical issues (respects CI/CD rule ktlFUZTBDGfzx5bGDaUqew)
+          fail-on-critical: true
+
+          # Generate summary for complex changes
+          enable-summary: true
+
+      - name: Comment results summary
+        if: steps.changed-files.outputs.any_changed == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            const coderabbitReviews = reviews.filter(review =>
+              review.user.login.includes('coderabbit') ||
+              review.body.includes('CodeRabbit')
+            );
+
+            if (coderabbitReviews.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `🤖 **CodeRabbit Review Complete**
+
+                ✅ Automated code review has been completed for this PR.
+                📊 Found ${coderabbitReviews.length} review comment(s).
+
+                Please address any issues before requesting human review.
+
+                ---
+                *This is part of SprintSense's automated quality assurance process.*`
+              });
+            }
+
+  # Validate that Code Rabbit review passes before allowing other jobs
+  # This job will be used as a dependency in ci.yml
+  review-gate:
+    name: Code Review Gate
+    runs-on: ubuntu-latest
+    needs: [coderabbit-review]
+    if: always()
+
+    outputs:
+      review-passed: ${{ steps.check-review.outputs.passed }}
+
+    steps:
+      - name: Check review results
+        id: check-review
+        run: |
+          if [[ "${{ needs.coderabbit-review.result }}" == "success" ]]; then
+            echo "✅ CodeRabbit review passed"
+            echo "passed=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.coderabbit-review.result }}" == "skipped" ]]; then
+            echo "⏭️ CodeRabbit review skipped (no relevant changes)"
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ CodeRabbit review failed"
+            echo "passed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Review failure notification
+        if: steps.check-review.outputs.passed == 'false' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Code Review Failed**
+
+              The automated code review has identified issues that need to be addressed before this PR can proceed.
+
+              Please:
+              1. Review the CodeRabbit feedback above
+              2. Address the identified issues
+              3. Push your changes to trigger a new review
+
+              ---
+              *This gate is part of our quality assurance process per project rules.*`
+            });

@@ -1,0 +1,107 @@
+# Code Rabbit Configuration for SprintSense
+# This configuration aligns with project rules and coding standards
+
+# Base configuration
+base_branch: main
+comment_mode: review
+enable_auto_review: true
+enable_line_comments: true
+enable_summary_comments: true
+
+# Custom review rules
+rules:
+  # Reference coding standards document per project rule BC73BsemmfLkKZmGzdCOY0
+  - file: docs/architecture.md
+  - file: claude_suggestions.md
+
+  # Custom review criteria
+  - name: "Python Code Quality"
+    pattern: "**/*.py"
+    checks:
+      - "Follow PEP 8 style guidelines"
+      - "Use type hints for function parameters and return values"
+      - "Include docstrings for classes and functions"
+      - "Use Poetry for dependency management (per rule sqHKIFU46esa5UYGyAAL9K)"
+
+  - name: "TypeScript/JavaScript Code Quality"
+    pattern: "**/*.{ts,tsx,js,jsx}"
+    checks:
+      - "Use TypeScript strict mode"
+      - "Follow ESLint and Prettier formatting"
+      - "Include JSDoc comments for complex functions"
+      - "Use proper error handling patterns"
+
+  - name: "API Design"
+    pattern: "backend/app/**/*.py"
+    checks:
+      - "Follow RESTful API conventions"
+      - "Include proper error responses"
+      - "Use Pydantic models for request/response validation"
+
+  - name: "Database Migrations"
+    pattern: "backend/alembic/**/*.py"
+    checks:
+      - "Include rollback instructions in migration comments"
+      - "Test migration reversibility"
+
+# Files and directories to exclude from review
+exclude:
+  - "**/node_modules/**"
+  - "**/.venv/**"
+  - "**/venv/**"
+  - "**/__pycache__/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.pytest_cache/**"
+  - "**/coverage/**"
+  - "**/.nyc_output/**"
+  - "**/*.pyc"
+  - "**/*.pyo"
+  - "**/*.log"
+  - "**/logs/**"
+  - ".git/**"
+  - ".bmad-core/**"
+
+# Include specific file patterns for review
+include:
+  - "**/*.py"
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.vue"
+  - "**/*.sql"
+  - "**/*.yml"
+  - "**/*.yaml"
+  - "**/*.json"
+  - "**/*.md"
+  - "Dockerfile*"
+  - "docker-compose*.yml"
+
+# Review intensity settings
+review_settings:
+  # Thorough review for critical paths
+  high_priority_paths:
+    - "backend/app/api/**"
+    - "backend/app/core/**"
+    - "frontend/src/api/**"
+    - "frontend/src/utils/**"
+    - ".github/workflows/**"
+
+  # Standard review for other code
+  standard_paths:
+    - "backend/app/**"
+    - "frontend/src/**"
+
+  # Light review for tests and docs
+  light_review_paths:
+    - "backend/tests/**"
+    - "frontend/src/**/*.test.*"
+    - "frontend/src/**/*.spec.*"
+    - "docs/**"
+
+# Integration with existing CI/CD (respects rule ktlFUZTBDGfzx5bGDaUqew)
+ci_integration:
+  block_merge_on_issues: true
+  require_approval_for_high_risk_changes: true
+  auto_dismiss_stale_reviews: false
