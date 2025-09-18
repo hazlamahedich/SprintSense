@@ -205,11 +205,20 @@ describe('EditWorkItemForm', () => {
     const user = userEvent.setup()
     const mockOnSave = vi.fn()
 
-    // Mock successful API response
-    mockWorkItemService.updateWorkItem.mockResolvedValueOnce({
-      ...mockWorkItem,
-      title: 'Updated Title',
-    })
+    // Mock successful API response with delay
+    mockWorkItemService.updateWorkItem.mockImplementationOnce(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ...mockWorkItem,
+                title: 'Updated Title',
+              }),
+            100
+          )
+        )
+    )
 
     render(<EditWorkItemForm {...defaultProps} onSave={mockOnSave} />)
 

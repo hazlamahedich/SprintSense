@@ -110,7 +110,8 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
       typeof formState.priority === 'string'
         ? parseFloat(formState.priority)
         : formState.priority
-    if (!isNaN(priorityNum) && priorityNum < 0) {
+    // Only validate if priority is not empty/NaN and has a valid number
+    if (formState.priority !== '' && !isNaN(priorityNum) && priorityNum < 0) {
       newErrors.priority = 'Priority cannot be negative'
     }
 
@@ -190,7 +191,9 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
 
     const finalPriority =
       typeof formState.priority === 'string'
-        ? parseFloat(formState.priority) || 0
+        ? formState.priority === ''
+          ? 0
+          : parseFloat(formState.priority) || 0
         : formState.priority
     if (finalPriority !== workItem.priority) {
       updateRequest.priority = finalPriority
@@ -223,7 +226,9 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
       status: formState.status,
       priority:
         typeof formState.priority === 'string'
-          ? parseFloat(formState.priority) || 0
+          ? formState.priority === ''
+            ? 0
+            : parseFloat(formState.priority) || 0
           : formState.priority,
       story_points:
         formState.story_points === ''
@@ -439,9 +444,10 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
             value={formState.priority}
             onChange={(e) => {
               const value = e.target.value
-              // Allow empty, numbers, negative sign, and decimal points
+              // Allow empty string, negative numbers, and decimal numbers
               if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
-                handleInputChange('priority', value === '' ? 0 : value)
+                // Keep as string during editing to allow proper negative input
+                handleInputChange('priority', value)
               }
             }}
             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${

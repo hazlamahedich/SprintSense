@@ -84,15 +84,22 @@ export const EditWorkItemModal: React.FC<EditWorkItemModalProps> = ({
 
       const handleTabKey = (e: KeyboardEvent) => {
         if (e.key === 'Tab') {
+          const focusableElementsArray = Array.from(
+            focusableElements
+          ) as HTMLElement[]
+          const currentFocusIndex = focusableElementsArray.indexOf(
+            document.activeElement as HTMLElement
+          )
+
           if (e.shiftKey) {
-            // Shift + Tab
-            if (document.activeElement === firstElement) {
+            // Shift + Tab - move backward
+            if (currentFocusIndex <= 0) {
               e.preventDefault()
               lastElement?.focus()
             }
           } else {
-            // Tab
-            if (document.activeElement === lastElement) {
+            // Tab - move forward
+            if (currentFocusIndex >= focusableElementsArray.length - 1) {
               e.preventDefault()
               firstElement?.focus()
             }
@@ -114,6 +121,11 @@ export const EditWorkItemModal: React.FC<EditWorkItemModalProps> = ({
     if (e.target === e.currentTarget) {
       handleClose()
     }
+  }
+
+  // Prevent modal content clicks from closing modal
+  const handleModalContentClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
   }
 
   // Handle form save
@@ -142,14 +154,15 @@ export const EditWorkItemModal: React.FC<EditWorkItemModalProps> = ({
     <div
       className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
     >
       <div
         ref={modalRef}
         className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
         tabIndex={-1}
+        onClick={handleModalContentClick}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
