@@ -34,7 +34,7 @@ interface FormState {
   description: string
   type: WorkItemType
   status: WorkItemStatus
-  priority: number
+  priority: number | string
   story_points: number | ''
   assignee_id: string
 }
@@ -80,7 +80,9 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
       formState.description !== (workItem.description || '') ||
       formState.type !== workItem.type ||
       formState.status !== workItem.status ||
-      formState.priority !== workItem.priority ||
+      (typeof formState.priority === 'string'
+        ? parseFloat(formState.priority) || 0
+        : formState.priority) !== workItem.priority ||
       formState.story_points !== (workItem.story_points || '') ||
       formState.assignee_id !== (workItem.assignee_id || '')
 
@@ -104,7 +106,11 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
     }
 
     // Priority validation
-    if (formState.priority < 0) {
+    const priorityNum =
+      typeof formState.priority === 'string'
+        ? parseFloat(formState.priority)
+        : formState.priority
+    if (!isNaN(priorityNum) && priorityNum < 0) {
       newErrors.priority = 'Priority cannot be negative'
     }
 
@@ -114,7 +120,7 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
     }
 
     return newErrors
-  }, [formState, workItem])
+  }, [formState])
 
   // Real-time validation for save button state and error display
   const currentValidationErrors = React.useMemo(() => {
@@ -182,8 +188,12 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
       updateRequest.status = formState.status
     }
 
-    if (formState.priority !== workItem.priority) {
-      updateRequest.priority = formState.priority
+    const finalPriority =
+      typeof formState.priority === 'string'
+        ? parseFloat(formState.priority) || 0
+        : formState.priority
+    if (finalPriority !== workItem.priority) {
+      updateRequest.priority = finalPriority
     }
 
     if (formState.story_points !== (workItem.story_points || '')) {
@@ -211,7 +221,10 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
       description: formState.description.trim() || undefined,
       type: formState.type,
       status: formState.status,
-      priority: formState.priority,
+      priority:
+        typeof formState.priority === 'string'
+          ? parseFloat(formState.priority) || 0
+          : formState.priority,
       story_points:
         formState.story_points === ''
           ? undefined
@@ -426,13 +439,9 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
             value={formState.priority}
             onChange={(e) => {
               const value = e.target.value
-              if (value === '') {
-                handleInputChange('priority', 0)
-              } else {
-                const parsed = parseFloat(value)
-                if (!isNaN(parsed)) {
-                  handleInputChange('priority', parsed)
-                }
+              // Allow empty, numbers, negative sign, and decimal points
+              if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
+                handleInputChange('priority', value === '' ? 0 : value)
               }
             }}
             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -457,12 +466,18 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
             id="story_points"
             type="number"
             value={formState.story_points}
-            onChange={(e) =>
-              handleInputChange(
-                'story_points',
-                e.target.value === '' ? '' : parseInt(e.target.value)
-              )
-            }
+            onChange={(e) => {
+              const value = e.target.value
+              if (value === '') {
+                handleInputChange('story_points', '')
+              } else {
+                const parsed = parseInt(value)
+                // Allow negative numbers and valid numbers
+                if (!isNaN(parsed) || value === '-') {
+                  handleInputChange('story_points', parsed || 0)
+                }
+              }
+            }}
             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
               errors.story_points ? 'border-red-300' : 'border-gray-300'
             }`}

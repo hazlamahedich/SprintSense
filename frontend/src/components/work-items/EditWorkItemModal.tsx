@@ -8,7 +8,7 @@
  * - Backdrop click handling with unsaved changes protection
  */
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { WorkItem } from '../../types/workItem.types'
 import EditWorkItemForm from './EditWorkItemForm'
 
@@ -33,7 +33,7 @@ export const EditWorkItemModal: React.FC<EditWorkItemModalProps> = ({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   // Handle close with unsaved changes protection
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (hasUnsavedChanges) {
       const confirmed = window.confirm(
         'You have unsaved changes. Are you sure you want to close without saving?'
@@ -44,7 +44,7 @@ export const EditWorkItemModal: React.FC<EditWorkItemModalProps> = ({
     }
     setHasUnsavedChanges(false)
     onClose()
-  }
+  }, [hasUnsavedChanges, onClose])
 
   // Handle escape key
   useEffect(() => {
