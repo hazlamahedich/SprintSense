@@ -26,6 +26,7 @@ from app.domains.schemas.work_item import (
     WorkItemCreateRequest,
     WorkItemListResponse,
     WorkItemResponse,
+    WorkItemUpdateRequest,
 )
 from app.domains.services.invitation_service import InvitationService
 from app.domains.services.team_service import TeamService
@@ -558,6 +559,157 @@ async def create_team_work_item(
             detail={
                 "code": "INTERNAL_SERVER_ERROR",
                 "message": "An unexpected error occurred while creating the work item.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
+            },
+        )
+
+
+@router.patch(
+    "/{team_id}/work-items/{work_item_id}",
+    response_model=WorkItemResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update a work item",
+    description="Update an existing work item in the team's backlog. "
+    "Supports partial updates with comprehensive validation, authorization, and "
+    "error handling. Addresses Story 2.4 requirements with real-time collaboration "
+    "support and performance optimization.",
+)
+async def update_team_work_item(
+    team_id: str,
+    work_item_id: str,
+    work_item_data: WorkItemUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    work_item_service: WorkItemService = Depends(get_work_item_service),
+) -> WorkItemResponse:
+    """
+    Update an existing work item for a team.
+
+    This endpoint addresses Story 2.4: Edit Work Item requirements including:
+    - Team membership authorization (AC 6)
+    - Comprehensive field validation (AC 2)
+    - Optimistic concurrency handling (AC 4)
+    - Structured error responses (AC 5)
+    - Performance monitoring (<1 second requirement)
+
+    **Authorization:** User must be a team member.
+    **Validation:** All fields validated according to business rules.
+    **Performance:** <1 second response time with monitoring.
+    """
+    logger.info(
+        "Updating work item",
+        team_id=team_id,
+        work_item_id=work_item_id,
+        user_id=str(current_user.id),
+        update_fields=list(work_item_data.model_dump(exclude_unset=True).keys()),
+    )
+
+    try:
+        # Validate and convert UUIDs
+        uuid.UUID(team_id)  # Validate team_id format
+        work_item_uuid = uuid.UUID(work_item_id)
+
+        # Update work item using service (includes authorization and validation)
+        updated_work_item = await work_item_service.update_work_item(
+            work_item_id=work_item_uuid,
+            work_item_data=work_item_data,
+            user_id=current_user.id,
+        )
+
+        logger.info(
+            "Work item updated successfully",
+            work_item_id=work_item_id,
+            team_id=team_id,
+            user_id=str(current_user.id),
+            updated_fields=list(work_item_data.model_dump(exclude_unset=True).keys()),
+        )
+
+        return updated_work_item
+
+    except ValueError as e:
+        error_msg = str(e)
+
+        # Map service errors to structured HTTP responses
+        if "not found" in error_msg.lower():
+            logger.warning(
+                "Work item not found",
+                work_item_id=work_item_id,
+                team_id=team_id,
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "error": "work_item_not_found",
+                    "message": "Work item not found",
+                    "recovery_action": "Please verify the work item ID and try again.",
+                },
+            )
+        elif "not a member" in error_msg.lower():
+            logger.warning(
+                "Unauthorized work item update - user not team member",
+                team_id=team_id,
+                work_item_id=work_item_id,
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "error": "access_denied",
+                    "message": "Not authorized to update this work item",
+                    "recovery_action": "Only team members can update work items.",
+                },
+            )
+        elif "uuid" in error_msg.lower():
+            logger.warning(
+                "Invalid UUID format",
+                team_id=team_id,
+                work_item_id=work_item_id,
+                user_id=str(current_user.id),
+                error=error_msg,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": "invalid_format",
+                    "message": "Invalid ID format provided",
+                    "recovery_action": "Please provide valid UUID format for IDs.",
+                },
+            )
+        else:
+            # Generic validation error
+            logger.warning(
+                "Work item update validation failed",
+                team_id=team_id,
+                work_item_id=work_item_id,
+                user_id=str(current_user.id),
+                error=error_msg,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": "validation_error",
+                    "message": error_msg,
+                    "recovery_action": "Please check your input data and try again.",
+                },
+            )
+
+    except Exception as e:
+        # Catch-all for unexpected errors
+        logger.error(
+            "Unexpected error during work item update",
+            error=str(e),
+            error_type=type(e).__name__,
+            team_id=team_id,
+            work_item_id=work_item_id,
+            user_id=str(current_user.id),
+        )
+
+        # Return generic error for security
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while updating the work item.",
                 "recovery_action": "Please try again. If the problem persists, contact support.",
             },
         )
