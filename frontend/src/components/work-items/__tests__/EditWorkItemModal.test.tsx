@@ -239,8 +239,6 @@ describe('EditWorkItemModal', () => {
   })
 
   it('traps focus within modal', async () => {
-    const user = userEvent.setup()
-
     render(<EditWorkItemModal {...defaultProps} />)
 
     // Get focusable elements in the modal
