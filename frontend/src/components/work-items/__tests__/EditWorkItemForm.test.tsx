@@ -4,7 +4,7 @@
  */
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
@@ -65,8 +65,11 @@ describe('EditWorkItemForm', () => {
     expect(
       screen.getByDisplayValue('Test description for work item')
     ).toBeInTheDocument()
-    expect(screen.getByDisplayValue('story')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('backlog')).toBeInTheDocument()
+    // Check select dropdowns have correct values selected
+    expect(screen.getByRole('combobox', { name: /type/i })).toHaveValue('story')
+    expect(screen.getByRole('combobox', { name: /status/i })).toHaveValue(
+      'backlog'
+    )
     expect(screen.getByDisplayValue('3.5')).toBeInTheDocument()
     expect(screen.getByDisplayValue('8')).toBeInTheDocument()
   })
@@ -108,7 +111,6 @@ describe('EditWorkItemForm', () => {
   })
 
   it('validates description length limit (AC2)', async () => {
-    const user = userEvent.setup()
     render(<EditWorkItemForm {...defaultProps} />)
 
     // Enter description exceeding 2000 characters
@@ -116,8 +118,9 @@ describe('EditWorkItemForm', () => {
       name: /description/i,
     })
     const longDescription = 'a'.repeat(2001)
-    await user.clear(descriptionInput)
-    await user.type(descriptionInput, longDescription)
+
+    // Use fireEvent.change for large text to avoid timeout
+    fireEvent.change(descriptionInput, { target: { value: longDescription } })
 
     // Should show validation error
     await waitFor(() => {
@@ -176,7 +179,7 @@ describe('EditWorkItemForm', () => {
 
     // Check character counts are displayed
     expect(screen.getByText('14/200 characters')).toBeInTheDocument() // Title length
-    expect(screen.getByText('33/2000 characters')).toBeInTheDocument() // Description length
+    expect(screen.getByText('30/2000 characters')).toBeInTheDocument() // Description length
   })
 
   it('tracks unsaved changes indicator', async () => {

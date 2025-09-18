@@ -4,7 +4,7 @@
  */
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
@@ -17,7 +17,15 @@ import {
 
 // Mock the EditWorkItemForm component
 vi.mock('../EditWorkItemForm', () => ({
-  default: ({ onSave, onCancel, onError }: any) => (
+  default: ({
+    onSave,
+    onCancel,
+    onError,
+  }: {
+    onSave: (item: { id: string; title: string }) => void
+    onCancel: () => void
+    onError: (error: string) => void
+  }) => (
     <div data-testid="edit-form">
       <button onClick={() => onSave({ id: '123', title: 'Updated' })}>
         Mock Save

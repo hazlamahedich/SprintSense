@@ -32,6 +32,20 @@ export const EditWorkItemModal: React.FC<EditWorkItemModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
+  // Handle close with unsaved changes protection
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      const confirmed = window.confirm(
+        'You have unsaved changes. Are you sure you want to close without saving?'
+      )
+      if (!confirmed) {
+        return
+      }
+    }
+    setHasUnsavedChanges(false)
+    onClose()
+  }
+
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -50,7 +64,7 @@ export const EditWorkItemModal: React.FC<EditWorkItemModalProps> = ({
       document.removeEventListener('keydown', handleEscape)
       document.body.style.overflow = 'unset'
     }
-  }, [isOpen])
+  }, [isOpen, handleClose])
 
   // Focus management
   useEffect(() => {
@@ -87,26 +101,13 @@ export const EditWorkItemModal: React.FC<EditWorkItemModalProps> = ({
       }
 
       modalRef.current.addEventListener('keydown', handleTabKey)
+      const currentModalRef = modalRef.current
 
       return () => {
-        modalRef.current?.removeEventListener('keydown', handleTabKey)
+        currentModalRef?.removeEventListener('keydown', handleTabKey)
       }
     }
   }, [isOpen])
-
-  // Handle close with unsaved changes protection
-  const handleClose = () => {
-    if (hasUnsavedChanges) {
-      const confirmed = window.confirm(
-        'You have unsaved changes. Are you sure you want to close without saving?'
-      )
-      if (!confirmed) {
-        return
-      }
-    }
-    setHasUnsavedChanges(false)
-    onClose()
-  }
 
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent) => {

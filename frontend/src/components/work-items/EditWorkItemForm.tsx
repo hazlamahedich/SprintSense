@@ -87,22 +87,6 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
     setHasUnsavedChanges(hasChanges)
   }, [formState, workItem])
 
-  // Input change handler with validation (AC2)
-  const handleInputChange = useCallback(
-    (
-      field: keyof FormState,
-      value: string | number | WorkItemType | WorkItemStatus
-    ) => {
-      setFormState((prev) => ({ ...prev, [field]: value }))
-
-      // Clear field-specific errors when user starts typing
-      if (errors[field as keyof ValidationErrors]) {
-        setErrors((prev) => ({ ...prev, [field]: undefined }))
-      }
-    },
-    [errors]
-  )
-
   // Comprehensive form validation (AC2)
   const validateForm = useCallback((): ValidationErrors => {
     const newErrors: ValidationErrors = {}
@@ -130,14 +114,49 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
     }
 
     return newErrors
-  }, [formState])
+  }, [formState, workItem])
+
+  // Real-time validation for save button state and error display
+  const currentValidationErrors = React.useMemo(() => {
+    return validateForm()
+  }, [validateForm])
+
+  const hasValidationErrors = Object.keys(currentValidationErrors).length > 0
+
+  // Update errors state when validation changes
+  React.useEffect(() => {
+    // Only show errors if form has been modified (to avoid showing errors on initial load)
+    if (hasUnsavedChanges && hasValidationErrors) {
+      setErrors(currentValidationErrors)
+    } else if (!hasValidationErrors) {
+      setErrors({})
+    }
+  }, [currentValidationErrors, hasValidationErrors, hasUnsavedChanges])
+
+  // Input change handler with validation (AC2)
+  const handleInputChange = useCallback(
+    (
+      field: keyof FormState,
+      value: string | number | WorkItemType | WorkItemStatus
+    ) => {
+      setFormState((prev) => ({ ...prev, [field]: value }))
+
+      // Clear field-specific errors when user starts typing
+      if (errors[field as keyof ValidationErrors]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }))
+      }
+    },
+    [errors]
+  )
 
   // Real-time save with optimistic updates (AC3, AC4)
   const handleSave = useCallback(async () => {
     const validationErrors = validateForm()
 
+    // Always set validation errors to state for display
+    setErrors(validationErrors)
+
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
       return
     }
 
@@ -215,7 +234,7 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
       // Success: replace optimistic update with real data
       setOptimisticUpdate(null)
       onSave(updatedWorkItem)
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Rollback optimistic update (AC4)
       setOptimisticUpdate(null)
       onSave(workItem)
@@ -223,15 +242,24 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
       // Handle structured error responses (AC5)
       let errorMessage = 'Failed to update work item'
 
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail
+      const apiError = error as {
+        response?: {
+          data?: {
+            detail?: string | { message?: string }
+          }
+        }
+        message?: string
+      }
+
+      if (apiError.response?.data?.detail) {
+        const detail = apiError.response.data.detail
         if (typeof detail === 'string') {
           errorMessage = detail
-        } else if (detail.message) {
+        } else if (typeof detail === 'object' && detail.message) {
           errorMessage = detail.message
         }
-      } else if (error.message) {
-        errorMessage = error.message
+      } else if (apiError.message) {
+        errorMessage = apiError.message
       }
 
       setErrors({ general: errorMessage })
@@ -297,7 +325,6 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
             errors.title ? 'border-red-300' : 'border-gray-300'
           }`}
           placeholder="Enter work item title"
-          maxLength={200}
           required
         />
         {errors.title && (
@@ -325,7 +352,6 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
             errors.description ? 'border-red-300' : 'border-gray-300'
           }`}
           placeholder="Enter work item description (optional)"
-          maxLength={2000}
         />
         {errors.description && (
           <p className="mt-1 text-sm text-red-600">{errors.description}</p>
@@ -397,11 +423,18 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
             id="priority"
             type="number"
             step="0.1"
-            min="0"
             value={formState.priority}
-            onChange={(e) =>
-              handleInputChange('priority', parseFloat(e.target.value) || 0)
-            }
+            onChange={(e) => {
+              const value = e.target.value
+              if (value === '') {
+                handleInputChange('priority', 0)
+              } else {
+                const parsed = parseFloat(value)
+                if (!isNaN(parsed)) {
+                  handleInputChange('priority', parsed)
+                }
+              }
+            }}
             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
               errors.priority ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -423,7 +456,6 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
           <input
             id="story_points"
             type="number"
-            min="0"
             value={formState.story_points}
             onChange={(e) =>
               handleInputChange(
@@ -455,9 +487,9 @@ export const EditWorkItemForm: React.FC<EditWorkItemFormProps> = ({
 
         <button
           type="submit"
-          disabled={isSaving || Object.keys(errors).length > 0}
+          disabled={isSaving || hasValidationErrors}
           className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            isSaving || Object.keys(errors).length > 0
+            isSaving || hasValidationErrors
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700'
           }`}

@@ -44,7 +44,15 @@ export const useEditWorkItem = (): UseEditWorkItemResult => {
           errorMessage = err.message
         } else if (typeof err === 'object' && err !== null) {
           // Handle axios errors
-          const axiosError = err as any
+          const axiosError = err as {
+            response?: {
+              data?: {
+                detail?: string
+                message?: string
+              }
+            }
+            message?: string
+          }
           if (axiosError.response?.data?.detail) {
             errorMessage = axiosError.response.data.detail
           } else if (axiosError.response?.data?.message) {
