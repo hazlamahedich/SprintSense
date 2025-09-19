@@ -372,6 +372,10 @@ async def get_team_work_items(
         regex="^(asc|desc)$",
         description="Sort direction (asc, desc)",
     ),
+    include_archived: bool = Query(
+        False,
+        description="Include archived work items in results (default: False)",
+    ),
     current_user: User = Depends(get_current_user),
     work_item_service: WorkItemService = Depends(get_work_item_service),
 ) -> WorkItemListResponse:
@@ -380,8 +384,9 @@ async def get_team_work_items(
 
     **Authorization:** User must be a team member.
     **Pagination:** Maximum 50 items per page.
-    **Filtering:** By status and text search (min 2 chars).
+    **Filtering:** By status and text search (min 2 chars). Archived items excluded by default.
     **Sorting:** By priority, created_at, story_points, or title.
+    **Archived Items:** Excluded by default unless include_archived=true.
     """
     logger.info(
         "Work items list request",
@@ -400,6 +405,7 @@ async def get_team_work_items(
             search=search,
             sort_by=sort_by,
             sort_order=sort_order,
+            include_archived=include_archived,
         )
     except ValueError as e:
         if "not a member" in str(e):

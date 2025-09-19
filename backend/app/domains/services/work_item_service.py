@@ -35,6 +35,7 @@ class WorkItemService:
         search: Optional[str] = None,
         sort_by: str = "priority",
         sort_order: str = "asc",
+        include_archived: bool = False,
     ) -> WorkItemListResponse:
         """
         Get work items for a team with filtering, sorting, and pagination.
@@ -48,6 +49,7 @@ class WorkItemService:
             search: Search in title and description
             sort_by: Field to sort by (priority, created_at, story_points, title)
             sort_order: Sort direction (asc, desc)
+            include_archived: Whether to include archived items (default: False)
 
         Returns:
             WorkItemListResponse with paginated work items
@@ -61,6 +63,10 @@ class WorkItemService:
 
         # Build base query
         query = select(WorkItem).where(WorkItem.team_id == team_id)
+
+        # Exclude archived items by default unless specifically requested
+        if not include_archived:
+            query = query.where(WorkItem.status != WorkItemStatus.ARCHIVED)
 
         # Apply status filter
         if status:
@@ -92,6 +98,11 @@ class WorkItemService:
 
         # Get total count (before pagination)
         count_query = select(WorkItem).where(WorkItem.team_id == team_id)
+
+        # Exclude archived items from count unless specifically requested
+        if not include_archived:
+            count_query = count_query.where(WorkItem.status != WorkItemStatus.ARCHIVED)
+
         if status:
             status_enum = WorkItemStatus(status)
             count_query = count_query.where(WorkItem.status == status_enum)
@@ -286,6 +297,49 @@ class WorkItemService:
         await self.db.commit()
 
         return True
+
+    async def archive_work_item(
+        self,
+        work_item_id: uuid.UUID,
+        user_id: uuid.UUID,
+    ) -> WorkItemResponse:
+        """
+        Archive a work item (soft delete by setting status to archived).
+
+        This method implements Story 2.5 requirements:
+        - Updates status to 'archived' instead of permanent deletion
+        - Maintains all relationships and data integrity
+        - Provides team membership authorization
+        - Returns updated work item for optimistic UI updates
+
+        Args:
+            work_item_id: ID of work item to archive
+            user_id: ID of user making the archival
+
+        Returns:
+            WorkItemResponse: Updated work item with 'archived' status
+
+        Raises:
+            ValueError: If work item not found or user not authorized
+        """
+        # Get existing work item
+        query = select(WorkItem).where(WorkItem.id == work_item_id)
+        result = await self.db.execute(query)
+        work_item = result.scalar_one_or_none()
+
+        if not work_item:
+            raise ValueError("Work item not found")
+
+        # Verify user is team member
+        if not await self._is_team_member(work_item.team_id, user_id):
+            raise ValueError("User is not a member of this team")
+
+        # Archive work item (soft delete)
+        work_item.status = WorkItemStatus.ARCHIVED
+        await self.db.commit()
+        await self.db.refresh(work_item)
+
+        return WorkItemResponse.model_validate(work_item)
 
     async def _is_team_member(self, team_id: uuid.UUID, user_id: uuid.UUID) -> bool:
         """

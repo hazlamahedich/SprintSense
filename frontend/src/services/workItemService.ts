@@ -135,6 +135,16 @@ class WorkItemServiceClass {
   }
 
   /**
+   * Archive (soft delete) a work item.
+   */
+  async archiveWorkItem(teamId: string, workItemId: string): Promise<WorkItem> {
+    const response = await axios.patch(
+      `${this.baseUrl}/${teamId}/work-items/${workItemId}/archive`
+    )
+    return response.data
+  }
+
+  /**
    * Delete a work item.
    */
   async deleteWorkItem(teamId: string, workItemId: string): Promise<void> {

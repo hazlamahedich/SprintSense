@@ -16,12 +16,14 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline'
 import EditWorkItemModal from '../work-items/EditWorkItemModal'
+import DeleteWorkItemButton from '../work-items/DeleteWorkItemButton'
 
 interface BacklogItemProps {
   workItem: WorkItem
   teamId: string
   onEdit?: (workItem: WorkItem) => void
   onDelete: (id: string) => void
+  onArchive?: (id: string) => Promise<void>
   onMove?: (id: string, direction: 'up' | 'down') => void
   showMoveButtons?: boolean
   className?: string
@@ -66,6 +68,7 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
   teamId,
   onEdit,
   onDelete,
+  onArchive,
   onMove,
   showMoveButtons = false,
   className = '',
@@ -159,15 +162,26 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
               >
                 <PencilIcon className="w-4 h-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDelete}
-                className="p-1 h-8 w-8 text-red-600 hover:text-red-800"
-                title="Delete"
-              >
-                <TrashIcon className="w-4 h-4" />
-              </Button>
+              {onArchive ? (
+                <DeleteWorkItemButton
+                  workItemId={workItem.id}
+                  workItemTitle={workItem.title}
+                  teamId={teamId}
+                  onArchive={onArchive}
+                  size="sm"
+                  className="p-1 h-8 w-8"
+                />
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDelete}
+                  className="p-1 h-8 w-8 text-red-600 hover:text-red-800"
+                  title="Delete"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
