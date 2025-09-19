@@ -12,6 +12,7 @@ import {
   WorkItemSort,
   GetWorkItemsResponse,
   SortOrder,
+  PriorityUpdateRequest,
 } from '../types/workItem.types'
 
 interface GetWorkItemsOptions {
@@ -135,10 +136,36 @@ class WorkItemServiceClass {
   }
 
   /**
+   * Archive (soft delete) a work item.
+   */
+  async archiveWorkItem(teamId: string, workItemId: string): Promise<WorkItem> {
+    const response = await axios.patch(
+      `${this.baseUrl}/${teamId}/work-items/${workItemId}/archive`
+    )
+    return response.data
+  }
+
+  /**
    * Delete a work item.
    */
   async deleteWorkItem(teamId: string, workItemId: string): Promise<void> {
     await axios.delete(`${this.baseUrl}/${teamId}/work-items/${workItemId}`)
+  }
+
+  /**
+   * Update work item priority using priority actions.
+   * Implements Story 2.6 requirements for accessible priority management.
+   */
+  async updateWorkItemPriority(
+    teamId: string,
+    workItemId: string,
+    priorityData: PriorityUpdateRequest
+  ): Promise<WorkItem> {
+    const response = await axios.patch(
+      `${this.baseUrl}/${teamId}/work-items/${workItemId}/priority`,
+      priorityData
+    )
+    return response.data
   }
 }
 

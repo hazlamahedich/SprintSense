@@ -94,6 +94,20 @@ export interface ApiError {
   details?: Record<string, unknown>
 }
 
+// Priority action types for Story 2.6
+export enum PriorityAction {
+  MOVE_TO_TOP = 'move_to_top',
+  MOVE_UP = 'move_up',
+  MOVE_DOWN = 'move_down',
+  MOVE_TO_BOTTOM = 'move_to_bottom',
+  SET_POSITION = 'set_position',
+}
+
+export interface PriorityUpdateRequest {
+  action: PriorityAction
+  position?: number // Used with SET_POSITION action
+}
+
 // Store state interfaces
 export interface BacklogState {
   workItems: WorkItem[]

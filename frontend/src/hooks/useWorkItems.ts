@@ -7,9 +7,9 @@ import { useCallback, useEffect } from 'react'
 import { useBacklogStore } from '../stores/backlogStore'
 import {
   WorkItem,
-  WorkItemCreateRequest,
+  CreateWorkItemRequest,
   WorkItemFilters,
-  WorkItemUpdateRequest,
+  UpdateWorkItemRequest,
   WorkItemSort,
   WorkItemPagination,
   ApiError,
@@ -29,10 +29,10 @@ export interface UseWorkItemsReturn {
   // Actions
   loadWorkItems: () => Promise<void>
   refreshWorkItems: () => Promise<void>
-  createWorkItem: (data: WorkItemCreateRequest) => Promise<void>
+  createWorkItem: (data: CreateWorkItemRequest) => Promise<void>
   updateWorkItem: (
     workItemId: string,
-    data: WorkItemUpdateRequest
+    data: UpdateWorkItemRequest
   ) => Promise<void>
   deleteWorkItem: (workItemId: string) => Promise<void>
 
@@ -100,7 +100,7 @@ export const useWorkItems = (teamId?: string): UseWorkItemsReturn => {
   )
 
   const updateWorkItem = useCallback(
-    async (workItemId: string, data: WorkItemUpdateRequest) => {
+    async (workItemId: string, data: UpdateWorkItemRequest) => {
       if (teamId) {
         await storeUpdateWorkItem(teamId, workItemId, data)
       }

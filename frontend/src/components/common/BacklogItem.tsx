@@ -16,14 +16,23 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline'
 import EditWorkItemModal from '../work-items/EditWorkItemModal'
+import DeleteWorkItemButton from '../work-items/DeleteWorkItemButton'
+import PriorityControls from '../feature/backlog/PriorityControls'
 
 interface BacklogItemProps {
   workItem: WorkItem
   teamId: string
   onEdit?: (workItem: WorkItem) => void
   onDelete: (id: string) => void
+  onArchive?: (id: string) => Promise<void>
   onMove?: (id: string, direction: 'up' | 'down') => void
   showMoveButtons?: boolean
+  showPriorityControls?: boolean
+  currentPosition?: number
+  totalItems?: number
+  onPriorityUpdateSuccess?: (updatedWorkItem: WorkItem) => void
+  onPriorityUpdateError?: (error: string) => void
+  onPriorityUpdateConflict?: (conflictMessage: string) => void
   className?: string
 }
 
@@ -66,8 +75,15 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
   teamId,
   onEdit,
   onDelete,
+  onArchive,
   onMove,
   showMoveButtons = false,
+  showPriorityControls = false,
+  currentPosition,
+  totalItems,
+  onPriorityUpdateSuccess,
+  onPriorityUpdateError,
+  onPriorityUpdateConflict,
   className = '',
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -128,6 +144,18 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
               </Badge>
             </div>
             <div className="flex items-center gap-1">
+              {showPriorityControls && currentPosition && totalItems && (
+                <PriorityControls
+                  workItem={workItem}
+                  teamId={teamId}
+                  currentPosition={currentPosition}
+                  totalItems={totalItems}
+                  onSuccess={onPriorityUpdateSuccess}
+                  onError={onPriorityUpdateError}
+                  onConflict={onPriorityUpdateConflict}
+                  compact
+                />
+              )}
               {showMoveButtons && onMove && (
                 <>
                   <Button
@@ -159,15 +187,26 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
               >
                 <PencilIcon className="w-4 h-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDelete}
-                className="p-1 h-8 w-8 text-red-600 hover:text-red-800"
-                title="Delete"
-              >
-                <TrashIcon className="w-4 h-4" />
-              </Button>
+              {onArchive ? (
+                <DeleteWorkItemButton
+                  workItemId={workItem.id}
+                  workItemTitle={workItem.title}
+                  teamId={teamId}
+                  onArchive={onArchive}
+                  size="sm"
+                  className="p-1 h-8 w-8"
+                />
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDelete}
+                  className="p-1 h-8 w-8 text-red-600 hover:text-red-800"
+                  title="Delete"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>

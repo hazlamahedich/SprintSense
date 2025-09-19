@@ -35,6 +35,7 @@ class WorkItemService:
         search: Optional[str] = None,
         sort_by: str = "priority",
         sort_order: str = "asc",
+        include_archived: bool = False,
     ) -> WorkItemListResponse:
         """
         Get work items for a team with filtering, sorting, and pagination.
@@ -48,6 +49,7 @@ class WorkItemService:
             search: Search in title and description
             sort_by: Field to sort by (priority, created_at, story_points, title)
             sort_order: Sort direction (asc, desc)
+            include_archived: Whether to include archived items (default: False)
 
         Returns:
             WorkItemListResponse with paginated work items
@@ -61,6 +63,10 @@ class WorkItemService:
 
         # Build base query
         query = select(WorkItem).where(WorkItem.team_id == team_id)
+
+        # Exclude archived items by default unless specifically requested
+        if not include_archived:
+            query = query.where(WorkItem.status != WorkItemStatus.ARCHIVED)
 
         # Apply status filter
         if status:
@@ -92,6 +98,11 @@ class WorkItemService:
 
         # Get total count (before pagination)
         count_query = select(WorkItem).where(WorkItem.team_id == team_id)
+
+        # Exclude archived items from count unless specifically requested
+        if not include_archived:
+            count_query = count_query.where(WorkItem.status != WorkItemStatus.ARCHIVED)
+
         if status:
             status_enum = WorkItemStatus(status)
             count_query = count_query.where(WorkItem.status == status_enum)
@@ -286,6 +297,266 @@ class WorkItemService:
         await self.db.commit()
 
         return True
+
+    async def archive_work_item(
+        self,
+        work_item_id: uuid.UUID,
+        user_id: uuid.UUID,
+    ) -> WorkItemResponse:
+        """
+        Archive a work item (soft delete by setting status to archived).
+
+        This method implements Story 2.5 requirements:
+        - Updates status to 'archived' instead of permanent deletion
+        - Maintains all relationships and data integrity
+        - Provides team membership authorization
+        - Returns updated work item for optimistic UI updates
+
+        Args:
+            work_item_id: ID of work item to archive
+            user_id: ID of user making the archival
+
+        Returns:
+            WorkItemResponse: Updated work item with 'archived' status
+
+        Raises:
+            ValueError: If work item not found or user not authorized
+        """
+        # Get existing work item
+        query = select(WorkItem).where(WorkItem.id == work_item_id)
+        result = await self.db.execute(query)
+        work_item = result.scalar_one_or_none()
+
+        if not work_item:
+            raise ValueError("Work item not found")
+
+        # Verify user is team member
+        if not await self._is_team_member(work_item.team_id, user_id):
+            raise ValueError("User is not a member of this team")
+
+        # Archive work item (soft delete)
+        work_item.status = WorkItemStatus.ARCHIVED
+        await self.db.commit()
+        await self.db.refresh(work_item)
+
+        return WorkItemResponse.model_validate(work_item)
+
+    async def update_work_item_priority(
+        self,
+        work_item_id: uuid.UUID,
+        priority_data,  # PriorityUpdateRequest - import added below
+        user_id: uuid.UUID,
+    ) -> WorkItemResponse:
+        """
+        Update work item priority based on the specified action.
+
+        This method implements Story 2.6 requirements:
+        - Handles move_to_top, move_up, move_down, move_to_bottom actions
+        - Implements conflict detection for concurrent changes
+        - Uses atomic transactions for priority recalculation
+        - Provides proper error handling for edge cases
+
+        Args:
+            work_item_id: ID of work item to update
+            priority_data: Priority update request with action
+            user_id: ID of user making the update
+
+        Returns:
+            WorkItemResponse: Updated work item with new priority
+
+        Raises:
+            ValueError: If work item not found or user not authorized
+            HTTPException: 409 if concurrent update conflict detected
+            RuntimeError: If priority recalculation fails after retries
+        """
+        max_retries = 3
+
+        for attempt in range(max_retries):
+            try:
+                async with self.db.begin():
+                    # Get work item with row lock to prevent concurrent updates
+                    query = (
+                        select(WorkItem)
+                        .where(WorkItem.id == work_item_id)
+                        .with_for_update()
+                    )
+                    result = await self.db.execute(query)
+                    work_item = result.scalar_one_or_none()
+
+                    if not work_item:
+                        raise ValueError("Work item not found")
+
+                    # Verify user is team member
+                    if not await self._is_team_member(work_item.team_id, user_id):
+                        raise ValueError("User is not a member of this team")
+
+                    # Get current priority-ordered list of team work items (excluding archived)
+                    ordered_items_query = (
+                        select(WorkItem)
+                        .where(
+                            and_(
+                                WorkItem.team_id == work_item.team_id,
+                                WorkItem.status != WorkItemStatus.ARCHIVED,
+                            )
+                        )
+                        .order_by(WorkItem.priority.asc())
+                    )
+                    result = await self.db.execute(ordered_items_query)
+                    ordered_items = result.scalars().all()
+
+                    # Find current position of the work item
+                    current_position = None
+                    for i, item in enumerate(ordered_items):
+                        if item.id == work_item_id:
+                            current_position = i
+                            break
+
+                    if current_position is None:
+                        raise ValueError("Work item not found in team priority list")
+
+                    # Calculate new priority based on action
+                    new_priority = await self._calculate_new_priority(
+                        priority_data.action,
+                        current_position,
+                        ordered_items,
+                        priority_data.position,
+                    )
+
+                    # Handle edge cases with appropriate messages
+                    if (
+                        priority_data.action == "move_up" and current_position == 0
+                    ) or (
+                        priority_data.action == "move_to_top" and current_position == 0
+                    ):
+                        # Item is already at top - no change needed but return success
+                        return WorkItemResponse.model_validate(work_item)
+
+                    if (
+                        priority_data.action == "move_down"
+                        and current_position == len(ordered_items) - 1
+                    ) or (
+                        priority_data.action == "move_to_bottom"
+                        and current_position == len(ordered_items) - 1
+                    ):
+                        # Item is already at bottom - no change needed but return success
+                        return WorkItemResponse.model_validate(work_item)
+
+                    # Update the work item priority
+                    work_item.priority = new_priority
+
+                    # Transaction commits automatically at end of async with block
+
+                # Refresh to get updated timestamps
+                await self.db.refresh(work_item)
+                return WorkItemResponse.model_validate(work_item)
+
+            except Exception as e:
+                # Handle database constraint violations or race conditions
+                if attempt == max_retries - 1:
+                    if "connection" in str(e).lower():
+                        raise DatabaseError.connection_error() from e
+                    elif (
+                        "constraint" in str(e).lower()
+                        or "serialization failure" in str(e).lower()
+                    ):
+                        # Concurrent update detected - return 409 conflict
+                        from fastapi import HTTPException, status
+
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail={
+                                "error": "Priority update conflict",
+                                "message": "Another user updated the priority. Please refresh and try again.",
+                                "code": "CONCURRENT_UPDATE",
+                            },
+                        ) from e
+                    else:
+                        raise RuntimeError(
+                            f"Priority update failed after {max_retries} attempts"
+                        ) from e
+                # Retry for race conditions
+                continue
+
+        # This should never be reached, but satisfy type checker
+        raise RuntimeError(f"Priority update failed after {max_retries} attempts")
+
+    async def _calculate_new_priority(
+        self,
+        action: str,
+        current_position: int,
+        ordered_items: list,
+        target_position: Optional[int] = None,
+    ) -> float:
+        """
+        Calculate new priority value based on action and current team priority list.
+
+        Uses priority gaps strategy to minimize cascading updates:
+        - Uses gaps of 1000 between items when possible
+        - Falls back to midpoint calculation when gaps are small
+
+        Args:
+            action: Priority action (move_to_top, move_up, etc.)
+            current_position: Current 0-based position in ordered list
+            ordered_items: List of work items ordered by priority
+            target_position: Target position for SET_POSITION (1-based)
+
+        Returns:
+            float: New priority value
+        """
+        if action == "move_to_top":
+            if len(ordered_items) == 0 or current_position == 0:
+                return ordered_items[0].priority if ordered_items else 1000.0
+            # Priority lower than current top item
+            top_priority = ordered_items[0].priority
+            return top_priority - 1000.0
+
+        elif action == "move_to_bottom":
+            if len(ordered_items) == 0 or current_position == len(ordered_items) - 1:
+                return ordered_items[-1].priority if ordered_items else 1000.0
+            # Priority higher than current bottom item
+            bottom_priority = ordered_items[-1].priority
+            return bottom_priority + 1000.0
+
+        elif action == "move_up":
+            if current_position == 0:
+                return ordered_items[current_position].priority  # No change
+            # Move between current-1 and current position
+            prev_item = ordered_items[current_position - 1]
+            current_item = ordered_items[current_position]
+            return (prev_item.priority + current_item.priority) / 2.0
+
+        elif action == "move_down":
+            if current_position == len(ordered_items) - 1:
+                return ordered_items[current_position].priority  # No change
+            # Move between current and current+1 position
+            current_item = ordered_items[current_position]
+            next_item = ordered_items[current_position + 1]
+            return (current_item.priority + next_item.priority) / 2.0
+
+        elif action == "set_position" and target_position is not None:
+            # Convert 1-based to 0-based position
+            target_idx = target_position - 1
+            if target_idx < 0:
+                target_idx = 0
+            elif target_idx >= len(ordered_items):
+                target_idx = len(ordered_items) - 1
+
+            if target_idx == 0:
+                # Moving to top
+                top_priority = ordered_items[0].priority
+                return top_priority - 1000.0
+            elif target_idx == len(ordered_items) - 1:
+                # Moving to bottom
+                bottom_priority = ordered_items[-1].priority
+                return bottom_priority + 1000.0
+            else:
+                # Moving to middle position
+                prev_item = ordered_items[target_idx - 1]
+                next_item = ordered_items[target_idx]
+                return (prev_item.priority + next_item.priority) / 2.0
+
+        else:
+            raise ValueError(f"Unknown priority action: {action}")
 
     async def _is_team_member(self, team_id: uuid.UUID, user_id: uuid.UUID) -> bool:
         """

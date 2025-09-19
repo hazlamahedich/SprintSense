@@ -23,6 +23,7 @@ from app.domains.schemas.invitation import (
 )
 from app.domains.schemas.team import TeamCreateRequest, TeamCreateResponse
 from app.domains.schemas.work_item import (
+    PriorityUpdateRequest,
     WorkItemCreateRequest,
     WorkItemListResponse,
     WorkItemResponse,
@@ -130,6 +131,55 @@ async def create_team(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error during team creation",
+        )
+
+
+@router.patch(
+    "/{team_id}/work-items/{work_item_id}/priority",
+    response_model=WorkItemResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update work item priority",
+    description="Update priority of a work item using actions like move_to_top, move_up, move_down, move_to_bottom, or set_position.",
+)
+async def update_work_item_priority(
+    team_id: uuid.UUID,
+    work_item_id: uuid.UUID,
+    priority_data: PriorityUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    work_item_service: WorkItemService = Depends(get_work_item_service),
+) -> WorkItemResponse:
+    """Update work item priority for a team work item.
+
+    Ensures the user is authenticated; authorization is enforced in the service by verifying
+    team membership. Returns the updated work item on success. May return 409 on conflict.
+    """
+    try:
+        updated = await work_item_service.update_work_item_priority(
+            work_item_id=work_item_id,
+            priority_data=priority_data,
+            user_id=current_user.id,
+        )
+        return updated
+    except HTTPException:
+        # pass through HTTP exceptions like 409
+        raise
+    except (AuthorizationError, ValidationError) as e:
+        logger.warning(
+            "Priority update failed", error=str(e), work_item_id=str(work_item_id)
+        )
+        raise HTTPException(
+            status_code=get_http_status_for_error_code(e.code),
+            detail=format_error_response(e),
+        )
+    except Exception as e:
+        logger.error(
+            "Unexpected error updating priority",
+            error=str(e),
+            work_item_id=str(work_item_id),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Failed to update priority"},
         )
 
 
@@ -372,6 +422,10 @@ async def get_team_work_items(
         regex="^(asc|desc)$",
         description="Sort direction (asc, desc)",
     ),
+    include_archived: bool = Query(
+        False,
+        description="Include archived work items in results (default: False)",
+    ),
     current_user: User = Depends(get_current_user),
     work_item_service: WorkItemService = Depends(get_work_item_service),
 ) -> WorkItemListResponse:
@@ -380,8 +434,9 @@ async def get_team_work_items(
 
     **Authorization:** User must be a team member.
     **Pagination:** Maximum 50 items per page.
-    **Filtering:** By status and text search (min 2 chars).
+    **Filtering:** By status and text search (min 2 chars). Archived items excluded by default.
     **Sorting:** By priority, created_at, story_points, or title.
+    **Archived Items:** Excluded by default unless include_archived=true.
     """
     logger.info(
         "Work items list request",
@@ -400,6 +455,7 @@ async def get_team_work_items(
             search=search,
             sort_by=sort_by,
             sort_order=sort_order,
+            include_archived=include_archived,
         )
     except ValueError as e:
         if "not a member" in str(e):
