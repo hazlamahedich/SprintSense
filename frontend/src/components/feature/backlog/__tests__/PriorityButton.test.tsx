@@ -229,7 +229,7 @@ describe('PriorityButton', () => {
     renderWithTheme(<PriorityButton {...defaultProps} />)
 
     const button = screen.getByRole('button')
-    const style = window.getComputedStyle(button)
+    window.getComputedStyle(button)
 
     // Note: These values come from the sx prop in the component
     expect(button).toHaveStyle({

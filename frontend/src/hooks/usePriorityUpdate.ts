@@ -62,7 +62,7 @@ export const usePriorityUpdate = (
         }
 
         return updatedItem
-      } catch (err: any) {
+      } catch (error: unknown) {
         const errorMessage =
           err.response?.data?.detail || err.message || 'Priority update failed'
         setError(errorMessage)

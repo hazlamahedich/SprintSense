@@ -3,40 +3,80 @@
  */
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 import { ConfirmDeleteModal } from '../ConfirmDeleteModal'
 
+// TypeScript interfaces for mocked components
+interface DialogProps {
+  children: React.ReactNode
+  open: boolean
+  onOpenChange: () => void
+}
+
+interface DialogContentProps {
+  children: React.ReactNode
+  onKeyDown?: (e: React.KeyboardEvent) => void
+  [key: string]: unknown
+}
+
+interface ComponentWithChildren {
+  children: React.ReactNode
+}
+
+interface ComponentWithId extends ComponentWithChildren {
+  id?: string
+}
+
+interface ComponentWithClassName extends ComponentWithChildren {
+  className?: string
+}
+
+interface ButtonProps extends ComponentWithChildren {
+  onClick?: () => void
+  disabled?: boolean
+  variant?: string
+  ref?: React.Ref<HTMLButtonElement>
+  [key: string]: unknown
+}
+
 // Mock the dialog components to simplify testing
 vi.mock('../../ui/dialog', () => ({
-  Dialog: ({ children, open, onOpenChange }: any) => (
+  Dialog: ({ children, open, onOpenChange }: DialogProps) => (
     <div data-testid="dialog" data-open={open} onClick={onOpenChange}>
       {open && children}
     </div>
   ),
-  DialogContent: ({ children, onKeyDown, ...props }: any) => (
+  DialogContent: ({ children, onKeyDown, ...props }: DialogContentProps) => (
     <div data-testid="dialog-content" onKeyDown={onKeyDown} {...props}>
       {children}
     </div>
   ),
-  DialogHeader: ({ children }: any) => (
+  DialogHeader: ({ children }: ComponentWithChildren) => (
     <div data-testid="dialog-header">{children}</div>
   ),
-  DialogTitle: ({ children, id }: any) => (
+  DialogTitle: ({ children, id }: ComponentWithId) => (
     <h2 data-testid="dialog-title" id={id}>
       {children}
     </h2>
   ),
-  DialogFooter: ({ children }: any) => (
+  DialogFooter: ({ children }: ComponentWithChildren) => (
     <div data-testid="dialog-footer">{children}</div>
   ),
 }))
 
 // Mock the UI components
 vi.mock('../../ui/button', () => ({
-  Button: ({ children, onClick, disabled, variant, ref, ...props }: any) => (
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    variant,
+    ref,
+    ...props
+  }: ButtonProps) => (
     <button
       ref={ref}
       onClick={onClick}
@@ -51,12 +91,12 @@ vi.mock('../../ui/button', () => ({
 }))
 
 vi.mock('../../ui/alert', () => ({
-  Alert: ({ children, className }: any) => (
+  Alert: ({ children, className }: ComponentWithClassName) => (
     <div data-testid="alert" className={className}>
       {children}
     </div>
   ),
-  AlertDescription: ({ children, id }: any) => (
+  AlertDescription: ({ children, id }: ComponentWithId) => (
     <div data-testid="alert-description" id={id}>
       {children}
     </div>

@@ -22,7 +22,7 @@ interface DeleteWorkItemButtonProps {
 export const DeleteWorkItemButton: React.FC<DeleteWorkItemButtonProps> = ({
   workItemId,
   workItemTitle,
-  teamId,
+  teamId: _teamId,
   onArchive,
   disabled = false,
   className = '',

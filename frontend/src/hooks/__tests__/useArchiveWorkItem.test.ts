@@ -17,7 +17,10 @@ vi.mock('../../services/workItemService', () => ({
 }))
 
 // Get the mocked functions
-const mockWorkItemService = workItemService as any
+const mockWorkItemService = workItemService as {
+  getWorkItem: ReturnType<typeof vi.fn>
+  archiveWorkItem: ReturnType<typeof vi.fn>
+}
 
 describe('useArchiveWorkItem', () => {
   const teamId = 'test-team-id'
@@ -96,7 +99,7 @@ describe('useArchiveWorkItem', () => {
     await act(async () => {
       try {
         await result.current.archiveWorkItem(workItemId)
-      } catch (error) {
+      } catch (_error) {
         // Expected to fail
       }
     })

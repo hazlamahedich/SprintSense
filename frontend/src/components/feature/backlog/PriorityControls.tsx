@@ -61,7 +61,7 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
       })
       onSuccess?.(updatedItem)
     },
-    onError: (errorMessage) => {
+    onError: (_error) => {
       setSnackbar({
         open: true,
         message: errorMessage,
