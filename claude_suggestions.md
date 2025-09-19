@@ -199,6 +199,72 @@ Provide specific improvement recommendations with code examples.
 
 **Minimum Acceptable Score**: 7/10
 
+## QA Gate Documentation Standards
+
+### Format Standardization (Updated: 2025-09-19)
+
+**Requirement**: All QA gate documents must use YAML format and be stored in `docs/qa/gates/` directory.
+
+#### Standard YAML Structure
+
+QA gate documents should follow this schema:
+
+```yaml
+schema: 1
+story: '[STORY_NUMBER]'
+story_title: '[STORY_TITLE]'
+gate: PASS|FAIL
+status_reason: '[DETAILED_JUSTIFICATION]'
+reviewer: '[QA_ARCHITECT_NAME]'
+updated: '[ISO_TIMESTAMP]'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: [0-100]
+expires: '[ISO_TIMESTAMP]'
+
+evidence:
+  tests_reviewed: { count: [NUMBER] }
+  risks_identified: { count: [NUMBER] }
+  trace:
+    ac_covered: [AC_NUMBERS]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS|FAIL
+    notes: '[SECURITY_ASSESSMENT]'
+  performance:
+    status: PASS|FAIL
+    notes: '[PERFORMANCE_ASSESSMENT]'
+  reliability:
+    status: PASS|FAIL
+    notes: '[RELIABILITY_ASSESSMENT]'
+  maintainability:
+    status: PASS|FAIL
+    notes: '[MAINTAINABILITY_ASSESSMENT]'
+
+recommendations:
+  immediate: []
+  resolved: []
+  future: []
+```
+
+#### Naming Convention
+
+- File format: `[STORY_NUMBER]-[STORY_SLUG].yml`
+- Examples: `2.5-soft-delete-work-item.yml`, `2.6-manual-prioritization.yml`
+- Location: `docs/qa/gates/`
+
+#### Quality Standards Compliance
+
+✅ **COMPLETED**: Stories 2.5 and 2.6 QA gate documents have been converted from Markdown to standardized YAML format
+- Maintains all original quality assessment data
+- Follows established YAML schema from existing gate documents
+- Validated YAML syntax with Python yaml parser
+- Original Markdown files removed to prevent format inconsistency
+
 ### Continuous Improvement Process
 
 #### Weekly Quality Reviews
