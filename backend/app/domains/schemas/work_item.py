@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -159,3 +160,31 @@ class WorkItemListResponse(BaseModel):
     size: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PriorityAction(str, Enum):
+    """Enum for priority change actions."""
+
+    MOVE_TO_TOP = "move_to_top"
+    MOVE_UP = "move_up"
+    MOVE_DOWN = "move_down"
+    MOVE_TO_BOTTOM = "move_to_bottom"
+    SET_POSITION = "set_position"
+
+
+class PriorityUpdateRequest(BaseModel):
+    """Schema for work item priority update request."""
+
+    action: PriorityAction
+    position: Optional[int] = None  # Used with SET_POSITION action
+
+    @field_validator("position")
+    @classmethod
+    def validate_position(cls, v: Optional[int], info) -> Optional[int]:
+        """Validate position when action is SET_POSITION."""
+        if info.data.get("action") == PriorityAction.SET_POSITION:
+            if v is None:
+                raise ValueError("Position is required for SET_POSITION action")
+            if v < 1:
+                raise ValueError("Position must be positive (1-based index)")
+        return v

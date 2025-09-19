@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline'
 import EditWorkItemModal from '../work-items/EditWorkItemModal'
 import DeleteWorkItemButton from '../work-items/DeleteWorkItemButton'
+import PriorityControls from '../feature/backlog/PriorityControls'
 
 interface BacklogItemProps {
   workItem: WorkItem
@@ -26,6 +27,12 @@ interface BacklogItemProps {
   onArchive?: (id: string) => Promise<void>
   onMove?: (id: string, direction: 'up' | 'down') => void
   showMoveButtons?: boolean
+  showPriorityControls?: boolean
+  currentPosition?: number
+  totalItems?: number
+  onPriorityUpdateSuccess?: (updatedWorkItem: WorkItem) => void
+  onPriorityUpdateError?: (error: string) => void
+  onPriorityUpdateConflict?: (conflictMessage: string) => void
   className?: string
 }
 
@@ -71,6 +78,12 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
   onArchive,
   onMove,
   showMoveButtons = false,
+  showPriorityControls = false,
+  currentPosition,
+  totalItems,
+  onPriorityUpdateSuccess,
+  onPriorityUpdateError,
+  onPriorityUpdateConflict,
   className = '',
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -131,6 +144,18 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
               </Badge>
             </div>
             <div className="flex items-center gap-1">
+              {showPriorityControls && currentPosition && totalItems && (
+                <PriorityControls
+                  workItem={workItem}
+                  teamId={teamId}
+                  currentPosition={currentPosition}
+                  totalItems={totalItems}
+                  onSuccess={onPriorityUpdateSuccess}
+                  onError={onPriorityUpdateError}
+                  onConflict={onPriorityUpdateConflict}
+                  compact
+                />
+              )}
               {showMoveButtons && onMove && (
                 <>
                   <Button
