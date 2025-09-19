@@ -4,12 +4,14 @@ Analyze BMad Method dependencies to find missing referenced documents.
 This script identifies files referenced by the bmad method but not present in the filesystem.
 """
 
+import json
 import os
 import re
-import yaml
 from pathlib import Path
-from typing import Dict, Set, List, Tuple
-import json
+from typing import Dict, List, Set, Tuple
+
+import yaml
+
 
 class BmadDependencyAnalyzer:
     def __init__(self, bmad_core_path: str):
@@ -21,7 +23,7 @@ class BmadDependencyAnalyzer:
 
     def extract_yaml_from_markdown(self, content: str) -> Dict:
         """Extract YAML block from markdown content."""
-        yaml_pattern = r'```yaml\n(.*?)\n```'
+        yaml_pattern = r"```yaml\n(.*?)\n```"
         match = re.search(yaml_pattern, content, re.DOTALL)
         if match:
             try:
@@ -46,8 +48,8 @@ class BmadDependencyAnalyzer:
             content = agent_file.read_text()
             yaml_data = self.extract_yaml_from_markdown(content)
 
-            if 'dependencies' in yaml_data:
-                deps = yaml_data['dependencies']
+            if "dependencies" in yaml_data:
+                deps = yaml_data["dependencies"]
                 for category, files in deps.items():
                     if isinstance(files, list):
                         for file_name in files:
@@ -55,15 +57,18 @@ class BmadDependencyAnalyzer:
                             self.add_reference(full_path, f"agent:{agent_file.name}")
 
             # Also check commands for template references
-            if 'commands' in yaml_data:
-                commands = yaml_data['commands']
+            if "commands" in yaml_data:
+                commands = yaml_data["commands"]
                 for cmd in commands:
-                    if isinstance(cmd, str) and '{template}' in cmd:
+                    if isinstance(cmd, str) and "{template}" in cmd:
                         # This command uses templates, add all templates as potential references
                         templates_dir = self.bmad_core / "templates"
                         if templates_dir.exists():
                             for tmpl in templates_dir.glob("*.yaml"):
-                                self.add_reference(f"templates/{tmpl.name}", f"agent:{agent_file.name}:command")
+                                self.add_reference(
+                                    f"templates/{tmpl.name}",
+                                    f"agent:{agent_file.name}:command",
+                                )
 
     def parse_core_config(self):
         """Parse core-config.yaml for document references."""
@@ -72,19 +77,19 @@ class BmadDependencyAnalyzer:
             config = yaml.safe_load(config_file.read_text())
 
             # Check for file references in config
-            file_keys = ['prdFile', 'architectureFile', 'devDebugLog']
+            file_keys = ["prdFile", "architectureFile", "devDebugLog"]
             for key in file_keys:
                 if key in config:
                     self.add_reference(config[key], "core-config.yaml")
 
             # Check devLoadAlwaysFiles
-            if 'devLoadAlwaysFiles' in config and config['devLoadAlwaysFiles']:
-                for file_path in config['devLoadAlwaysFiles']:
+            if "devLoadAlwaysFiles" in config and config["devLoadAlwaysFiles"]:
+                for file_path in config["devLoadAlwaysFiles"]:
                     self.add_reference(file_path, "core-config.yaml:devLoadAlwaysFiles")
 
     def scan_templates_for_references(self):
         """Scan template and workflow files for nested references."""
-        for category in ['templates', 'workflows', 'tasks', 'checklists', 'data']:
+        for category in ["templates", "workflows", "tasks", "checklists", "data"]:
             category_dir = self.bmad_core / category
             if category_dir.exists():
                 for file_path in category_dir.glob("*.md"):
@@ -98,17 +103,19 @@ class BmadDependencyAnalyzer:
             content = file_path.read_text()
 
             # Look for .md file references
-            md_refs = re.findall(r'([a-zA-Z0-9_-]+\.md)', content)
+            md_refs = re.findall(r"([a-zA-Z0-9_-]+\.md)", content)
             for ref in md_refs:
                 self.add_reference(ref, f"{source_category}:{file_path.name}")
 
             # Look for .yaml/.yml file references
-            yaml_refs = re.findall(r'([a-zA-Z0-9_-]+\.ya?ml)', content)
+            yaml_refs = re.findall(r"([a-zA-Z0-9_-]+\.ya?ml)", content)
             for ref in yaml_refs:
                 self.add_reference(ref, f"{source_category}:{file_path.name}")
 
             # Look for bmad-core path references
-            bmad_refs = re.findall(r'\.bmad-core/([a-zA-Z0-9_/-]+\.(md|ya?ml))', content)
+            bmad_refs = re.findall(
+                r"\.bmad-core/([a-zA-Z0-9_/-]+\.(md|ya?ml))", content
+            )
             for ref, ext in bmad_refs:
                 self.add_reference(ref, f"{source_category}:{file_path.name}")
 
@@ -119,7 +126,7 @@ class BmadDependencyAnalyzer:
         """Build set of files that actually exist in the filesystem."""
         for root, dirs, files in os.walk(self.bmad_core):
             for file in files:
-                if file.endswith(('.md', '.yaml', '.yml')):
+                if file.endswith((".md", ".yaml", ".yml")):
                     rel_path = Path(root).relative_to(self.bmad_core) / file
                     self.actual_files.add(str(rel_path))
 
@@ -128,7 +135,7 @@ class BmadDependencyAnalyzer:
         if docs_dir.exists():
             for root, dirs, files in os.walk(docs_dir):
                 for file in files:
-                    if file.endswith(('.md', '.yaml', '.yml')):
+                    if file.endswith((".md", ".yaml", ".yml")):
                         rel_path = Path(root).relative_to(self.bmad_core.parent) / file
                         self.actual_files.add(str(rel_path))
 
@@ -138,9 +145,9 @@ class BmadDependencyAnalyzer:
             # Try different path variations
             variations = [
                 ref_file,
-                ref_file.replace('/', os.sep),
+                ref_file.replace("/", os.sep),
                 f".bmad-core/{ref_file}",
-                ref_file.split('/')[-1] if '/' in ref_file else ref_file
+                ref_file.split("/")[-1] if "/" in ref_file else ref_file,
             ]
 
             found = False
@@ -172,11 +179,13 @@ class BmadDependencyAnalyzer:
                 elif "template" in ref_file or "tmpl" in ref_file:
                     category = "template"
 
-                self.missing_files.append({
-                    'file': ref_file,
-                    'category': category,
-                    'referenced_by': self.references_map.get(ref_file, [])
-                })
+                self.missing_files.append(
+                    {
+                        "file": ref_file,
+                        "category": category,
+                        "referenced_by": self.references_map.get(ref_file, []),
+                    }
+                )
 
     def generate_report(self) -> str:
         """Generate a comprehensive markdown report."""
@@ -191,13 +200,15 @@ class BmadDependencyAnalyzer:
         report.append("")
 
         if not self.missing_files:
-            report.append("✅ **Good news!** All referenced files appear to exist in the filesystem.")
+            report.append(
+                "✅ **Good news!** All referenced files appear to exist in the filesystem."
+            )
             return "\n".join(report)
 
         # Group by category
         by_category = {}
         for item in self.missing_files:
-            category = item['category']
+            category = item["category"]
             if category not in by_category:
                 by_category[category] = []
             by_category[category].append(item)
@@ -212,9 +223,11 @@ class BmadDependencyAnalyzer:
             report.append("|------|---------------|----------------|")
 
             for file_info in files:
-                file_name = file_info['file']
-                refs = ", ".join(file_info['referenced_by'][:3])  # Limit to 3 refs for readability
-                if len(file_info['referenced_by']) > 3:
+                file_name = file_info["file"]
+                refs = ", ".join(
+                    file_info["referenced_by"][:3]
+                )  # Limit to 3 refs for readability
+                if len(file_info["referenced_by"]) > 3:
                     refs += f" (+{len(file_info['referenced_by'])-3} more)"
 
                 # Infer purpose from filename
@@ -226,9 +239,15 @@ class BmadDependencyAnalyzer:
 
         report.append("## Recommendations")
         report.append("")
-        report.append("1. **Create missing files**: Start with the most referenced files")
-        report.append("2. **Update references**: Some files may exist with different names/paths")
-        report.append("3. **Clean up**: Remove references to files that are no longer needed")
+        report.append(
+            "1. **Create missing files**: Start with the most referenced files"
+        )
+        report.append(
+            "2. **Update references**: Some files may exist with different names/paths"
+        )
+        report.append(
+            "3. **Clean up**: Remove references to files that are no longer needed"
+        )
         report.append("")
 
         return "\n".join(report)
@@ -262,6 +281,7 @@ class BmadDependencyAnalyzer:
         else:
             return "Support document"
 
+
 def main():
     bmad_core_path = "/Users/sherwingorechomante/Sprintsense/.bmad-core"
     analyzer = BmadDependencyAnalyzer(bmad_core_path)
@@ -290,16 +310,17 @@ def main():
     report_path = "/Users/sherwingorechomante/Sprintsense/docs/bmad-missing-dependencies-report.md"
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
-    with open(report_path, 'w') as f:
+    with open(report_path, "w") as f:
         f.write(report)
 
     print(f"✅ Report saved to: {report_path}")
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("PREVIEW:")
-    print("="*50)
+    print("=" * 50)
     print(report[:1000] + "..." if len(report) > 1000 else report)
 
     return analyzer
+
 
 if __name__ == "__main__":
     analyzer = main()

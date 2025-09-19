@@ -606,8 +606,8 @@ Generate test reports that include:
 
 ## Story 1.5 Pre-Deployment Compliance Check
 
-**Date**: 2025-09-16  
-**Story**: User Login and Logout (Story 1.5)  
+**Date**: 2025-09-16
+**Story**: User Login and Logout (Story 1.5)
 **Status**: QA Approved, Ready for CI/CD
 
 ### Code Quality Validation Completed
@@ -660,7 +660,7 @@ All quality gates passed, code is ready for staging deployment via GitHub Action
 async def test_complete_edit_work_item_flow(self, setup_test_data):
     # existing test code
 
-# File: tests/integration/test_health_checks.py  
+# File: tests/integration/test_health_checks.py
 # Issue: Health check response time test has timing calculation mismatch
 # Fix: Adjust mock_time function to return correct timing values
 ```

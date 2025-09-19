@@ -107,7 +107,7 @@ const useApiCall = <T>(apiCall: () => Promise<T>) => {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<ApiError | null>(null)
   const [loading, setLoading] = useState(false)
-  
+
   const execute = useCallback(async () => {
     try {
       setLoading(true)
@@ -120,7 +120,7 @@ const useApiCall = <T>(apiCall: () => Promise<T>) => {
       setLoading(false)
     }
   }, [apiCall])
-  
+
   return { data, error, loading, execute }
 }
 ```
@@ -134,7 +134,7 @@ from fastapi import HTTPException, status
 
 class SprintSenseException(Exception):
     """Base exception for SprintSense application."""
-    
+
     def __init__(self, message: str, details: Dict[str, Any] | None = None):
         self.message = message
         self.details = details or {}
@@ -177,7 +177,7 @@ from app.main import app
 async def test_get_user_success():
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.get("/api/v1/users/1")
-    
+
     assert response.status_code == 200
     assert response.json()["id"] == 1
 ```
@@ -196,9 +196,9 @@ describe('UserProfile', () => {
       loading: false,
       error: null
     })
-    
+
     render(<UserProfile />)
-    
+
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument()
     })
@@ -229,7 +229,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     database_url: str
     secret_key: str
-    
+
     class Config:
         env_file = ".env"
 
@@ -248,7 +248,7 @@ src/
 │   ├── common/          # Generic components
 │   └── feature/         # Feature-specific components
 ├── pages/              # Route-level components
-├── hooks/              # Custom React hooks  
+├── hooks/              # Custom React hooks
 ├── services/           # API clients and business logic
 ├── stores/             # State management
 ├── types/              # TypeScript type definitions
@@ -304,7 +304,7 @@ const UserCard: React.FC<{ user?: User }> = ({ user }) => {
   if (!user) {
     return <div>Loading...</div>
   }
-  
+
   return (
     <div>
       <h3>{user.name}</h3>
@@ -329,7 +329,7 @@ class UserProfile extends React.Component {
 // ✅ GOOD: Function components with hooks
 const UserProfile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)
-  
+
   return <div>User Profile</div>
 }
 ```
@@ -342,7 +342,7 @@ const useUserData = (userId: number) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -355,10 +355,10 @@ const useUserData = (userId: number) => {
         setLoading(false)
       }
     }
-    
+
     fetchUser()
   }, [userId])
-  
+
   return { user, loading, error }
 }
 ```
@@ -461,7 +461,7 @@ class UserResponse(BaseModel):
     email: str
     created_at: datetime
     is_active: bool = True
-    
+
     class Config:
         from_attributes = True
 
@@ -469,7 +469,7 @@ class UserResponse(BaseModel):
 class UserService:
     def __init__(self, db: AsyncSession):
         self.db = db
-    
+
     async def create_user(self, user_data: UserCreateRequest) -> UserResponse:
         db_user = User(**user_data.model_dump())
         self.db.add(db_user)
@@ -521,12 +521,12 @@ from sqlalchemy import select
 class UserRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
-    
+
     async def get_user_by_id(self, user_id: int) -> User | None:
         query = select(User).where(User.id == user_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
-    
+
     async def get_active_users(self) -> List[User]:
         query = select(User).where(User.is_active == True)
         result = await self.db.execute(query)
@@ -603,7 +603,7 @@ user_data = {"name": "Very Long Name Here", "email": "very.long.email.address@co
 # ✅ GOOD: Properly formatted
 user_data = {
     "name": "Very Long Name Here",
-    "email": "very.long.email.address@company.com", 
+    "email": "very.long.email.address@company.com",
     "department": "Engineering"
 }
 ```
@@ -629,7 +629,7 @@ Your `.pre-commit-config.yaml` runs:
 npm run lint                    # ESLint check
 npm run format:check           # Prettier check
 
-# Fix automatically  
+# Fix automatically
 npm run lint:fix               # ESLint auto-fix
 npm run format                 # Prettier auto-format
 ```
@@ -639,7 +639,7 @@ npm run format                 # Prettier auto-format
 ```bash
 # Individual tools
 poetry run black .             # Format code
-poetry run isort .             # Sort imports  
+poetry run isort .             # Sort imports
 poetry run flake8 app/         # Lint check
 poetry run mypy app/           # Type check
 
@@ -717,12 +717,12 @@ Before accepting AI-generated code, verify:
 
 ```tsx
 import React, { useCallback, useState } from 'react'
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  Button, 
-  CircularProgress 
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  CircularProgress
 } from '@mui/material'
 import { motion } from 'framer-motion'
 import { User } from '../types/user.types'
@@ -733,19 +733,19 @@ interface UserCardProps {
   onSelect?: (user: User) => void
 }
 
-export const UserCard: React.FC<UserCardProps> = ({ 
-  userId, 
-  onSelect 
+export const UserCard: React.FC<UserCardProps> = ({
+  userId,
+  onSelect
 }) => {
   const { user, loading, error } = useUserData(userId)
   const [isHovered, setIsHovered] = useState(false)
-  
+
   const handleSelect = useCallback(() => {
     if (user && onSelect) {
       onSelect(user)
     }
   }, [user, onSelect])
-  
+
   if (loading) {
     return (
       <Card sx={{ minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -753,7 +753,7 @@ export const UserCard: React.FC<UserCardProps> = ({
       </Card>
     )
   }
-  
+
   if (error) {
     return (
       <Card sx={{ minHeight: 200, bgcolor: 'error.light' }}>
@@ -765,11 +765,11 @@ export const UserCard: React.FC<UserCardProps> = ({
       </Card>
     )
   }
-  
+
   if (!user) {
     return null
   }
-  
+
   return (
     <motion.div
       whileHover={{ y: -4, boxShadow: '0 8px 25px rgba(99, 102, 241, 0.15)' }}
@@ -777,7 +777,7 @@ export const UserCard: React.FC<UserCardProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Card sx={{ 
+      <Card sx={{
         minHeight: 200,
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: 'white',
@@ -794,7 +794,7 @@ export const UserCard: React.FC<UserCardProps> = ({
           <Typography variant="caption" sx={{ opacity: 0.7 }}>
             Joined {new Date(user.createdAt).toLocaleDateString()}
           </Typography>
-          
+
           <Button
             variant="contained"
             sx={{
@@ -810,7 +810,7 @@ export const UserCard: React.FC<UserCardProps> = ({
             View Profile
           </Button>
         </CardContent>
-        
+
         {isHovered && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -848,17 +848,17 @@ class UserCard extends React.Component<Props> {  // ❌ Class component
     user: null,
     loading: true
   }
-  
+
   componentDidMount() {  // ❌ Lifecycle methods instead of hooks
     this.fetchUser()
   }
-  
+
   fetchUser = async () => {  // ❌ Arrow function property
     const response = await fetch(`/users/${this.props.userId}`)
     const user = await response.json()  // ❌ No error handling
     this.setState({ user, loading: false })  // ❌ Direct state mutation
   }
-  
+
   render() {
     return (
       <Card style={{ padding: 20 }}>  {/* ❌ Inline styles, generic design */}
@@ -901,7 +901,7 @@ def get_user_service(db: AsyncSession = Depends(get_db)) -> UserService:
 
 
 def get_notification_service() -> NotificationService:
-    """Get notification service instance.""" 
+    """Get notification service instance."""
     return NotificationService()
 
 
@@ -915,7 +915,7 @@ async def list_users(
 ) -> List[UserResponse]:
     """
     Retrieve a list of users.
-    
+
     - **skip**: Number of users to skip (pagination)
     - **limit**: Maximum number of users to return
     - **active_only**: Filter for active users only
@@ -926,15 +926,15 @@ async def list_users(
             limit=limit,
             active_only=active_only
         )
-        
+
         logger.info(
             "Users retrieved successfully",
             user_count=len(users),
             requested_by=current_user.id
         )
-        
+
         return [UserResponse.model_validate(user) for user in users]
-    
+
     except Exception as e:
         logger.error(
             "Failed to retrieve users",
@@ -957,7 +957,7 @@ async def create_user(
 ) -> UserResponse:
     """
     Create a new user account.
-    
+
     - **name**: User's full name
     - **email**: User's email address (must be unique)
     - **role**: User's role in the system
@@ -970,26 +970,26 @@ async def create_user(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="User with this email already exists"
             )
-        
+
         # Create new user
         new_user = await user_service.create_user(user_data)
-        
+
         # Schedule background notification
         background_tasks.add_task(
             notification_service.send_welcome_email,
             email=new_user.email,
             name=new_user.name
         )
-        
+
         logger.info(
             "User created successfully",
             user_id=new_user.id,
             email=new_user.email,
             created_by=current_user.id
         )
-        
+
         return UserResponse.model_validate(new_user)
-    
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1013,13 +1013,13 @@ async def get_user(
 ) -> UserResponse:
     """Get user by ID."""
     user = await user_service.get_user_by_id(user_id)
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with ID {user_id} not found"
         )
-    
+
     return UserResponse.model_validate(user)
 ```
 
@@ -1035,7 +1035,7 @@ app = FastAPI()  # ❌ Global app instance
 
 def get_user(user_id):  # ❌ Missing type annotations
     # ❌ No error handling, SQL injection risk
-    query = f"SELECT * FROM users WHERE id = {user_id}"  
+    query = f"SELECT * FROM users WHERE id = {user_id}"
     return db.execute(query).fetchone()  # ❌ Global db reference
 
 @app.get("/users/{user_id}")  # ❌ Using global app
@@ -1051,7 +1051,7 @@ very_long_variable_name_that_exceeds_the_maximum_line_length = "This line is way
 
 ---
 
-## Relation to AI Generation Guidelines  
+## Relation to AI Generation Guidelines
 
 This document works in conjunction with [`claude_suggestions.md`](../../claude_suggestions.md):
 
@@ -1060,7 +1060,7 @@ This document works in conjunction with [`claude_suggestions.md`](../../claude_s
 The AI generation process should follow:
 
 1. **Code Generation** → Follow patterns in this document
-2. **Linting Check** → Pass all rules defined here  
+2. **Linting Check** → Pass all rules defined here
 3. **Creative Validation** → Meet creativity standards (frontend only)
 4. **Architecture Review** → Align with system design
 5. **Integration Testing** → Ensure compatibility
@@ -1084,7 +1084,7 @@ The AI generation process should follow:
 ### Pre-Generation Checklist
 
 - [ ] Read this document completely
-- [ ] Review [`claude_suggestions.md`](../../claude_suggestions.md) creativity guidelines  
+- [ ] Review [`claude_suggestions.md`](../../claude_suggestions.md) creativity guidelines
 - [ ] Understand target feature requirements
 - [ ] Check existing code patterns in the relevant module
 
@@ -1105,7 +1105,7 @@ The AI generation process should follow:
 # Frontend emergency fixes
 cd frontend && npm run lint:fix && npm run format
 
-# Backend emergency fixes  
+# Backend emergency fixes
 cd backend && poetry run black . && poetry run isort . && poetry run flake8 app/
 ```
 

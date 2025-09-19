@@ -11,7 +11,7 @@ This guide explains how to integrate the [Coding Standards](./architecture/codin
 When generating code, **ALWAYS** reference these documents in order:
 
 1. **[`docs/architecture/coding-standards.md`](./architecture/coding-standards.md)** - Complete linting rules and patterns
-2. **[`claude_suggestions.md`](../claude_suggestions.md)** - Quality and creativity guidelines  
+2. **[`claude_suggestions.md`](../claude_suggestions.md)** - Quality and creativity guidelines
 3. **Current story requirements** - Feature specifications
 
 ### Post-Generation Validation Workflow
@@ -22,7 +22,7 @@ When generating code, **ALWAYS** reference these documents in order:
 cd frontend && npm run format  # Frontend
 cd backend && poetry run black . && poetry run isort .  # Backend
 
-# 3. Lint check  
+# 3. Lint check
 cd frontend && npm run lint     # Frontend
 cd backend && poetry run flake8 app/  # Backend
 
@@ -98,7 +98,7 @@ Add this step to your CI pipeline:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       # Frontend linting
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -108,8 +108,8 @@ Add this step to your CI pipeline:
         run: cd frontend && npm ci
       - name: Lint frontend
         run: cd frontend && npm run lint && npm run format:check
-        
-      # Backend linting  
+
+      # Backend linting
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -136,7 +136,7 @@ Add these workspace settings:
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  
+
   // Backend
   "python.defaultInterpreterPath": "./backend/.venv/bin/python",
   "python.linting.enabled": true,
@@ -154,7 +154,7 @@ Add these workspace settings:
 ```markdown
 **Context**: I'm working on SprintSense, a TypeScript/React frontend with Python/FastAPI backend.
 
-**Requirements**: 
+**Requirements**:
 {feature requirements}
 
 **Standards**: Follow the coding standards in `/docs/architecture/coding-standards.md`:
@@ -177,7 +177,7 @@ Add these workspace settings:
 
 Checklist:
 - [ ] Naming conventions followed
-- [ ] Type annotations complete  
+- [ ] Type annotations complete
 - [ ] Error handling implemented
 - [ ] No anti-patterns present
 - [ ] Linting would pass
@@ -193,7 +193,7 @@ Code:
 Track these metrics to measure improvement:
 
 - **Linting Error Rate**: Errors per PR before/after standards
-- **PR Review Cycles**: Average rounds of feedback  
+- **PR Review Cycles**: Average rounds of feedback
 - **CI/CD Success Rate**: Percentage of builds passing linting
 - **Creative Score**: Frontend components meeting 8/10+ creativity (manual review)
 
@@ -202,7 +202,7 @@ Track these metrics to measure improvement:
 ### "Still getting linting errors"
 
 1. **Verify standards document is loaded** in dev agent session
-2. **Check rule coverage** - may need to update standards doc  
+2. **Check rule coverage** - may need to update standards doc
 3. **Run emergency fix commands**:
 
    ```bash

@@ -43,7 +43,7 @@ poetry run uvicorn app.main:app --reload
 ### 4. Frontend Configuration
 
 ```bash
-cd frontend  
+cd frontend
 cp ../.env.dev .env.local
 npm install
 npm run dev
@@ -63,7 +63,7 @@ In your GitHub repository:
 - Require approvals: 1 reviewer
 - Restrict to `main` branch
 
-**Production Environment:**  
+**Production Environment:**
 - Require approvals: 2 reviewers
 - Restrict to `main` branch and tags matching `v*.*.*`
 - Wait timer: 5 minutes
@@ -79,7 +79,7 @@ In your GitHub repository:
 
 #### Staging Environment
 - `DATABASE_URL`: Staging Supabase database connection string
-- `SUPABASE_URL`: Staging Supabase project URL  
+- `SUPABASE_URL`: Staging Supabase project URL
 - `SUPABASE_ANON_KEY`: Staging anon key
 - `SUPABASE_SERVICE_KEY`: Staging service key
 - `SLACK_WEBHOOK_URL`: Slack webhook for notifications
@@ -88,7 +88,7 @@ In your GitHub repository:
 #### Production Environment
 - `DATABASE_URL`: Production Supabase database connection string
 - `SUPABASE_URL`: Production Supabase project URL
-- `SUPABASE_ANON_KEY`: Production anon key  
+- `SUPABASE_ANON_KEY`: Production anon key
 - `SUPABASE_SERVICE_KEY`: Production service key
 - `SLACK_WEBHOOK_URL`: Slack webhook for notifications
 - `SENTRY_DSN`: Sentry project DSN (required)
@@ -149,7 +149,7 @@ Expected responses:
 
 ```json
 {
-  "status": "OK", 
+  "status": "OK",
   "service": "SprintSense Backend",
   "database": "connected",
   "version": "0.1.0"
@@ -173,7 +173,7 @@ The CI pipeline validates configuration by:
    ```bash
    # Check if Supabase is running
    supabase status
-   
+
    # Restart if needed
    supabase stop
    supabase start
@@ -183,7 +183,7 @@ The CI pipeline validates configuration by:
    ```bash
    # Get fresh keys
    supabase status
-   
+
    # Update .env.dev with new keys
    ```
 
@@ -191,7 +191,7 @@ The CI pipeline validates configuration by:
    ```bash
    # Reset local database
    supabase db reset
-   
+
    # Or create new migration
    supabase db diff --schema public
    ```

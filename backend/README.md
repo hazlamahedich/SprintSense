@@ -25,7 +25,7 @@ poetry run flake8 .
 Set environment variables or create a `.env` file:
 
 - `POSTGRES_SERVER` - PostgreSQL server hostname
-- `POSTGRES_USER` - PostgreSQL username  
+- `POSTGRES_USER` - PostgreSQL username
 - `POSTGRES_PASSWORD` - PostgreSQL password
 - `POSTGRES_DB` - PostgreSQL database name
 - `ENVIRONMENT` - Environment (development/production)

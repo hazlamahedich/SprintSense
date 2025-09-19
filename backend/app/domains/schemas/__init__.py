@@ -7,6 +7,13 @@ from .invitation import (
     InvitationListResponse,
     InvitationResponse,
 )
+from .project_goal import (
+    ProjectGoalCreateRequest,
+    ProjectGoalListResponse,
+    ProjectGoalResponse,
+    ProjectGoalUniqueValidationError,
+    ProjectGoalUpdateRequest,
+)
 from .team import (
     TeamCreateRequest,
     TeamCreateResponse,
@@ -34,6 +41,11 @@ __all__ = [
     "InvitationCreateResponse",
     "InvitationListItem",
     "InvitationListResponse",
+    "ProjectGoalCreateRequest",
+    "ProjectGoalUpdateRequest",
+    "ProjectGoalResponse",
+    "ProjectGoalListResponse",
+    "ProjectGoalUniqueValidationError",
     "WorkItemCreateRequest",
     "WorkItemUpdateRequest",
     "WorkItemResponse",

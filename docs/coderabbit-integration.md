@@ -155,14 +155,14 @@ enable_auto_review: true
 rules:
   - file: docs/architecture.md          # Project architecture guide
   - file: claude_suggestions.md         # AI-generated suggestions
-  
+
   - name: "Python Code Quality"
     pattern: "**/*.py"
     checks:
       - "Follow PEP 8 style guidelines"
       - "Use type hints"
       - "Use Poetry for dependencies"
-      
+
   - name: "TypeScript/JavaScript Quality"
     pattern: "**/*.{ts,tsx,js,jsx}"
     checks:
@@ -190,7 +190,7 @@ review_settings:
 # Required for GitHub Actions
 CODERABBIT_API_TOKEN=your_api_token
 
-# Required for Warp MCP integration  
+# Required for Warp MCP integration
 GITHUB_PAT=your_github_token
 ```
 

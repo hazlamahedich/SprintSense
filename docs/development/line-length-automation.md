@@ -221,7 +221,7 @@ query = (
 ```python
 # Long conditionals are wrapped
 if (
-    condition_one and condition_two 
+    condition_one and condition_two
     and condition_three and condition_four
 ):
     do_something()
@@ -261,7 +261,7 @@ if (
 
 - ✅ No manual line counting
 - ✅ Intelligent break points
-- ✅ Preserves code readability  
+- ✅ Preserves code readability
 - ✅ Works with existing tools (Black, isort)
 
 ### Maintenance

@@ -16,7 +16,14 @@ from app.core.exceptions import (
     get_http_status_for_error_code,
 )
 from app.domains.models.user import User
+from app.domains.schemas.project_goal import (
+    ProjectGoalCreateRequest,
+    ProjectGoalListResponse,
+    ProjectGoalResponse,
+    ProjectGoalUpdateRequest,
+)
 from app.domains.schemas.work_item import WorkItemCreateRequest, WorkItemResponse
+from app.domains.services.project_goal_service import ProjectGoalService
 from app.domains.services.work_item_service import WorkItemService
 from app.infra.db import get_session
 
@@ -29,6 +36,13 @@ async def get_work_item_service(
 ) -> WorkItemService:
     """Dependency to get work item service with database session."""
     return WorkItemService(db)
+
+
+async def get_project_goal_service(
+    db: AsyncSession = Depends(get_session),
+) -> ProjectGoalService:
+    """Dependency to get project goal service with database session."""
+    return ProjectGoalService(db)
 
 
 @router.post(
@@ -283,6 +297,386 @@ async def archive_work_item(
         )
 
 
+@router.get(
+    "/{team_id}/goals",
+    response_model=ProjectGoalListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get project goals for team",
+    description="Retrieve all project goals for a team, ordered by priority. "
+    "All team members can view goals.",
+)
+async def get_project_goals(
+    team_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    goal_service: ProjectGoalService = Depends(get_project_goal_service),
+) -> ProjectGoalListResponse:
+    """
+    Get all project goals for a team.
+
+    This endpoint implements Story 3.1 AC2: Goal Management Interface requirements:
+    - All team members can view goals
+    - Goals returned ordered by priority weight (highest first)
+    - Proper team membership authorization
+
+    Args:
+        team_id: UUID of the team to get goals for
+        current_user: Authenticated user making the request
+        goal_service: Project goal service dependency
+
+    Returns:
+        ProjectGoalListResponse: List of team goals with metadata
+
+    Raises:
+        HTTPException: 403 if user is not a team member
+    """
+    logger.info(
+        "Fetching project goals",
+        team_id=str(team_id),
+        user_id=str(current_user.id),
+    )
+
+    try:
+        goals = await goal_service.get_project_goals(
+            team_id=team_id,
+            user_id=current_user.id,
+        )
+
+        logger.info(
+            "Project goals fetched successfully",
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+            goal_count=goals.total,
+        )
+
+        return goals
+
+    except (AuthorizationError, ValidationError, DatabaseError) as e:
+        logger.error(
+            "Project goals fetch failed",
+            error_code=e.error_code,
+            error_message=e.message,
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+            error_details=e.details,
+        )
+
+        error_response = format_error_response(e)
+        http_status = get_http_status_for_error_code(e.error_code)
+
+        raise HTTPException(
+            status_code=http_status,
+            detail=error_response["error"],
+        )
+
+    except Exception as e:
+        logger.error(
+            "Unexpected error fetching project goals",
+            error=str(e),
+            error_type=type(e).__name__,
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while fetching project goals.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
+            },
+        )
+
+
+@router.post(
+    "/{team_id}/goals",
+    response_model=ProjectGoalResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new project goal",
+    description="Create a new strategic goal for a team. "
+    "Only Product Owners and Team Owners can create goals.",
+)
+async def create_project_goal(
+    team_id: uuid.UUID,
+    goal_data: ProjectGoalCreateRequest,
+    current_user: User = Depends(get_current_user),
+    goal_service: ProjectGoalService = Depends(get_project_goal_service),
+) -> ProjectGoalResponse:
+    """
+    Create a new project goal for a team.
+
+    This endpoint implements Story 3.1 AC2 & AC3: Goal Management Interface requirements:
+    - Only Product Owners and Team Owners can create goals
+    - Goal content validation including uniqueness checks
+    - Priority weighting (1-10 scale)
+    - Rich text descriptions with 500 char limit
+    - Author attribution and audit trail
+
+    Args:
+        team_id: UUID of the team to create the goal for
+        goal_data: Goal creation request data
+        current_user: Authenticated user making the request
+        goal_service: Project goal service dependency
+
+    Returns:
+        ProjectGoalResponse: The created goal with auto-generated ID and timestamps
+
+    Raises:
+        HTTPException: Various errors with specific error codes and recovery actions
+    """
+    logger.info(
+        "Creating project goal",
+        team_id=str(team_id),
+        user_id=str(current_user.id),
+        priority_weight=goal_data.priority_weight,
+    )
+
+    try:
+        new_goal = await goal_service.create_project_goal(
+            team_id=team_id,
+            goal_data=goal_data,
+            author_id=current_user.id,
+        )
+
+        logger.info(
+            "Project goal created successfully",
+            goal_id=str(new_goal.id),
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+            priority_weight=new_goal.priority_weight,
+        )
+
+        return new_goal
+
+    except (AuthorizationError, ValidationError, DatabaseError) as e:
+        logger.error(
+            "Project goal creation failed",
+            error_code=e.error_code,
+            error_message=e.message,
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+            error_details=e.details,
+        )
+
+        error_response = format_error_response(e)
+        http_status = get_http_status_for_error_code(e.error_code)
+
+        raise HTTPException(
+            status_code=http_status,
+            detail=error_response["error"],
+        )
+
+    except Exception as e:
+        logger.error(
+            "Unexpected error creating project goal",
+            error=str(e),
+            error_type=type(e).__name__,
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while creating the project goal.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
+            },
+        )
+
+
+@router.put(
+    "/{team_id}/goals/{goal_id}",
+    response_model=ProjectGoalResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update a project goal",
+    description="Update an existing project goal. "
+    "Only Product Owners and Team Owners can update goals.",
+)
+async def update_project_goal(
+    team_id: uuid.UUID,
+    goal_id: uuid.UUID,
+    goal_data: ProjectGoalUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    goal_service: ProjectGoalService = Depends(get_project_goal_service),
+) -> ProjectGoalResponse:
+    """
+    Update an existing project goal.
+
+    This endpoint implements Story 3.1 AC2 & AC3: Goal Management Interface requirements:
+    - Only Product Owners and Team Owners can update goals
+    - Partial updates supported (only provided fields are updated)
+    - Goal uniqueness validation if description changes
+    - Audit trail with updated_by tracking
+
+    Args:
+        team_id: UUID of the team containing the goal
+        goal_id: UUID of the goal to update
+        goal_data: Goal update request data
+        current_user: Authenticated user making the request
+        goal_service: Project goal service dependency
+
+    Returns:
+        ProjectGoalResponse: The updated goal with new timestamps
+
+    Raises:
+        HTTPException: Various errors including authorization, not found, and validation
+    """
+    logger.info(
+        "Updating project goal",
+        goal_id=str(goal_id),
+        team_id=str(team_id),
+        user_id=str(current_user.id),
+    )
+
+    try:
+        updated_goal = await goal_service.update_project_goal(
+            team_id=team_id,
+            goal_id=goal_id,
+            goal_data=goal_data,
+            user_id=current_user.id,
+        )
+
+        logger.info(
+            "Project goal updated successfully",
+            goal_id=str(goal_id),
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        return updated_goal
+
+    except (AuthorizationError, ValidationError, DatabaseError) as e:
+        logger.error(
+            "Project goal update failed",
+            error_code=e.error_code,
+            error_message=e.message,
+            goal_id=str(goal_id),
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+            error_details=e.details,
+        )
+
+        error_response = format_error_response(e)
+        http_status = get_http_status_for_error_code(e.error_code)
+
+        raise HTTPException(
+            status_code=http_status,
+            detail=error_response["error"],
+        )
+
+    except Exception as e:
+        logger.error(
+            "Unexpected error updating project goal",
+            error=str(e),
+            error_type=type(e).__name__,
+            goal_id=str(goal_id),
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while updating the project goal.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
+            },
+        )
+
+
+@router.delete(
+    "/{team_id}/goals/{goal_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a project goal",
+    description="Delete an existing project goal. "
+    "Only Product Owners and Team Owners can delete goals.",
+)
+async def delete_project_goal(
+    team_id: uuid.UUID,
+    goal_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    goal_service: ProjectGoalService = Depends(get_project_goal_service),
+) -> None:
+    """
+    Delete a project goal.
+
+    This endpoint implements Story 3.1 AC2: Goal Management Interface requirements:
+    - Only Product Owners and Team Owners can delete goals
+    - Hard delete for simplicity (goal is permanently removed)
+    - Proper authorization and error handling
+
+    Args:
+        team_id: UUID of the team containing the goal
+        goal_id: UUID of the goal to delete
+        current_user: Authenticated user making the request
+        goal_service: Project goal service dependency
+
+    Returns:
+        None (204 No Content on success)
+
+    Raises:
+        HTTPException: Various errors including authorization and not found
+    """
+    logger.info(
+        "Deleting project goal",
+        goal_id=str(goal_id),
+        team_id=str(team_id),
+        user_id=str(current_user.id),
+    )
+
+    try:
+        await goal_service.delete_project_goal(
+            team_id=team_id,
+            goal_id=goal_id,
+            user_id=current_user.id,
+        )
+
+        logger.info(
+            "Project goal deleted successfully",
+            goal_id=str(goal_id),
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+    except (AuthorizationError, ValidationError, DatabaseError) as e:
+        logger.error(
+            "Project goal deletion failed",
+            error_code=e.error_code,
+            error_message=e.message,
+            goal_id=str(goal_id),
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+            error_details=e.details,
+        )
+
+        error_response = format_error_response(e)
+        http_status = get_http_status_for_error_code(e.error_code)
+
+        raise HTTPException(
+            status_code=http_status,
+            detail=error_response["error"],
+        )
+
+    except Exception as e:
+        logger.error(
+            "Unexpected error deleting project goal",
+            error=str(e),
+            error_type=type(e).__name__,
+            goal_id=str(goal_id),
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while deleting the project goal.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
+            },
+        )
+
+
 @router.get("/health", include_in_schema=False)
 async def teams_health_check() -> Dict[str, Any]:
     """Health check for teams router."""
@@ -290,6 +684,10 @@ async def teams_health_check() -> Dict[str, Any]:
         "status": "OK",
         "router": "teams",
         "endpoints": [
+            "GET /{team_id}/goals",
+            "POST /{team_id}/goals",
+            "PUT /{team_id}/goals/{goal_id}",
+            "DELETE /{team_id}/goals/{goal_id}",
             "POST /{team_id}/work-items",
             "PATCH /{team_id}/work-items/{work_item_id}/archive",
         ],

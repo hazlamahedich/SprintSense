@@ -10,7 +10,7 @@ An open-source, AI-powered agile project management platform designed to enhance
 SprintSense moves beyond traditional project management tools by providing:
 
 - **AI-Powered Backlog Prioritization** - Smart recommendations based on strategic goals
-- **Predictive Sprint Planning** - Monte Carlo simulations for realistic capacity planning  
+- **Predictive Sprint Planning** - Monte Carlo simulations for realistic capacity planning
 - **Intelligent Retrospectives** - NLP-powered analysis of team feedback
 - **Self-Hostable** - Complete control over your data and infrastructure
 - **Privacy-First** - End-to-end encryption and GDPR compliance
@@ -33,7 +33,7 @@ SprintSense moves beyond traditional project management tools by providing:
 ### Prerequisites
 
 - **Docker & Docker Compose** - For containerized deployment
-- **Node.js 20+** - For frontend development  
+- **Node.js 20+** - For frontend development
 - **Python 3.11+** - For backend development
 - **Poetry** - Python dependency management
 
@@ -93,7 +93,7 @@ npm run dev
 # Backend tests
 cd backend && poetry run pytest
 
-# Frontend tests  
+# Frontend tests
 cd frontend && npm run test
 
 # Full pre-commit checks (run this before pushing)
@@ -213,7 +213,7 @@ Traditional project management tools are reactive - they track what happened. Sp
 By combining the power of AI with proven agile methodologies, SprintSense empowers teams to:
 
 - Make data-driven planning decisions
-- Identify risks before they become problems  
+- Identify risks before they become problems
 - Continuously improve through intelligent insights
 - Maintain full control over their data and processes
 

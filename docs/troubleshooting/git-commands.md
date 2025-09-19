@@ -95,7 +95,7 @@ If a git command gets stuck:
    ```bash
    # Find the process
    ps aux | grep git
-   
+
    # Kill it
    kill <process-id>
    ```

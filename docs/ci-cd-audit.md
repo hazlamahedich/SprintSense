@@ -56,7 +56,7 @@ Generated: 2025-01-17
 #### Required Secrets (per environment)
 - `SUPABASE_URL` - Supabase project API URL
 - `SUPABASE_ANON_KEY` - Public anonymous key
-- `SUPABASE_SERVICE_KEY` - Service role key for admin operations  
+- `SUPABASE_SERVICE_KEY` - Service role key for admin operations
 - `DATABASE_URL` - Direct database connection string
 - `SLACK_WEBHOOK_URL` - For deployment notifications
 - `SENTRY_DSN` - Error monitoring (optional)
@@ -90,25 +90,25 @@ graph TB
     B --> C{Tests Pass?}
     C -->|Yes| D[Build & Push Images]
     C -->|No| E[❌ Block Deployment]
-    
+
     D --> F[Deploy to Dev]
     F --> G[Health Check Dev]
     G -->|Pass| H[Manual Promote to Staging]
     G -->|Fail| I[🔄 Auto Rollback]
-    
-    H --> J[Deploy to Staging] 
+
+    H --> J[Deploy to Staging]
     J --> K[Health Check Staging]
     K -->|Pass| L[Manual Promote to Prod]
     K -->|Fail| M[🔄 Auto Rollback]
-    
+
     L --> N[Deploy to Production]
     N --> O[Health Check Prod]
     O -->|Pass| P[✅ Success Notification]
     O -->|Fail| Q[🚨 Critical Alert & Rollback]
-    
+
     style E fill:#ff6b6b
     style I fill:#ffa726
-    style M fill:#ffa726  
+    style M fill:#ffa726
     style Q fill:#ff1744
     style P fill:#4caf50
 ```

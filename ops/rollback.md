@@ -68,7 +68,7 @@ poetry run alembic downgrade <revision_id>
 ## Emergency Contacts
 
 - **On-Call Engineer**: [Configure your team's contact info]
-- **DevOps Team**: [Configure your team's contact info]  
+- **DevOps Team**: [Configure your team's contact info]
 - **QA Team**: Quinn (QA Architect who approved Stories 2.5 & 2.6)
 
 ## Monitoring URLs
@@ -85,6 +85,6 @@ poetry run alembic downgrade <revision_id>
 
 ---
 
-**Last Updated**: 2025-09-19  
-**Pipeline Version**: commit `c6baf28`  
+**Last Updated**: 2025-09-19
+**Pipeline Version**: commit `c6baf28`
 **QA Approved Features**: Stories 2.5 (Soft Delete), 2.6 (Manual Prioritization)

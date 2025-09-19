@@ -1,5 +1,6 @@
 """Domain models package."""
 
+from .project_goal import ProjectGoal
 from .team import Team, TeamMember, TeamRole
 from .user import User
 from .work_item import WorkItem, WorkItemStatus, WorkItemType
@@ -12,4 +13,5 @@ __all__ = [
     "WorkItem",
     "WorkItemStatus",
     "WorkItemType",
+    "ProjectGoal",
 ]

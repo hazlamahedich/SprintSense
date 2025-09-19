@@ -58,6 +58,9 @@ class Team(Base):
     members = relationship(
         "TeamMember", back_populates="team", cascade="all, delete-orphan"
     )
+    project_goals = relationship(
+        "ProjectGoal", back_populates="team", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         """String representation of Team."""

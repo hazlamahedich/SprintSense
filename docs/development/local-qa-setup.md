@@ -260,7 +260,7 @@ This runs:
 
 1. Install dependencies
 2. Format all code
-3. Run all linting checks  
+3. Run all linting checks
 4. Run all tests
 5. Verify everything passes
 
