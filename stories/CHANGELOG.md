@@ -1,5 +1,14 @@
 # Stories Changelog
 
+## [2025-01-20] Story 3.2 Draft Creation
+- **Added**: Story 3.2: AI Prioritization Service
+- **Author**: Bob (SM)
+- **Description**: Comprehensive story creation for backend service that scores work items based on project goal alignment
+- **Epic**: Epic 3 - AI-Powered Backlog Prioritization
+- **Status**: Draft (ready for PO review)
+- **Context**: Built upon Story 3.1 artifacts including project goals data model and text processing pipeline
+- **Technical Scope**: FastAPI service, keyword matching algorithm, Redis caching, comprehensive testing
+
 ## [2025-09-19] Story 2.6 Stakeholder Review Complete
 - **Story**: Story 2.6: Manual Prioritization
 - **Status Updated**: Draft → Approved (ready for development)

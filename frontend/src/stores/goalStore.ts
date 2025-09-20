@@ -6,8 +6,8 @@
  * with role-based permissions and real-time updates.
  */
 
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 
 import {
   ProjectGoal,
@@ -16,60 +16,60 @@ import {
   TeamRole,
   GoalPermissions,
   getGoalPermissions,
-} from '../types/goal.types';
-import { GoalService } from '../services/goalService';
+} from '../types/goal.types'
+import { GoalService } from '../services/goalService'
 
 // Goal-specific state
 interface GoalState {
-  goals: ProjectGoal[];
-  loading: boolean;
+  goals: ProjectGoal[]
+  loading: boolean
   error: {
-    error: string;
-    message: string;
-  } | null;
-  selectedTeamId: string | null;
-  userRole: TeamRole | null;
-  permissions: GoalPermissions;
+    error: string
+    message: string
+  } | null
+  selectedTeamId: string | null
+  userRole: TeamRole | null
+  permissions: GoalPermissions
   // UI state for forms
-  isFormOpen: boolean;
-  editingGoal: ProjectGoal | null;
+  isFormOpen: boolean
+  editingGoal: ProjectGoal | null
   // Onboarding state
-  hasCompletedOnboarding: boolean;
+  hasCompletedOnboarding: boolean
 }
 
 // Store actions
 interface GoalActions {
   // Data loading
-  loadGoals: (teamId: string) => Promise<void>;
-  refreshGoals: () => Promise<void>;
+  loadGoals: (teamId: string) => Promise<void>
+  refreshGoals: () => Promise<void>
 
   // CRUD operations
-  createGoal: (teamId: string, data: ProjectGoalCreateRequest) => Promise<void>;
+  createGoal: (teamId: string, data: ProjectGoalCreateRequest) => Promise<void>
   updateGoal: (
     teamId: string,
     goalId: string,
     data: ProjectGoalUpdateRequest
-  ) => Promise<void>;
-  deleteGoal: (teamId: string, goalId: string) => Promise<void>;
+  ) => Promise<void>
+  deleteGoal: (teamId: string, goalId: string) => Promise<void>
 
   // UI state management
-  openCreateForm: () => void;
-  openEditForm: (goal: ProjectGoal) => void;
-  closeForm: () => void;
+  openCreateForm: () => void
+  openEditForm: (goal: ProjectGoal) => void
+  closeForm: () => void
 
   // Permission management
-  setUserRole: (role: TeamRole | null) => void;
-  setTeam: (teamId: string, userRole?: TeamRole) => void;
+  setUserRole: (role: TeamRole | null) => void
+  setTeam: (teamId: string, userRole?: TeamRole) => void
 
   // Onboarding
-  completeOnboarding: () => void;
+  completeOnboarding: () => void
 
   // Error handling
-  clearError: () => void;
-  reset: () => void;
+  clearError: () => void
+  reset: () => void
 }
 
-type GoalStore = GoalState & GoalActions;
+type GoalStore = GoalState & GoalActions
 
 const initialState: GoalState = {
   goals: [],
@@ -81,7 +81,7 @@ const initialState: GoalState = {
   isFormOpen: false,
   editingGoal: null,
   hasCompletedOnboarding: false,
-};
+}
 
 export const useGoalStore = create<GoalStore>()(
   devtools(
@@ -90,17 +90,17 @@ export const useGoalStore = create<GoalStore>()(
 
       // Load goals for a team
       loadGoals: async (teamId: string) => {
-        set({ loading: true, error: null, selectedTeamId: teamId });
+        set({ loading: true, error: null, selectedTeamId: teamId })
 
         try {
-          const response = await GoalService.getGoals(teamId);
+          const response = await GoalService.getGoals(teamId)
 
           set({
             goals: response.goals,
             loading: false,
-          });
+          })
         } catch (error) {
-          const errorMessage = GoalService.formatApiError(error);
+          const errorMessage = GoalService.formatApiError(error)
 
           set({
             loading: false,
@@ -109,46 +109,45 @@ export const useGoalStore = create<GoalStore>()(
               message: errorMessage,
             },
             goals: [],
-          });
+          })
         }
       },
 
       // Refresh current goals
       refreshGoals: async () => {
-        const { selectedTeamId } = get();
+        const { selectedTeamId } = get()
         if (selectedTeamId) {
-          await get().loadGoals(selectedTeamId);
+          await get().loadGoals(selectedTeamId)
         }
       },
 
       // Create new goal
       createGoal: async (teamId: string, data: ProjectGoalCreateRequest) => {
-        const state = get();
+        const state = get()
 
         // Check permissions
         if (!state.permissions.canCreate) {
-          throw new Error('You do not have permission to create goals');
+          throw new Error('You do not have permission to create goals')
         }
 
-        set({ loading: true, error: null });
+        set({ loading: true, error: null })
 
         try {
-          const newGoal = await GoalService.createGoal(teamId, data);
+          const newGoal = await GoalService.createGoal(teamId, data)
 
           // Add to current list (goals are ordered by priority_weight desc)
-          const currentGoals = get().goals;
+          const currentGoals = get().goals
           const updatedGoals = [...currentGoals, newGoal].sort(
             (a, b) => b.priority_weight - a.priority_weight
-          );
+          )
 
           set({
             goals: updatedGoals,
             loading: false,
             isFormOpen: false, // Close form on success
-          });
-
+          })
         } catch (error) {
-          const errorMessage = GoalService.formatApiError(error);
+          const errorMessage = GoalService.formatApiError(error)
 
           set({
             loading: false,
@@ -156,9 +155,9 @@ export const useGoalStore = create<GoalStore>()(
               error: 'create_failed',
               message: errorMessage,
             },
-          });
+          })
 
-          throw error;
+          throw error
         }
       },
 
@@ -168,32 +167,31 @@ export const useGoalStore = create<GoalStore>()(
         goalId: string,
         data: ProjectGoalUpdateRequest
       ) => {
-        const state = get();
+        const state = get()
 
         // Check permissions
         if (!state.permissions.canEdit) {
-          throw new Error('You do not have permission to edit goals');
+          throw new Error('You do not have permission to edit goals')
         }
 
-        set({ loading: true, error: null });
+        set({ loading: true, error: null })
 
         try {
-          const updatedGoal = await GoalService.updateGoal(teamId, goalId, data);
+          const updatedGoal = await GoalService.updateGoal(teamId, goalId, data)
 
-          const currentGoals = get().goals;
+          const currentGoals = get().goals
           const updatedGoals = currentGoals
             .map((goal) => (goal.id === goalId ? updatedGoal : goal))
-            .sort((a, b) => b.priority_weight - a.priority_weight);
+            .sort((a, b) => b.priority_weight - a.priority_weight)
 
           set({
             goals: updatedGoals,
             loading: false,
             isFormOpen: false,
             editingGoal: null,
-          });
-
+          })
         } catch (error) {
-          const errorMessage = GoalService.formatApiError(error);
+          const errorMessage = GoalService.formatApiError(error)
 
           set({
             loading: false,
@@ -201,36 +199,35 @@ export const useGoalStore = create<GoalStore>()(
               error: 'update_failed',
               message: errorMessage,
             },
-          });
+          })
 
-          throw error;
+          throw error
         }
       },
 
       // Delete goal
       deleteGoal: async (teamId: string, goalId: string) => {
-        const state = get();
+        const state = get()
 
         // Check permissions
         if (!state.permissions.canDelete) {
-          throw new Error('You do not have permission to delete goals');
+          throw new Error('You do not have permission to delete goals')
         }
 
-        set({ loading: true, error: null });
+        set({ loading: true, error: null })
 
         try {
-          await GoalService.deleteGoal(teamId, goalId);
+          await GoalService.deleteGoal(teamId, goalId)
 
-          const currentGoals = get().goals;
-          const updatedGoals = currentGoals.filter((goal) => goal.id !== goalId);
+          const currentGoals = get().goals
+          const updatedGoals = currentGoals.filter((goal) => goal.id !== goalId)
 
           set({
             goals: updatedGoals,
             loading: false,
-          });
-
+          })
         } catch (error) {
-          const errorMessage = GoalService.formatApiError(error);
+          const errorMessage = GoalService.formatApiError(error)
 
           set({
             loading: false,
@@ -238,49 +235,49 @@ export const useGoalStore = create<GoalStore>()(
               error: 'delete_failed',
               message: errorMessage,
             },
-          });
+          })
 
-          throw error;
+          throw error
         }
       },
 
       // UI state management
       openCreateForm: () => {
-        const state = get();
+        const state = get()
         if (!state.permissions.canCreate) {
           set({
             error: {
               error: 'permission_denied',
               message: 'You do not have permission to create goals',
             },
-          });
-          return;
+          })
+          return
         }
 
         set({
           isFormOpen: true,
           editingGoal: null,
           error: null,
-        });
+        })
       },
 
       openEditForm: (goal: ProjectGoal) => {
-        const state = get();
+        const state = get()
         if (!state.permissions.canEdit) {
           set({
             error: {
               error: 'permission_denied',
               message: 'You do not have permission to edit goals',
             },
-          });
-          return;
+          })
+          return
         }
 
         set({
           isFormOpen: true,
           editingGoal: goal,
           error: null,
-        });
+        })
       },
 
       closeForm: () => {
@@ -288,7 +285,7 @@ export const useGoalStore = create<GoalStore>()(
           isFormOpen: false,
           editingGoal: null,
           error: null,
-        });
+        })
       },
 
       // Permission management
@@ -296,7 +293,7 @@ export const useGoalStore = create<GoalStore>()(
         set({
           userRole: role,
           permissions: getGoalPermissions(role),
-        });
+        })
       },
 
       setTeam: (teamId: string, userRole?: TeamRole) => {
@@ -306,52 +303,52 @@ export const useGoalStore = create<GoalStore>()(
           permissions: getGoalPermissions(userRole),
           goals: [], // Clear goals when switching teams
           error: null,
-        });
+        })
       },
 
       // Onboarding
       completeOnboarding: () => {
-        set({ hasCompletedOnboarding: true });
+        set({ hasCompletedOnboarding: true })
       },
 
       // Error handling
       clearError: () => {
-        set({ error: null });
+        set({ error: null })
       },
 
       reset: () => {
-        set(initialState);
+        set(initialState)
       },
     }),
     {
       name: 'goal-store', // For Redux DevTools
     }
   )
-);
+)
 
 // Custom hooks for common use cases
 export const useGoals = () => {
-  const store = useGoalStore();
+  const store = useGoalStore()
   return {
     goals: store.goals,
     loading: store.loading,
     error: store.error,
     loadGoals: store.loadGoals,
     refreshGoals: store.refreshGoals,
-  };
-};
+  }
+}
 
 export const useGoalPermissions = () => {
-  const store = useGoalStore();
+  const store = useGoalStore()
   return {
     permissions: store.permissions,
     userRole: store.userRole,
     setUserRole: store.setUserRole,
-  };
-};
+  }
+}
 
 export const useGoalForm = () => {
-  const store = useGoalStore();
+  const store = useGoalStore()
   return {
     isFormOpen: store.isFormOpen,
     editingGoal: store.editingGoal,
@@ -360,14 +357,14 @@ export const useGoalForm = () => {
     closeForm: store.closeForm,
     createGoal: store.createGoal,
     updateGoal: store.updateGoal,
-  };
-};
+  }
+}
 
 export const useGoalOnboarding = () => {
-  const store = useGoalStore();
+  const store = useGoalStore()
   return {
     hasCompletedOnboarding: store.hasCompletedOnboarding,
     completeOnboarding: store.completeOnboarding,
     goals: store.goals,
-  };
-};
+  }
+}

@@ -5,47 +5,56 @@
  * Goal Content & Validation, Empty State & Onboarding.
  */
 
-import React, { useEffect } from 'react';
-import { useGoals, useGoalForm, useGoalPermissions, useGoalOnboarding } from '../../../stores/goalStore';
+import React, { useEffect } from 'react'
+import {
+  useGoals,
+  useGoalForm,
+  useGoalPermissions,
+  useGoalOnboarding,
+} from '../../../stores/goalStore'
 import {
   ProjectGoal,
   getPriorityLabel,
   getPriorityColor,
-  EXAMPLE_GOALS
-} from '../../../types/goal.types';
-import { Button } from '../../ui/button';
-import { Card } from '../../ui/card';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+  EXAMPLE_GOALS,
+} from '../../../types/goal.types'
+import { Button } from '../../ui/button'
+import { Card } from '../../ui/card'
+import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 interface GoalsListProps {
-  teamId: string;
-  userRole?: 'owner' | 'member';
+  teamId: string
+  userRole?: 'owner' | 'member'
 }
 
 export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
-  const { goals, loading, error, loadGoals } = useGoals();
-  const { permissions } = useGoalPermissions();
-  const { openCreateForm, openEditForm, deleteGoal } = useGoalForm();
-  const { hasCompletedOnboarding } = useGoalOnboarding();
+  const { goals, loading, error, loadGoals } = useGoals()
+  const { permissions } = useGoalPermissions()
+  const { openCreateForm, openEditForm, deleteGoal } = useGoalForm()
+  const { hasCompletedOnboarding } = useGoalOnboarding()
 
   // Load goals when component mounts or teamId changes
   useEffect(() => {
     if (teamId) {
-      loadGoals(teamId);
+      loadGoals(teamId)
     }
-  }, [teamId, loadGoals]);
+  }, [teamId, loadGoals])
 
   // Handle goal deletion with confirmation
   const handleDeleteGoal = async (goal: ProjectGoal) => {
-    if (window.confirm(`Are you sure you want to delete the goal "${goal.description}"?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete the goal "${goal.description}"?`
+      )
+    ) {
       try {
-        await deleteGoal(teamId, goal.id);
+        await deleteGoal(teamId, goal.id)
       } catch (error) {
         // Error handling is managed by the store
-        console.error('Failed to delete goal:', error);
+        console.error('Failed to delete goal:', error)
       }
     }
-  };
+  }
 
   // Show error state
   if (error) {
@@ -59,7 +68,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
           </Button>
         </div>
       </Card>
-    );
+    )
   }
 
   // Show empty state with onboarding (AC4)
@@ -73,7 +82,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
             Define strategic goals to guide AI prioritization recommendations.
-            Goals help the AI understand what matters most for your team's success.
+            Goals help the AI understand what matters most for your team's
+            success.
           </p>
 
           {permissions.canCreate ? (
@@ -95,7 +105,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
                   {EXAMPLE_GOALS.slice(0, 3).map((example, index) => (
                     <div key={index} className="bg-gray-50 rounded p-3 text-sm">
                       <div className="font-medium text-gray-900 mb-1">
-                        Priority {example.priority_weight}: {example.description}
+                        Priority {example.priority_weight}:{' '}
+                        {example.description}
                       </div>
                       <div className="text-gray-600">
                         Success: {example.success_metrics}
@@ -112,7 +123,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
           )}
         </div>
       </Card>
-    );
+    )
   }
 
   // Show loading state
@@ -136,7 +147,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
           </Card>
         ))}
       </div>
-    );
+    )
   }
 
   // Show goals list (AC1,2,3)
@@ -154,10 +165,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
         </div>
 
         {permissions.canCreate && (
-          <Button
-            onClick={openCreateForm}
-            className="flex items-center gap-2"
-          >
+          <Button onClick={openCreateForm} className="flex items-center gap-2">
             <PlusIcon className="w-4 h-4" />
             Add Goal
           </Button>
@@ -172,12 +180,15 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
               {/* Goal content */}
               <div className="flex-1 pr-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`
+                  <span
+                    className={`
                     inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                     ${getPriorityColor(goal.priority_weight)}
                     bg-opacity-10 border border-current border-opacity-20
-                  `}>
-                    Priority {goal.priority_weight}: {getPriorityLabel(goal.priority_weight)}
+                  `}
+                  >
+                    Priority {goal.priority_weight}:{' '}
+                    {getPriorityLabel(goal.priority_weight)}
                   </span>
                   <span className="w-2 h-2 rounded-full bg-current opacity-50"></span>
                 </div>
@@ -188,14 +199,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
 
                 {goal.success_metrics && (
                   <p className="text-sm text-gray-600 mb-2">
-                    <span className="font-medium">Success metrics:</span> {goal.success_metrics}
+                    <span className="font-medium">Success metrics:</span>{' '}
+                    {goal.success_metrics}
                   </p>
                 )}
 
                 <div className="text-xs text-gray-500">
                   Created {new Date(goal.created_at).toLocaleDateString()}
                   {goal.updated_at && goal.updated_at !== goal.created_at && (
-                    <span> • Updated {new Date(goal.updated_at).toLocaleDateString()}</span>
+                    <span>
+                      {' '}
+                      • Updated {new Date(goal.updated_at).toLocaleDateString()}
+                    </span>
                   )}
                 </div>
               </div>
@@ -243,7 +258,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default GoalsList;
+export default GoalsList
