@@ -8,7 +8,7 @@ of the AI prioritization algorithm and support A/B testing frameworks.
 import json
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession

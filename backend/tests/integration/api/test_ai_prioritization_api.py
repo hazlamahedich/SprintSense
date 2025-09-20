@@ -2,7 +2,6 @@
 
 import json
 import uuid
-from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -10,9 +9,7 @@ from fastapi import status
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import AuthorizationError, DatabaseError
 from app.domains.models.project_goal import ProjectGoal
-from app.domains.models.team import Team, TeamMember, TeamRole
 from app.domains.models.user import User
 from app.domains.models.work_item import WorkItem, WorkItemStatus, WorkItemType
 from app.domains.schemas.ai_prioritization import (

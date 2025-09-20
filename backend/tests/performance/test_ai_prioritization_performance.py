@@ -4,19 +4,16 @@ These tests focus on meeting the <500ms response time requirement
 and validating caching performance improvements.
 """
 
-import asyncio
 import json
 import statistics
 import time
 import uuid
-from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.models.project_goal import ProjectGoal
-from app.domains.models.team import TeamMember, TeamRole
 from app.domains.models.work_item import WorkItem, WorkItemStatus, WorkItemType
 from app.domains.schemas.ai_prioritization import AIPrioritizationRequest
 from app.domains.services.ai_prioritization_service import AIPrioritizationService
@@ -282,7 +279,7 @@ class TestAIPrioritizationPerformance:
         tasks = [single_request() for _ in range(concurrent_requests)]
         results = await asyncio.gather(*tasks)
 
-        total_time = (time.time() - start_time) * 1000
+        # total_time calculation removed
 
         # Extract execution times and responses
         execution_times, responses = zip(*results)

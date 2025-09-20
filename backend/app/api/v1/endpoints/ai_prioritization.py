@@ -438,7 +438,6 @@ async def execute_workflow(
     """
     import time
     import uuid as uuid_module
-    from datetime import datetime
 
     start_time = time.time()
     workflow_id = uuid_module.uuid4()

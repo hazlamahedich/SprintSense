@@ -3,7 +3,6 @@
 Script to run AI Prioritization tests with proper setup and validation.
 """
 
-import asyncio
 import os
 import subprocess
 import sys

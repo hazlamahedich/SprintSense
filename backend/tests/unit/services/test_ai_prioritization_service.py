@@ -2,15 +2,12 @@
 
 import json
 import uuid
-from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import AuthorizationError, DatabaseError, ValidationError
 from app.domains.models.project_goal import ProjectGoal
-from app.domains.models.team import TeamMember, TeamRole
 from app.domains.models.work_item import WorkItem, WorkItemStatus, WorkItemType
 from app.domains.schemas.ai_prioritization import (
     AIPrioritizationRequest,

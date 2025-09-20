@@ -14,7 +14,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import AuthorizationError, DatabaseError, ValidationError
 from app.core.performance import monitor_performance
 from app.domains.models.project_goal import ProjectGoal
-from app.domains.models.team import TeamMember, TeamRole
 from app.domains.models.work_item import WorkItem, WorkItemStatus
 from app.domains.schemas.ai_prioritization import (
     AIPrioritizationRequest,
