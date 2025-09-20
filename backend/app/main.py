@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers import health
-from app.api.v1.endpoints import auth, teams, users
+from app.api.v1.endpoints import ai_prioritization, auth, teams, users
 from app.core.config import settings
 from app.core.logging_config import instrument_fastapi, setup_instrumentation
 
@@ -59,6 +59,9 @@ app.include_router(health.router, prefix=settings.API_V1_STR, tags=["health"])
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 app.include_router(teams.router, prefix=f"{settings.API_V1_STR}/teams", tags=["teams"])
+app.include_router(
+    ai_prioritization.router, prefix=settings.API_V1_STR, tags=["ai-prioritization"]
+)
 
 
 # Root endpoint
