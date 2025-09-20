@@ -7,6 +7,7 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api import ai_suggestions_simple
 from app.api.routers import health
 from app.api.v1.endpoints import ai_prioritization, auth, teams, users
 from app.core.config import settings
@@ -61,6 +62,9 @@ app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["u
 app.include_router(teams.router, prefix=f"{settings.API_V1_STR}/teams", tags=["teams"])
 app.include_router(
     ai_prioritization.router, prefix=settings.API_V1_STR, tags=["ai-prioritization"]
+)
+app.include_router(
+    ai_suggestions_simple.router, prefix=settings.API_V1_STR, tags=["ai-suggestions"]
 )
 
 
