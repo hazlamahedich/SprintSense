@@ -1,30 +1,74 @@
-from datetime import date
-from typing import Optional
-from uuid import UUID
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Enum, ForeignKey
+if TYPE_CHECKING:
+    from .team import Team
+from typing import Optional
+from uuid import UUID, uuid4
+
+from sqlalchemy import DateTime, Enum, ForeignKey, String, func
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.domains.models.team import Team  # noqa: F401 - needed for relationship
 from app.infra.db import Base
+
+
+class SprintStatus(str, Enum):
+    """Sprint status values."""
+
+    FUTURE = "future"
+    ACTIVE = "active"
+    CLOSED = "closed"
 
 
 class Sprint(Base):
     __tablename__ = "sprints"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    team_id: Mapped[UUID] = mapped_column(ForeignKey("teams.id", ondelete="CASCADE"))
-    name: Mapped[str]
-    status: Mapped[str] = mapped_column(
-        Enum("future", "active", "closed", name="sprint_status"), default="future"
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+        index=True,
     )
-    start_date: Mapped[date]
-    end_date: Mapped[date]
-    goal: Mapped[Optional[str]]
+    team_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("teams.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default=SprintStatus.FUTURE,
+        nullable=False,
+    )
+    start_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    end_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    goal: Mapped[Optional[str]] = mapped_column(
+        String(1000),
+        nullable=True,
+    )
 
-    # Timestamps automatically handled by triggers
-    created_at: Mapped[date]
-    updated_at: Mapped[date]
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=True,
+    )
 
     # Relationships
-    team: Mapped[Team] = relationship("Team", back_populates="sprints")
+    team: Mapped["Team"] = relationship("Team", back_populates="sprints")

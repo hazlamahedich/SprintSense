@@ -1,25 +1,35 @@
 """Unit tests for sprint service."""
 
 import uuid
-from datetime import date
-from unittest.mock import Mock
+from datetime import date, datetime
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.models.sprint import Sprint
-from app.domains.models.team import Team
-from app.schemas.sprint import SprintCreate
+
+# Test implementation doesn't need Team import
+# from app.domains.models.team import Team
+from app.schemas.sprint import SprintCreate, SprintStatus
 from app.services.sprint_service import SprintService
 
 
 @pytest.fixture
-async def mock_session():
+def mock_session():
     """Create a mock database session."""
-    session = Mock(spec=AsyncSession)
-    session.execute = Mock()
-    session.commit = Mock()
-    session.refresh = Mock()
+    session = AsyncMock(spec=AsyncSession)
+    session.execute = AsyncMock()
+    session.commit = AsyncMock()
+    session.refresh = AsyncMock()
+    session.add = MagicMock()
+
+    # Setup mock returns
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none = MagicMock()
+    session.execute.return_value = execute_result
+
     return session
 
 
@@ -52,17 +62,14 @@ async def test_create_sprint_validates_dates(
 ):
     """Test that sprint creation validates dates."""
     # Test with invalid dates (end before start)
-    invalid_data = SprintCreate(
-        name="Invalid Sprint",
-        start_date=date(2025, 1, 15),
-        end_date=date(2025, 1, 1),
-        goal="Invalid dates",
-    )
-
-    # Should raise value error
-    with pytest.raises(ValueError) as exc:
-        await sprint_service.create_sprint(mock_session, team_id, invalid_data)
-    assert "end_date must be after start_date" in str(exc.value)
+    with pytest.raises(Exception) as exc_info:
+        SprintCreate(
+            name="Invalid Sprint",
+            start_date=date(2025, 1, 15),
+            end_date=date(2025, 1, 1),
+            goal="Invalid dates",
+        )
+    assert "end_date must be after start_date" in str(exc_info.value)
 
     # Test with valid dates
     mock_session.execute.return_value.scalar_one_or_none.return_value = None
@@ -87,6 +94,8 @@ async def test_prevent_multiple_active_sprints(
         status=SprintStatus.ACTIVE,
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 15),
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_session.execute.return_value.scalar_one_or_none.return_value = active_sprint
 
@@ -109,6 +118,8 @@ async def test_valid_state_transitions(mock_session, sprint_service, team_id):
         status="future",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 15),
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
     active_sprint = Sprint(
@@ -118,6 +129,8 @@ async def test_valid_state_transitions(mock_session, sprint_service, team_id):
         status="active",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 15),
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
     # Test future -> active transition
@@ -142,6 +155,8 @@ async def test_invalid_state_transitions(mock_session, sprint_service, team_id):
         status="future",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 15),
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
     closed_sprint = Sprint(
@@ -151,6 +166,8 @@ async def test_invalid_state_transitions(mock_session, sprint_service, team_id):
         status="closed",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 15),
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
     # Test future -> closed (invalid)
