@@ -34,50 +34,50 @@ C4Container
 
 **1. Web Server (Nginx)**
 
-* **Responsibility:** Serves the static assets for the React SPA. Acts as a reverse proxy, directing API requests to the backend service.
-* **Dependencies:** Frontend App (files), Backend Monolith (API).
-* **Technology Stack:** Nginx.
+  - **Responsibility:** Serves the static assets for the React SPA. Acts as a reverse proxy, directing API requests to the backend service.
+  - **Dependencies:** Frontend App (files), Backend Monolith (API).
+  - **Technology Stack:** Nginx.
 
 **2. Frontend App (React SPA)**
 
-* **Responsibility:** Renders the UI, manages local UI state.
-* **Dependencies:** Web Server (for API calls).
-* **Technology Stack:** React, MUI, Zustand, Vite.
+  - **Responsibility:** Renders the UI, manages local UI state.
+  - **Dependencies:** Web Server (for API calls).
+  - **Technology Stack:** React, MUI, Zustand, Vite.
 
 **3. Backend Monolith (FastAPI)**
 
-* **Responsibility:** The container for all backend modules.
-* **Dependencies:** Database, Cache.
-* **Technology Stack:** FastAPI, Python.
+  - **Responsibility:** The container for all backend modules.
+  - **Dependencies:** Database, Cache.
+  - **Technology Stack:** FastAPI, Python.
 
 **4. Auth Service (Internal Module)**
 
-* **Responsibility:** Manages user identity, registration, login, and sessions.
-* **Dependencies:** Database, Cache.
+  - **Responsibility:** Manages user identity, registration, login, and sessions.
+  - **Dependencies:** Database, Cache.
 
 **5. Team Service (Internal Module)**
 
-* **Responsibility:** Manages teams and user membership/roles.
-* **Dependencies:** Database, Auth Service.
+  - **Responsibility:** Manages teams and user membership/roles.
+  - **Dependencies:** Database, Auth Service.
 
 **6. Backlog & Sprint Service (Internal Module)**
 
-* **Responsibility:** Manages Work Items and Sprints.
-* **Dependencies:** Database, Team Service (for permissions).
+  - **Responsibility:** Manages Work Items and Sprints.
+  - **Dependencies:** Database, Team Service (for permissions).
 
 **7. AI Prioritization Service (Internal Module)**
 
-* **Responsibility:** Ranks backlog items based on project goals.
-* **Dependencies:** Backlog & Sprint Service (to get data).
+  - **Responsibility:** Ranks backlog items based on project goals.
+  - **Dependencies:** Backlog & Sprint Service (to get data).
 
 **8. AI Retrospective Service (Internal Module)**
 
-* **Responsibility:** Analyzes retrospective feedback for themes and sentiment.
-* **Dependencies:** Backlog & Sprint Service (to get data).
+  - **Responsibility:** Analyzes retrospective feedback for themes and sentiment.
+  - **Dependencies:** Backlog & Sprint Service (to get data).
 
 **9. AI Simulation Service (Internal Module)**
 
-* **Responsibility:** Forecasts sprint outcomes based on historical velocity.
-* **Dependencies:** Backlog & Sprint Service (to get data).
+  - **Responsibility:** Forecasts sprint outcomes based on historical velocity.
+  - **Dependencies:** Backlog & Sprint Service (to get data).
 
 ---

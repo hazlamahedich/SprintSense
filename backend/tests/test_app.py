@@ -1,12 +1,16 @@
 """Test FastAPI application fixtures."""
 
-from typing import AsyncGenerator, Dict, Any
+from typing import Any, AsyncGenerator, Dict
+
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from .test_database import get_test_db
+
 from app.api.endpoints import recommendations
 from app.core.database import get_db
+
+from .test_database import get_test_db
+
 
 @pytest.fixture
 def app(get_test_db) -> FastAPI:
@@ -20,6 +24,7 @@ def app(get_test_db) -> FastAPI:
     app.include_router(recommendations.router)
     return app
 
+
 @pytest.fixture
 async def async_client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     """Get async test client."""
@@ -30,10 +35,11 @@ async def async_client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
             "Content-Type": "application/json",
             # Add any default test auth headers here
             "X-Test-User": "test-user",
-            "X-Test-Team": "test-team"
-        }
+            "X-Test-Team": "test-team",
+        },
     ) as client:
         yield client
+
 
 @pytest.fixture
 def test_metrics_data() -> Dict[str, Any]:
@@ -49,10 +55,6 @@ def test_metrics_data() -> Dict[str, Any]:
             "feedback_count": 25,
             "ui_response_time": 250,
             "backend_response_time_95th": 150,
-            "feedback_reasons": {
-                "too_complex": 10,
-                "not_relevant": 8,
-                "duplicate": 7
-            }
-        }
+            "feedback_reasons": {"too_complex": 10, "not_relevant": 8, "duplicate": 7},
+        },
     }

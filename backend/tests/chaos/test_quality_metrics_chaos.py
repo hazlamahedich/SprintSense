@@ -1,15 +1,16 @@
 """Chaos testing for quality metrics endpoints."""
 
 import asyncio
-import pytest
 from unittest.mock import Mock, patch
+
+import numpy as np
+import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-import numpy as np
 
 from app.core.database import get_db
-from app.services.recommendations_service import RecommendationsService
 from app.core.metrics_logger import metrics_logger
+from app.services.recommendations_service import RecommendationsService
 
 
 @pytest.mark.asyncio
@@ -21,15 +22,15 @@ async def test_metrics_under_load(app, async_client: AsyncClient):
     concurrent_limit = 10
 
     async def make_request():
-        return await async_client.get(f"/teams/{team_id}/recommendations/quality-metrics")
+        return await async_client.get(
+            f"/teams/{team_id}/recommendations/quality-metrics"
+        )
 
     # Execute requests in batches to simulate realistic load
     responses = []
     for i in range(0, num_requests, concurrent_limit):
         batch = min(concurrent_limit, num_requests - i)
-        batch_responses = await asyncio.gather(
-            *[make_request() for _ in range(batch)]
-        )
+        batch_responses = await asyncio.gather(*[make_request() for _ in range(batch)])
         responses.extend(batch_responses)
 
     # Verify responses
@@ -42,7 +43,9 @@ async def test_metrics_under_load(app, async_client: AsyncClient):
     response_times = [r.elapsed.total_seconds() for r in responses]
     p95_time = np.percentile(response_times, 95)
 
-    assert p95_time < 0.2, f"95th percentile response time {p95_time:.3f}s exceeds 200ms limit"
+    assert (
+        p95_time < 0.2
+    ), f"95th percentile response time {p95_time:.3f}s exceeds 200ms limit"
 
 
 @pytest.mark.asyncio
@@ -57,15 +60,21 @@ async def test_metrics_with_network_issues(app, async_client: AsyncClient):
             raise ConnectionError("Simulated network issue")
         return Mock(scalar=lambda: np.random.randint(1, 100))
 
-    with patch('sqlalchemy.ext.asyncio.AsyncSession.execute', side_effect=flaky_db_call):
+    with patch(
+        "sqlalchemy.ext.asyncio.AsyncSession.execute", side_effect=flaky_db_call
+    ):
         responses = await asyncio.gather(
-            *[async_client.get(f"/teams/{team_id}/recommendations/quality-metrics")
-              for _ in range(20)],
-            return_exceptions=True
+            *[
+                async_client.get(f"/teams/{team_id}/recommendations/quality-metrics")
+                for _ in range(20)
+            ],
+            return_exceptions=True,
         )
 
     # Analyze results
-    success_count = sum(1 for r in responses if hasattr(r, 'status_code') and r.status_code == 200)
+    success_count = sum(
+        1 for r in responses if hasattr(r, "status_code") and r.status_code == 200
+    )
     error_count = len(responses) - success_count
 
     # Some requests should succeed despite network issues
@@ -80,7 +89,9 @@ async def test_metrics_cache_resilience(app, async_client: AsyncClient):
     team_id = "test-team-id"
 
     # First request to populate cache
-    initial_response = await async_client.get(f"/teams/{team_id}/recommendations/quality-metrics")
+    initial_response = await async_client.get(
+        f"/teams/{team_id}/recommendations/quality-metrics"
+    )
     assert initial_response.status_code == 200
     initial_data = initial_response.json()
 
@@ -88,9 +99,11 @@ async def test_metrics_cache_resilience(app, async_client: AsyncClient):
     def db_failure(*args, **kwargs):
         raise Exception("Database unavailable")
 
-    with patch('sqlalchemy.ext.asyncio.AsyncSession.execute', side_effect=db_failure):
+    with patch("sqlalchemy.ext.asyncio.AsyncSession.execute", side_effect=db_failure):
         # Should still get cached response
-        cached_response = await async_client.get(f"/teams/{team_id}/recommendations/quality-metrics")
+        cached_response = await async_client.get(
+            f"/teams/{team_id}/recommendations/quality-metrics"
+        )
         assert cached_response.status_code == 200
         cached_data = cached_response.json()
 
@@ -107,9 +120,11 @@ async def test_metrics_data_consistency(app, async_client: AsyncClient):
     async def concurrent_operations():
         feedback_task = async_client.post(
             f"/work-items/recommendations/test-id/feedback",
-            json={"type": "not_useful", "reason": "too_complex"}
+            json={"type": "not_useful", "reason": "too_complex"},
         )
-        metrics_task = async_client.get(f"/teams/{team_id}/recommendations/quality-metrics")
+        metrics_task = async_client.get(
+            f"/teams/{team_id}/recommendations/quality-metrics"
+        )
 
         feedback_resp, metrics_resp = await asyncio.gather(feedback_task, metrics_task)
         return feedback_resp.status_code == 200, metrics_resp.status_code == 200
@@ -120,7 +135,9 @@ async def test_metrics_data_consistency(app, async_client: AsyncClient):
     assert all(feedback and metrics for feedback, metrics in results)
 
     # Final metrics check
-    final_metrics = await async_client.get(f"/teams/{team_id}/recommendations/quality-metrics")
+    final_metrics = await async_client.get(
+        f"/teams/{team_id}/recommendations/quality-metrics"
+    )
     assert final_metrics.status_code == 200
     metrics_data = final_metrics.json()
 

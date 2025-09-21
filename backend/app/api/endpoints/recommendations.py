@@ -1,13 +1,16 @@
 from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
+
 from app.core.auth import get_current_user
+from app.core.database import get_db
 from app.schemas.quality_metrics import QualityMetrics
-from app.schemas.recommendation import WorkItemRecommendation, RecommendationFeedback
+from app.schemas.recommendation import RecommendationFeedback, WorkItemRecommendation
 from app.services.recommendations_service import RecommendationsService
 
 router = APIRouter()
+
 
 @router.get(
     "/teams/{team_id}/recommendations/quality-metrics",
@@ -34,14 +37,12 @@ async def get_quality_metrics(
     """
     try:
         return await recommendations_service.get_quality_metrics(
-            session=db,
-            team_id=team_id
+            session=db, team_id=team_id
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 recommendations_service = RecommendationsService()
 
 

@@ -1,14 +1,16 @@
-from typing import Dict, List, Optional
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+
 from fastapi import HTTPException
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from app.domains.models.work_item import WorkItem
-from app.schemas.recommendation import WorkItemRecommendation
-from app.schemas.quality_metrics import QualityMetrics
-from app.core.cache import AsyncCache
+
 from app.core.ai_service import AIService
+from app.core.cache import AsyncCache
 from app.core.circuit_breaker import CircuitBreaker
+from app.domains.models.work_item import WorkItem
+from app.schemas.quality_metrics import QualityMetrics
+from app.schemas.recommendation import WorkItemRecommendation
 
 
 class RecommendationsService:
@@ -176,7 +178,9 @@ class RecommendationsService:
         # TODO: Implement more granular cache invalidation
         await self.cache.clear_pattern("recommendations:*")
 
-    async def get_quality_metrics(self, session: AsyncSession, team_id: str) -> QualityMetrics:
+    async def get_quality_metrics(
+        self, session: AsyncSession, team_id: str
+    ) -> QualityMetrics:
         """Get quality metrics for recommendations."""
         cache_key = f"quality:{team_id}"
         try:
@@ -190,66 +194,72 @@ class RecommendationsService:
             seven_days_ago = datetime.utcnow() - timedelta(days=7)
 
             # Get total recommendations and acceptance counts
-            total_query = select(func.count('*')).select_from(WorkItem).\
-                where(
-                    WorkItem.team_id == team_id,
-                    WorkItem.created_at >= thirty_days_ago
+            total_query = (
+                select(func.count("*"))
+                .select_from(WorkItem)
+                .where(
+                    WorkItem.team_id == team_id, WorkItem.created_at >= thirty_days_ago
                 )
+            )
             total_result = await session.execute(total_query)
             total_recommendations = total_result.scalar() or 0
 
             # Get accepted and archived counts
             status_query = (
-                select(WorkItem.status, func.count('*').label('count'))
+                select(WorkItem.status, func.count("*").label("count"))
                 .where(
-                    WorkItem.team_id == team_id,
-                    WorkItem.created_at >= thirty_days_ago
+                    WorkItem.team_id == team_id, WorkItem.created_at >= thirty_days_ago
                 )
                 .group_by(WorkItem.status)
             )
             status_result = await session.execute(status_query)
             status_counts = {status: count for status, count in status_result.all()}
 
-            accepted_count = sum(count for status, count in status_counts.items()
-                               if status != 'archived')
+            accepted_count = sum(
+                count for status, count in status_counts.items() if status != "archived"
+            )
 
             # Get recent acceptance count
-            recent_query = select(func.count('*')).select_from(WorkItem).\
-                where(
+            recent_query = (
+                select(func.count("*"))
+                .select_from(WorkItem)
+                .where(
                     WorkItem.team_id == team_id,
                     WorkItem.created_at >= seven_days_ago,
-                    WorkItem.status != 'archived'
+                    WorkItem.status != "archived",
                 )
+            )
             recent_result = await session.execute(recent_query)
             recent_accepted = recent_result.scalar() or 0
 
             # Get average confidence scores (stored in priority field)
-            confidence_query = select(func.avg(WorkItem.priority)).\
-                where(
-                    WorkItem.team_id == team_id,
-                    WorkItem.created_at >= thirty_days_ago
-                )
+            confidence_query = select(func.avg(WorkItem.priority)).where(
+                WorkItem.team_id == team_id, WorkItem.created_at >= thirty_days_ago
+            )
             confidence_result = await session.execute(confidence_query)
             avg_confidence = confidence_result.scalar() or 0.0
 
             # Get feedback reasons distribution
-            feedback_query = select(
-                WorkItem.feedback_reason,
-                func.count('*').label('count')
-            ).select_from(WorkItem).\
-                where(
+            feedback_query = (
+                select(WorkItem.feedback_reason, func.count("*").label("count"))
+                .select_from(WorkItem)
+                .where(
                     WorkItem.team_id == team_id,
                     WorkItem.created_at >= thirty_days_ago,
-                    WorkItem.status == 'archived',
-                    WorkItem.feedback_reason.isnot(None)
-                ).group_by(WorkItem.feedback_reason)
+                    WorkItem.status == "archived",
+                    WorkItem.feedback_reason.isnot(None),
+                )
+                .group_by(WorkItem.feedback_reason)
+            )
 
             feedback_result = await session.execute(feedback_query)
             feedback_counts = feedback_result.all()
             feedback_reasons = {reason: count for reason, count in feedback_counts}
             total_feedback = sum(feedback_reasons.values())
 
-            top_reason = max(feedback_counts, key=lambda x: x[1])[0] if feedback_counts else None
+            top_reason = (
+                max(feedback_counts, key=lambda x: x[1])[0] if feedback_counts else None
+            )
 
             # Get performance metrics from monitoring (synthetic data for now)
             # In production, these would come from actual monitoring metrics
@@ -257,7 +267,11 @@ class RecommendationsService:
             backend_resp_95th = 150  # Example: 150ms 95th percentile backend time
 
             result = QualityMetrics(
-                acceptance_rate=accepted_count / total_recommendations if total_recommendations > 0 else 0,
+                acceptance_rate=(
+                    accepted_count / total_recommendations
+                    if total_recommendations > 0
+                    else 0
+                ),
                 recent_acceptance_count=recent_accepted,
                 avg_confidence=avg_confidence,
                 total_recommendations=total_recommendations,
@@ -266,7 +280,7 @@ class RecommendationsService:
                 feedback_reasons=feedback_reasons,
                 ui_response_time=ui_resp_time,
                 backend_response_time_95th=backend_resp_95th,
-                updated_at=datetime.utcnow()
+                updated_at=datetime.utcnow(),
             )
 
             # Cache result
@@ -280,6 +294,5 @@ class RecommendationsService:
                 return cached
             print(f"Error calculating quality metrics: {str(e)}")
             raise HTTPException(
-                status_code=500,
-                detail="Failed to calculate quality metrics"
+                status_code=500, detail="Failed to calculate quality metrics"
             )

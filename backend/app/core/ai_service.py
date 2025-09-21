@@ -2,6 +2,7 @@
 
 import uuid
 from typing import Any, Dict, List
+
 import structlog
 
 logger = structlog.get_logger(__name__)

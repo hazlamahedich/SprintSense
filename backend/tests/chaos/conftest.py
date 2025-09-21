@@ -2,15 +2,16 @@
 
 import asyncio
 from typing import AsyncGenerator
+
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.cache_service import CacheService
 from app.core.metrics_collector import MetricsCollector
-from tests.conftest import db_session, app, async_client
+from tests.conftest import app, async_client, db_session
 
 
 @pytest_asyncio.fixture
@@ -41,7 +42,9 @@ async def metrics_collector(
 
 
 @pytest_asyncio.fixture
-async def chaos_app(app, cache_service: CacheService, metrics_collector: MetricsCollector):
+async def chaos_app(
+    app, cache_service: CacheService, metrics_collector: MetricsCollector
+):
     """Configure FastAPI app with chaos test dependencies."""
     from app.core.dependencies import get_cache_service, get_metrics_collector
 

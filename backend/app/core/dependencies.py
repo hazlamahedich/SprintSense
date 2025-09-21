@@ -1,14 +1,13 @@
 """FastAPI dependency providers."""
 
 from fastapi import Depends
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.cache_service import CacheService
-from app.core.metrics_collector import MetricsCollector
 from app.core.config import settings
+from app.core.metrics_collector import MetricsCollector
 from app.infra.db import get_session
-
-from redis.asyncio import Redis
 
 
 async def get_redis_connection() -> Redis:

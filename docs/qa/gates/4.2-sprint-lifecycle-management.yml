@@ -1,0 +1,8 @@
+schema: 1
+story: '4.2'
+gate: PASS
+status_reason: 'All concerns have been addressed in the story document.'
+reviewer: 'Sarah (Product Owner)'
+updated: '2025-09-21T22:00:00Z'
+top_issues: []
+waiver: { active: false }

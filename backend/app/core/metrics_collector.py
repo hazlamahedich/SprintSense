@@ -2,15 +2,13 @@
 
 import asyncio
 import datetime
-import time
-from typing import Dict, Optional
+from typing import Optional
 
 import structlog
 from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.core.metrics_logger import metrics_logger
 from app.domains.schemas.quality_metrics import QualityMetricsResponse
 
@@ -98,7 +96,8 @@ class MetricsCollector:
         try:
             # Get recommendation stats
             stats_result = await session.execute(
-                text("""
+                text(
+                    """
                     SELECT
                         COUNT(*) as total_count,
                         SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted_count,
@@ -107,34 +106,39 @@ class MetricsCollector:
                     FROM recommendations
                     WHERE team_id = :team_id
                     AND created_at >= NOW() - INTERVAL '1 hour'
-                """),
+                """
+                ),
                 {"team_id": team_id},
             )
             stats = stats_result.fetchone()
 
             # Get feedback distribution
             feedback_result = await session.execute(
-                text("""
+                text(
+                    """
                     SELECT feedback_type, COUNT(*)
                     FROM recommendation_feedback
                     WHERE team_id = :team_id
                     AND created_at >= NOW() - INTERVAL '1 hour'
                     GROUP BY feedback_type
-                """),
+                """
+                ),
                 {"team_id": team_id},
             )
             feedback_dist = {r[0]: r[1] for r in feedback_result}
 
             # Get feedback reasons
             reasons_result = await session.execute(
-                text("""
+                text(
+                    """
                     SELECT feedback_reason, COUNT(*)
                     FROM recommendation_feedback
                     WHERE team_id = :team_id
                     AND feedback_reason IS NOT NULL
                     AND created_at >= NOW() - INTERVAL '1 hour'
                     GROUP BY feedback_reason
-                """),
+                """
+                ),
                 {"team_id": team_id},
             )
             feedback_reasons = {r[0]: r[1] for r in reasons_result}
@@ -176,7 +180,9 @@ class MetricsCollector:
             # Release lock
             await self.redis.delete(lock_key)
 
-    async def get_cached_metrics(self, team_id: str) -> Optional[QualityMetricsResponse]:
+    async def get_cached_metrics(
+        self, team_id: str
+    ) -> Optional[QualityMetricsResponse]:
         """Get cached metrics for a team.
 
         Args:

@@ -6,8 +6,8 @@ This document outlines the complete fullstack architecture for SprintSense, incl
 
 ### Starter Template or Existing Project
 
-* **Decision:** We will build this Greenfield project from scratch.
-* **Rationale:** Our chosen tech stack of FastAPI (Python) + a standard React SPA does not have a common, well-supported starter template. Building from scratch using standard tools (`vite`, standard FastAPI layout) gives us maximum control and avoids fighting against a template's opinions.
+  - **Decision:** We will build this Greenfield project from scratch.
+  - **Rationale:** Our chosen tech stack of FastAPI (Python) + a standard React SPA does not have a common, well-supported starter template. Building from scratch using standard tools (`vite`, standard FastAPI layout) gives us maximum control and avoids fighting against a template's opinions.
 
 ### Change Log
 
@@ -25,21 +25,21 @@ The architecture for SprintSense is a **Modular Monolith**, deployed as a set of
 
 ### Platform and Infrastructure Choice
 
-* **Platform:** Generic Containerized Hosting
-* **Key Services:** Nginx, FastAPI/Uvicorn, PostgreSQL, Redis.
-* **Note on Support:** Official support and documentation will prioritize Linux-based Docker hosts.
+  - **Platform:** Generic Containerized Hosting
+  - **Key Services:** Nginx, FastAPI/Uvicorn, PostgreSQL, Redis.
+  - **Note on Support:** Official support and documentation will prioritize Linux-based Docker hosts.
 
 ### Data Persistence & Backup
 
-* **Production Recommendation:** It is **strongly recommended** to use an external, managed database service for production.
-* **Self-Hosted Database:** If running the database in a Docker container, the user is **fully responsible** for implementing a robust backup strategy. The self-hosting documentation will provide examples.
+  - **Production Recommendation:** It is **strongly recommended** to use an external, managed database service for production.
+  - **Self-Hosted Database:** If running the database in a Docker container, the user is **fully responsible** for implementing a robust backup strategy. The self-hosting documentation will provide examples.
 
 ### Repository Structure
 
-* **Structure:** Monorepo
-* **Monorepo Tool:** `npm workspaces`
-* **Package Organization:** `apps/web`, `apps/api`, `packages/shared-types`.
-* **Type Safety Strategy:** We will use `openapi-typescript-codegen` to automatically generate TypeScript interfaces from the FastAPI OpenAPI specification.
+  - **Structure:** Monorepo
+  - **Monorepo Tool:** `npm workspaces`
+  - **Package Organization:** `apps/web`, `apps/api`, `packages/shared-types`.
+  - **Type Safety Strategy:** We will use `openapi-typescript-codegen` to automatically generate TypeScript interfaces from the FastAPI OpenAPI specification.
 
 ### High Level Architecture Diagram
 
@@ -64,10 +64,10 @@ graph TD
 
 ### Architectural Patterns
 
-* **Modular Monolith:** The backend will be a single deployable application with strict internal boundaries between modules.
-* **Component-Based UI:** The frontend will be built as a collection of reusable React components.
-* **Repository Pattern:** The backend will use a data access layer to abstract database logic.
-* **API Gateway:** The main FastAPI application will serve as the single entry point for all client requests.
+  - **Modular Monolith:** The backend will be a single deployable application with strict internal boundaries between modules.
+  - **Component-Based UI:** The frontend will be built as a collection of reusable React components.
+  - **Repository Pattern:** The backend will use a data access layer to abstract database logic.
+  - **API Gateway:** The main FastAPI application will serve as the single entry point for all client requests.
 
 ---
 
@@ -217,51 +217,51 @@ C4Container
 
 **1. Web Server (Nginx)**
 
-* **Responsibility:** Serves the static assets for the React SPA. Acts as a reverse proxy, directing API requests to the backend service.
-* **Dependencies:** Frontend App (files), Backend Monolith (API).
-* **Technology Stack:** Nginx.
+  - **Responsibility:** Serves the static assets for the React SPA. Acts as a reverse proxy, directing API requests to the backend service.
+  - **Dependencies:** Frontend App (files), Backend Monolith (API).
+  - **Technology Stack:** Nginx.
 
 **2. Frontend App (React SPA)**
 
-* **Responsibility:** Renders the UI, manages local UI state.
-* **Dependencies:** Web Server (for API calls).
-* **Technology Stack:** React, MUI, Zustand, Vite.
+  - **Responsibility:** Renders the UI, manages local UI state.
+  - **Dependencies:** Web Server (for API calls).
+  - **Technology Stack:** React, MUI, Zustand, Vite.
 
 **3. Backend Monolith (FastAPI)**
 
-* **Responsibility:** The container for all backend modules.
-* **Dependencies:** Database, Cache.
-* **Technology Stack:** FastAPI, Python.
+  - **Responsibility:** The container for all backend modules.
+  - **Dependencies:** Database, Cache.
+  - **Technology Stack:** FastAPI, Python.
 
 **4. Auth Service (Internal Module)**
 
-* **Responsibility:** Manages user identity, registration, login, and sessions.
-* **Dependencies:** Database, Cache.
+  - **Responsibility:** Manages user identity, registration, login, and sessions.
+  - **Dependencies:** Database, Cache.
 
 **5. Team Service (Internal Module)**
 
-* **Responsibility:** Manages teams and user membership/roles.
-* **Dependencies:** Database, Auth Service.
+  - **Responsibility:** Manages teams and user membership/roles.
+  - **Dependencies:** Database, Auth Service.
 
 **6. Backlog & Sprint Service (Internal Module)**
 
-* **Responsibility:** Manages Work Items and Sprints.
-* **Dependencies:** Database, Team Service (for permissions).
+  - **Responsibility:** Manages Work Items and Sprints.
+  - **Dependencies:** Database, Team Service (for permissions).
 
 **7. AI Prioritization Service (Internal Module)**
 
-* **Responsibility:** Ranks backlog items based on project goals.
-* **Dependencies:** Backlog & Sprint Service (to get data).
+  - **Responsibility:** Ranks backlog items based on project goals.
+  - **Dependencies:** Backlog & Sprint Service (to get data).
 
 **8. AI Retrospective Service (Internal Module)**
 
-* **Responsibility:** Analyzes retrospective feedback for themes and sentiment.
-* **Dependencies:** Backlog & Sprint Service (to get data).
+  - **Responsibility:** Analyzes retrospective feedback for themes and sentiment.
+  - **Dependencies:** Backlog & Sprint Service (to get data).
 
 **9. AI Simulation Service (Internal Module)**
 
-* **Responsibility:** Forecasts sprint outcomes based on historical velocity.
-* **Dependencies:** Backlog & Sprint Service (to get data).
+  - **Responsibility:** Forecasts sprint outcomes based on historical velocity.
+  - **Dependencies:** Backlog & Sprint Service (to get data).
 
 ---
 

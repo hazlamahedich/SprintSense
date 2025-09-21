@@ -2,11 +2,11 @@
 
 ## Goals
 
-* Achieve 10 active pilot teams within the first 4 months.
-* Achieve a 20% improvement in sprint predictability for pilot teams.
-* Receive high user satisfaction scores for the core AI-powered features.
-* Increase participation rates in sprint planning and retrospective activities.
-* Establish a sustainable business model with growing MRR from premium features.
+  - Achieve 10 active pilot teams within the first 4 months.
+  - Achieve a 20% improvement in sprint predictability for pilot teams.
+  - Receive high user satisfaction scores for the core AI-powered features.
+  - Increase participation rates in sprint planning and retrospective activities.
+  - Establish a sustainable business model with growing MRR from premium features.
 
 ## Background Context
 

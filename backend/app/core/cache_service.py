@@ -8,6 +8,7 @@ from redis.asyncio import Redis
 
 logger = structlog.get_logger(__name__)
 
+
 class CacheService:
     """Redis-based caching service with resilient operations."""
 

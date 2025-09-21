@@ -4,8 +4,8 @@ This document outlines the complete fullstack architecture for SprintSense, incl
 
 ## Starter Template or Existing Project
 
-* **Decision:** We will build this Greenfield project from scratch.
-* **Rationale:** Our chosen tech stack of FastAPI (Python) + a standard React SPA does not have a common, well-supported starter template. Building from scratch using standard tools (`vite`, standard FastAPI layout) gives us maximum control and avoids fighting against a template's opinions.
+  - **Decision:** We will build this Greenfield project from scratch.
+  - **Rationale:** Our chosen tech stack of FastAPI (Python) + a standard React SPA does not have a common, well-supported starter template. Building from scratch using standard tools (`vite`, standard FastAPI layout) gives us maximum control and avoids fighting against a template's opinions.
 
 ## Change Log
 

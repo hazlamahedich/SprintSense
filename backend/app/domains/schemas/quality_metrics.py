@@ -1,6 +1,7 @@
 """Schemas for quality metrics endpoints."""
 
-from typing import Dict, Optional
+from typing import Dict
+
 from pydantic import BaseModel, Field
 
 

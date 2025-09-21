@@ -1,10 +1,12 @@
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, patch
+
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.recommendations_service import RecommendationsService
+
 from app.models.work_item import WorkItem
 from app.schemas.recommendation import WorkItemRecommendation
+from app.services.recommendations_service import RecommendationsService
 
 
 @pytest.fixture
