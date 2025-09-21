@@ -139,3 +139,99 @@ class TestTeamsAPI:
         )
 
         assert response.status_code == 422
+
+    @pytest.mark.asyncio
+    async def test_get_team_success(
+        self,
+        test_user: User,
+        auth_headers_for_user: Dict[str, str],
+        async_client: AsyncClient,
+    ):
+        """Test successful team retrieval."""
+        # First create a team
+        team_data = {"name": "Test Team For Retrieval"}
+        create_response = await async_client.post(
+            "/api/v1/teams/", json=team_data, headers=auth_headers_for_user
+        )
+
+        assert create_response.status_code == 201
+        team_id = create_response.json()["team"]["id"]
+
+        # Now try to retrieve it
+        get_response = await async_client.get(
+            f"/api/v1/teams/{team_id}", headers=auth_headers_for_user
+        )
+
+        assert get_response.status_code == 200
+        data = get_response.json()
+        assert data["name"] == "Test Team For Retrieval"
+        assert data["id"] == team_id
+        assert len(data["members"]) == 1
+        assert data["members"][0]["user_id"] == str(test_user.id)
+        assert data["members"][0]["role"] == "owner"
+
+    @pytest.mark.asyncio
+    async def test_get_team_not_found(
+        self,
+        auth_headers_for_user: Dict[str, str],
+        async_client: AsyncClient,
+    ):
+        """Test 404 response for non-existent team."""
+        non_existent_id = "12345678-1234-5678-1234-567812345678"
+        response = await async_client.get(
+            f"/api/v1/teams/{non_existent_id}", headers=auth_headers_for_user
+        )
+
+        assert response.status_code == 404
+        data = response.json()
+        assert data["code"] == "TEAM_NOT_FOUND"
+
+    @pytest.mark.asyncio
+    async def test_get_team_unauthorized_access(
+        self,
+        test_user: User,
+        other_test_user: User,  # Another user who is not a team member
+        auth_headers_for_user: Dict[str, str],
+        auth_headers_for_other_user: Dict[str, str],
+        async_client: AsyncClient,
+    ):
+        """Test 403 response when non-member tries to access team."""
+        # Create team as first user
+        team_data = {"name": "Restricted Team"}
+        create_response = await async_client.post(
+            "/api/v1/teams/", json=team_data, headers=auth_headers_for_user
+        )
+
+        assert create_response.status_code == 201
+        team_id = create_response.json()["team"]["id"]
+
+        # Try to access as other user
+        get_response = await async_client.get(
+            f"/api/v1/teams/{team_id}", headers=auth_headers_for_other_user
+        )
+
+        assert get_response.status_code == 403
+        data = get_response.json()
+        assert data["code"] == "NOT_TEAM_MEMBER"
+
+    @pytest.mark.asyncio
+    async def test_get_team_no_auth(
+        self,
+        test_user: User,
+        auth_headers_for_user: Dict[str, str],
+        async_client: AsyncClient,
+    ):
+        """Test 401 response when no authentication provided."""
+        # First create a team
+        team_data = {"name": "Auth Required Team"}
+        create_response = await async_client.post(
+            "/api/v1/teams/", json=team_data, headers=auth_headers_for_user
+        )
+
+        assert create_response.status_code == 201
+        team_id = create_response.json()["team"]["id"]
+
+        # Try to access without auth headers
+        get_response = await async_client.get(f"/api/v1/teams/{team_id}")
+
+        assert get_response.status_code == 401

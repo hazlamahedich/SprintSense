@@ -8,6 +8,8 @@ export const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Include cookies for authentication
+  xsrfHeaderName: 'X-CSRF-Token',
+  xsrfCookieName: 'csrf_token',
 })
 
 // Add request interceptor for logging (development only)

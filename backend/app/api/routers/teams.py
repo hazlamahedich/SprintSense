@@ -22,8 +22,10 @@ from app.domains.schemas.project_goal import (
     ProjectGoalResponse,
     ProjectGoalUpdateRequest,
 )
+from app.domains.schemas.team import TeamResponse
 from app.domains.schemas.work_item import WorkItemCreateRequest, WorkItemResponse
 from app.domains.services.project_goal_service import ProjectGoalService
+from app.domains.services.team_service import TeamService
 from app.domains.services.work_item_service import WorkItemService
 from app.infra.db import get_session
 
@@ -36,6 +38,13 @@ async def get_work_item_service(
 ) -> WorkItemService:
     """Dependency to get work item service with database session."""
     return WorkItemService(db)
+
+
+async def get_team_service(
+    db: AsyncSession = Depends(get_session),
+) -> TeamService:
+    """Dependency to get team service with database session."""
+    return TeamService(db)
 
 
 async def get_project_goal_service(
@@ -677,6 +686,216 @@ async def delete_project_goal(
         )
 
 
+@router.get(
+    "/{team_id}",
+    response_model=TeamResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        404: {"description": "Team not found"},
+        403: {"description": "Forbidden - No access to team"},
+        401: {"description": "Unauthorized"},
+    },
+    summary="Get team by ID",
+    description="Retrieve a team's details by its ID. Team members can view team details.",
+)
+async def get_team_by_id(
+    team_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    team_service: TeamService = Depends(get_team_service),
+) -> TeamResponse:
+    """
+    Get a team by its ID.
+
+    Args:
+        team_id: UUID of the team to retrieve
+        current_user: Authenticated user making the request
+        team_service: Team service dependency
+
+    Returns:
+        TeamResponse: The requested team's details
+
+    Raises:
+        HTTPException: 404 if team not found, 403 if user doesn't have access
+    """
+    logger.info(
+        "Fetching team",
+        team_id=str(team_id),
+        user_id=str(current_user.id),
+    )
+
+    try:
+        # Get team with members
+        team = await team_service.get_team_by_id(team_id)
+        if not team:
+            logger.warning(
+                "Team not found",
+                team_id=str(team_id),
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "code": "TEAM_NOT_FOUND",
+                    "message": "Team not found",
+                    "recovery_action": "Please verify the team ID and try again.",
+                },
+            )
+
+        # Check if user has access to team
+        user_member = next(
+            (member for member in team.members if member.user_id == current_user.id),
+            None,
+        )
+        if not user_member:
+            logger.warning(
+                "Unauthorized team access attempt",
+                team_id=str(team_id),
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "NOT_TEAM_MEMBER",
+                    "message": "You do not have access to this team.",
+                    "recovery_action": "Please request access from the team owner.",
+                },
+            )
+
+        logger.info(
+            "Team fetched successfully",
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        return TeamResponse.model_validate(team)
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error(
+            "Unexpected error fetching team",
+            error=str(e),
+            error_type=type(e).__name__,
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while fetching the team.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
+            },
+        )
+
+
+@router.get(
+    "/{team_id}",
+    response_model=TeamResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        404: {"description": "Team not found"},
+        403: {"description": "Forbidden - No access to team"},
+        401: {"description": "Unauthorized"},
+    },
+    summary="Get team by ID",
+    description="Get team details by ID. Requires team membership.",
+)
+async def get_team_by_id(
+    team_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    team_service: TeamService = Depends(get_team_service),
+) -> TeamResponse:
+    """
+    Get a team by its ID.
+
+    Args:
+        team_id: UUID of the team to retrieve
+        current_user: Authenticated user making the request
+        team_service: Team service dependency
+
+    Returns:
+        TeamResponse: The requested team's details
+
+    Raises:
+        HTTPException: 404 if team not found, 403 if user doesn't have access
+    """
+    logger.info(
+        "Fetching team",
+        team_id=str(team_id),
+        user_id=str(current_user.id),
+    )
+
+    try:
+        # Get team with members
+        team = await team_service.get_team_by_id(team_id)
+        if not team:
+            logger.warning(
+                "Team not found",
+                team_id=str(team_id),
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "code": "TEAM_NOT_FOUND",
+                    "message": "Team not found",
+                    "recovery_action": "Please verify the team ID and try again.",
+                },
+            )
+
+        # Check if user has access to team
+        user_member = next(
+            (member for member in team.members if member.user_id == current_user.id),
+            None,
+        )
+        if not user_member:
+            logger.warning(
+                "Unauthorized team access attempt",
+                team_id=str(team_id),
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "NOT_TEAM_MEMBER",
+                    "message": "You do not have access to this team.",
+                    "recovery_action": "Please request access from the team owner.",
+                },
+            )
+
+        logger.info(
+            "Team fetched successfully",
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        return TeamResponse.model_validate(team)
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error(
+            "Unexpected error fetching team",
+            error=str(e),
+            error_type=type(e).__name__,
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while fetching the team.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
+            },
+        )
+
+
 @router.get("/health", include_in_schema=False)
 async def teams_health_check() -> Dict[str, Any]:
     """Health check for teams router."""
@@ -684,6 +903,7 @@ async def teams_health_check() -> Dict[str, Any]:
         "status": "OK",
         "router": "teams",
         "endpoints": [
+            "GET /{team_id}",
             "GET /{team_id}/goals",
             "POST /{team_id}/goals",
             "PUT /{team_id}/goals/{goal_id}",

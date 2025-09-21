@@ -65,6 +65,10 @@
 * **Story 3.4: Suggest and Create Epics from Clusters**
   * As a Product Owner, I want the AI to suggest clusters of related items and allow me to create a new epic from them, so that I can more easily organize my backlog.
   * **AC:** 1. "Analyze Backlog" button exists. 2. Backend service identifies clusters. 3. UI displays clusters. 4. User can "Create Epic" from a cluster. 5. Form pre-populates the new epic with clustered items.
+* **Story 3.5: AI-Enhanced Work Item Dependencies** (Added 2025-09-21)
+  * As a Product Owner, I want the AI to analyze and suggest work item dependencies based on content similarity and historical patterns, so that I can better understand and manage work item relationships.
+  * **AC:** 1. AI service analyzes work item relationships. 2. Dependency suggestions displayed in UI. 3. User can accept/reject suggestions. 4. Performance requirements met. 5. Integration with existing AI features maintained.
+  * **Note:** This story was added after initial epic planning. See `/docs/prd/epic-changes.md` for impact analysis and mitigation strategies.
 
 ## Epic 4: Sprint Management & Execution
 

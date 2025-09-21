@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.14"
 fastapi = "^0.109.0"
 uvicorn = {extras = ["standard"], version = "^0.27.0"}
 structlog = "^24.1.0"
@@ -25,6 +25,12 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-jose = "^3.5.0"
 httpx = "^0.26.0"
 prometheus-client = "^0.23.1"
+transformers = "^4.56.2"
+torch = "^2.8.0"
+xgboost = "^3.0.5"
+scikit-learn = "^1.7.2"
+numpy = "^2.3.3"
+pandas = "^2.3.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

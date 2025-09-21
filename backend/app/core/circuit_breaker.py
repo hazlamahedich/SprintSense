@@ -3,7 +3,16 @@
 import time
 from enum import Enum
 from typing import Any, Optional
+
 from fastapi import HTTPException
+
+
+class CircuitBreakerError(Exception):
+    """Raised when circuit is open and operation is blocked."""
+
+    pass
+
+
 import structlog
 
 logger = structlog.get_logger(__name__)
@@ -77,10 +86,7 @@ class CircuitBreaker:
                     circuit=self.name,
                     recovery_in=self._time_until_recovery(),
                 )
-                raise HTTPException(
-                    status_code=503,
-                    detail="Service temporarily unavailable",
-                )
+                raise CircuitBreakerError("Service temporarily unavailable")
 
     async def _handle_failure(self) -> None:
         """Handle a failed request."""

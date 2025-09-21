@@ -27,11 +27,17 @@ import { useAppStore } from '../store/appStore'
 import { teamsApi } from '../services/api'
 import { InviteUserModal, PendingInvitations } from '../components/team'
 
+interface TeamMember {
+  user_id: string
+  role: string
+}
+
 interface Team {
   id: string
   name: string
   created_at: string
   updated_at?: string
+  members: TeamMember[]
 }
 
 export const TeamDashboardPage: React.FC = () => {
@@ -56,7 +62,7 @@ export const TeamDashboardPage: React.FC = () => {
 
       try {
         const teamData = await teamsApi.getTeam(teamId)
-        setTeam(teamData.team)
+        setTeam(teamData)
       } catch (err: unknown) {
         console.error('Failed to fetch team:', err)
 

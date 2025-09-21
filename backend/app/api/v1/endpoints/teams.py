@@ -23,7 +23,7 @@ from app.domains.schemas.invitation import (
     InvitationCreateResponse,
     InvitationListResponse,
 )
-from app.domains.schemas.team import TeamCreateRequest, TeamCreateResponse
+from app.domains.schemas.team import TeamCreateRequest, TeamCreateResponse, TeamResponse
 from app.domains.schemas.work_item import (
     PriorityUpdateRequest,
     WorkItemCreateRequest,
@@ -40,12 +40,8 @@ logger = structlog.get_logger(__name__)
 
 router = APIRouter()
 
-# In-memory lightweight cache for quality metrics to satisfy chaos tests
-# Keyed by team_id with TTL in seconds
-_quality_metrics_cache: dict[str, dict] = {}
-_quality_metrics_cache_ttl_seconds = 60
 
-
+# Dependency providers MUST be defined before being referenced in route decorators
 async def get_team_service(db: AsyncSession = Depends(get_session)) -> TeamService:
     """Dependency to get team service with database session."""
     return TeamService(db)
@@ -63,6 +59,120 @@ async def get_work_item_service(
 ) -> WorkItemService:
     """Dependency to get work item service with database session."""
     return WorkItemService(db)
+
+
+@router.get(
+    "/{team_id}",
+    response_model=TeamResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        404: {"description": "Team not found"},
+        403: {"description": "Forbidden - user does not have access"},
+        401: {"description": "Unauthorized - authentication required"},
+    },
+    summary="Get team by ID",
+    description="Get details for a specific team. User must be authenticated and a member of the team.",
+)
+async def get_team(
+    team_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    team_service: TeamService = Depends(get_team_service),
+) -> TeamResponse:
+    """Get a team by its ID.
+
+    The user must be authenticated and a member of the team to access its details.
+
+    Args:
+        team_id: UUID of the team to retrieve
+        current_user: Currently authenticated user making the request
+        team_service: Team service dependency injection
+
+    Returns:
+        TeamResponse: The requested team's details including members
+
+    Raises:
+        HTTPException:
+            - 404: Team not found
+            - 403: User is not a team member
+            - 401: User is not authenticated
+    """
+    logger.info(
+        "Team details request", team_id=str(team_id), user_id=str(current_user.id)
+    )
+
+    try:
+        # Get team with members
+        team = await team_service.get_team_by_id(team_id)
+        if not team:
+            logger.warning(
+                "Team not found", team_id=str(team_id), user_id=str(current_user.id)
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "code": "TEAM_NOT_FOUND",
+                    "message": "The requested team was not found.",
+                    "recovery_action": "Please verify the team ID and try again.",
+                },
+            )
+
+        # Check if user has access (is a team member)
+        user_member = next(
+            (member for member in team.members if member.user_id == current_user.id),
+            None,
+        )
+        if not user_member:
+            logger.warning(
+                "Unauthorized team access attempt",
+                team_id=str(team_id),
+                user_id=str(current_user.id),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "NOT_TEAM_MEMBER",
+                    "message": "You do not have access to this team.",
+                    "recovery_action": "Please request access from the team owner.",
+                },
+            )
+
+        logger.info(
+            "Team details retrieved successfully",
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+
+        return TeamResponse.model_validate(team)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            "Unexpected error retrieving team",
+            error=str(e),
+            error_type=type(e).__name__,
+            team_id=str(team_id),
+            user_id=str(current_user.id),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred while retrieving the team.",
+                "recovery_action": "Please try again. If the problem persists, contact support.",
+            },
+        )
+
+
+async def get_team_service(db: AsyncSession = Depends(get_session)) -> TeamService:
+    """Dependency to get team service with database session."""
+    return TeamService(db)
+
+
+# In-memory lightweight cache for quality metrics to satisfy chaos tests
+# Keyed by team_id with TTL in seconds
+_quality_metrics_cache: dict[str, dict] = {}
+_quality_metrics_cache_ttl_seconds = 60
 
 
 @router.post(

@@ -23,7 +23,7 @@ import { Alert, AlertDescription } from '../components/ui/alert'
 import {
   PlusIcon,
   ExclamationTriangleIcon,
-  RefreshCwIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline'
 
 export const BacklogPage: React.FC = () => {
@@ -207,7 +207,7 @@ export const BacklogPage: React.FC = () => {
             disabled={loading}
             className="flex items-center gap-2"
           >
-            <RefreshCwIcon
+            <ArrowPathIcon
               className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
             />
             Refresh

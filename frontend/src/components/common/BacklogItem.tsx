@@ -37,17 +37,17 @@ interface BacklogItemProps {
 }
 
 const TYPE_COLORS: Record<WorkItemType, string> = {
-  [WorkItemType.STORY]: 'bg-green-100 text-green-800',
-  [WorkItemType.TASK]: 'bg-yellow-100 text-yellow-800',
-  [WorkItemType.BUG]: 'bg-red-100 text-red-800',
+  story: 'bg-green-100 text-green-800',
+  task: 'bg-yellow-100 text-yellow-800',
+  bug: 'bg-red-100 text-red-800',
 }
 
 const STATUS_COLORS: Record<WorkItemStatus, string> = {
-  [WorkItemStatus.BACKLOG]: 'bg-slate-100 text-slate-800',
-  [WorkItemStatus.TODO]: 'bg-blue-100 text-blue-800',
-  [WorkItemStatus.IN_PROGRESS]: 'bg-orange-100 text-orange-800',
-  [WorkItemStatus.DONE]: 'bg-green-100 text-green-800',
-  [WorkItemStatus.ARCHIVED]: 'bg-gray-100 text-gray-800',
+  backlog: 'bg-slate-100 text-slate-800',
+  todo: 'bg-blue-100 text-blue-800',
+  in_progress: 'bg-orange-100 text-orange-800',
+  done: 'bg-green-100 text-green-800',
+  archived: 'bg-gray-100 text-gray-800',
 }
 
 // Priority is a numeric value from backend, we'll create utility functions for display

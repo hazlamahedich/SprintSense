@@ -1,0 +1,70 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - button [ref=e8] [cursor=pointer]:
+        - img [ref=e9] [cursor=pointer]
+      - img [ref=e11]
+      - generic [ref=e13]:
+        - heading "Restricted Team 1758431493160" [level=1] [ref=e14]
+        - paragraph [ref=e15]: Team Dashboard
+    - button "Team Settings" [ref=e17] [cursor=pointer]:
+      - img [ref=e18] [cursor=pointer]
+  - generic [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - img [ref=e25]
+          - heading "Team Information" [level=6] [ref=e27]
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - paragraph [ref=e30]: Team Name
+            - heading "Restricted Team 1758431493160" [level=6] [ref=e31]
+          - generic [ref=e32]:
+            - paragraph [ref=e33]: Created
+            - paragraph [ref=e34]: Sunday, September 21, 2025
+          - generic [ref=e35]:
+            - paragraph [ref=e36]: Your Role
+            - generic [ref=e37]:
+              - img [ref=e38]
+              - generic [ref=e40]: Owner
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - img [ref=e44]
+          - heading "Team Management" [level=6] [ref=e46]
+        - paragraph [ref=e47]: Manage your team members and send invitations to collaborate.
+        - generic [ref=e48]:
+          - button "Invite User" [ref=e49] [cursor=pointer]:
+            - img [ref=e51] [cursor=pointer]
+            - text: Invite User
+          - button "View Members" [ref=e53] [cursor=pointer]:
+            - img [ref=e55] [cursor=pointer]
+            - text: View Members
+    - generic [ref=e57]:
+      - generic [ref=e59]:
+        - heading "Quick Stats" [level=6] [ref=e60]
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - paragraph [ref=e63]: Team Members
+            - generic [ref=e65]: "1"
+          - generic [ref=e66]:
+            - paragraph [ref=e67]: Active Projects
+            - generic [ref=e69]: "0"
+          - generic [ref=e70]:
+            - paragraph [ref=e71]: Pending Invitations
+            - generic [ref=e73]: View Below
+      - generic [ref=e75]:
+        - heading "🚀 Coming Soon" [level=6] [ref=e76]
+        - paragraph [ref=e77]: Sprint planning, task management, and team analytics features will be available in upcoming releases.
+  - generic [ref=e79]:
+    - generic [ref=e80]:
+      - img [ref=e81]
+      - generic [ref=e83]: Pending Invitations
+      - generic [ref=e85]: "0"
+    - generic [ref=e86]:
+      - img [ref=e87]
+      - paragraph [ref=e89]: No pending invitations
+      - paragraph [ref=e90]: Sent invitations will appear here
+```

@@ -205,28 +205,30 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
                       </Box>
                     }
                     secondary={
-                      <Box
-                        display="flex"
-                        flexDirection="column"
-                        gap={0.5}
-                        mt={0.5}
-                      >
-                        <Typography variant="caption" color="text.secondary">
-                          Invited by {invitation.inviter_name}
-                        </Typography>
-                        <Box display="flex" alignItems="center">
-                          <TimeIcon
-                            sx={{
-                              fontSize: 14,
-                              mr: 0.5,
-                              color: 'text.secondary',
-                            }}
-                          />
-                          <Typography variant="caption" color="text.secondary">
-                            {formatDate(invitation.created_at)}
+                      <Typography component="div" variant="body2">
+                        <Box
+                          display="flex"
+                          flexDirection="column"
+                          gap={0.5}
+                          mt={0.5}
+                        >
+                          <Typography variant="caption" color="text.secondary" component="div">
+                            Invited by {invitation.inviter_name}
                           </Typography>
+                          <Box display="flex" alignItems="center">
+                            <TimeIcon
+                              sx={{
+                                fontSize: 14,
+                                mr: 0.5,
+                                color: 'text.secondary',
+                              }}
+                            />
+                            <Typography variant="caption" color="text.secondary" component="div">
+                              {formatDate(invitation.created_at)}
+                            </Typography>
+                          </Box>
                         </Box>
-                      </Box>
+                      </Typography>
                     }
                   />
 
