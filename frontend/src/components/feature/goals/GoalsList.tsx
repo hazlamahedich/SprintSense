@@ -20,7 +20,11 @@ import {
 } from '../../../types/goal.types'
 import { Button } from '../../ui/button'
 import { Card } from '../../ui/card'
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline/index.js'
 
 interface GoalsListProps {
   teamId: string

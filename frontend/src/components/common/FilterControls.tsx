@@ -19,7 +19,7 @@ import {
   FunnelIcon,
   XMarkIcon,
   MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/24/outline/index.js'
 
 interface FilterControlsProps {
   filters: WorkItemFilters

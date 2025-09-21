@@ -16,7 +16,7 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   Bars3BottomLeftIcon,
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/24/outline/index.js'
 
 interface SortControlsProps {
   sort: WorkItemSort

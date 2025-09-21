@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import {
+import type {
   WorkItem,
   WorkItemType,
   WorkItemStatus,
@@ -14,7 +14,7 @@ import {
   MinusIcon,
   PencilIcon,
   TrashIcon,
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/24/outline/index.js'
 import EditWorkItemModal from '../work-items/EditWorkItemModal'
 import DeleteWorkItemButton from '../work-items/DeleteWorkItemButton'
 import PriorityControls from '../feature/backlog/PriorityControls'
@@ -58,7 +58,9 @@ const getPriorityColor = (priority: number): string => {
   return 'bg-gray-100 text-gray-600' // Low
 }
 
-const getPriorityIcon = (priority: number) => {
+const getPriorityIcon = (
+  priority: number
+): React.ComponentType<React.SVGProps<SVGSVGElement>> => {
   if (priority >= 5) return ArrowUpIcon // High/Critical
   return MinusIcon // Low/Medium
 }

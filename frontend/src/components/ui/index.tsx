@@ -25,7 +25,7 @@ import type { ChipProps as MuiChipProps } from '@mui/material/Chip'
 import type { AlertProps as MuiAlertProps } from '@mui/material/Alert'
 
 // Button component
-export interface ButtonProps extends Omit<MuiButtonProps, 'variant'> {
+export interface ButtonProps extends Omit<MuiButtonProps, 'variant' | 'size'> {
   variant?:
     | 'default'
     | 'destructive'

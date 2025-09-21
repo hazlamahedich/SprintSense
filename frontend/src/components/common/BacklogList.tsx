@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef } from 'react'
 import { WorkItem } from '../../types/workItem.types'
 import BacklogItem from './BacklogItem'
 import { Button } from '../ui/button'
-import { RefreshCwIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon as RefreshCwIcon } from '@heroicons/react/24/outline/index.js'
 
 interface BacklogListProps {
   workItems: WorkItem[]

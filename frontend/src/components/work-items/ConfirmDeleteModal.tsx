@@ -8,7 +8,7 @@ import {
 } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Alert, AlertDescription } from '../ui/alert'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline/index.js'
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean

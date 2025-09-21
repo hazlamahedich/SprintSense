@@ -4,7 +4,7 @@ import {
   ListBulletIcon,
   Squares2X2Icon,
   TableCellsIcon,
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/24/outline/index.js'
 
 const ViewMode = {
   LIST: 'list',

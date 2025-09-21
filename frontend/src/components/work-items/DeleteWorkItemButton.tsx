@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '../ui/button'
-import { TrashIcon } from '@heroicons/react/24/outline'
+import { TrashIcon } from '@heroicons/react/24/outline/index.js'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
 
 interface DeleteWorkItemButtonProps {

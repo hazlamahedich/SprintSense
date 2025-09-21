@@ -12,7 +12,7 @@ import {
   ChevronRightIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/24/outline/index.js'
 
 interface PaginationProps {
   currentPage: number

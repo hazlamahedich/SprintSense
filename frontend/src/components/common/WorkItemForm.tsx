@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline/index.js'
 
 interface WorkItemFormProps {
   workItem?: WorkItem | null
