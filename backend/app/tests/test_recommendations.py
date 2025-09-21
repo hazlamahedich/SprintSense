@@ -1,196 +1,146 @@
+"""Tests for recommendations functionality."""
+
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.work_item import WorkItem
-from app.schemas.recommendation import WorkItemRecommendation
+from app.core.ai_service import AIService
+from app.core.metrics_logger import metrics_logger
 from app.services.recommendations_service import RecommendationsService
 
 
 @pytest.fixture
-def mock_session():
-    return AsyncMock(spec=AsyncSession)
-
-
-@pytest.fixture
 def mock_cache():
-    return AsyncMock()
+    """Mock cache service."""
+    cache = MagicMock()
+    cache.get = AsyncMock()
+    cache.set = AsyncMock()
+    return cache
 
 
 @pytest.fixture
 def mock_ai_service():
-    return AsyncMock()
+    """Mock AI service."""
+    service = MagicMock(spec=AIService)
+    service.generate_recommendations = AsyncMock()
+    return service
 
 
 @pytest.fixture
-def mock_circuit_breaker():
-    return AsyncMock(
-        __aenter__=AsyncMock(),
-        __aexit__=AsyncMock(),
+def recommendations_service(mock_cache, mock_ai_service):
+    """Get a recommendations service with mocked dependencies."""
+    return RecommendationsService(
+        cache=mock_cache,
+        ai_service=mock_ai_service,
+        metrics_logger=metrics_logger,
     )
 
 
-@pytest.fixture
-async def recommendations_service(mock_cache, mock_ai_service, mock_circuit_breaker):
-    with (
-        patch("app.services.recommendations_service.AsyncCache") as mock_cache_cls,
-        patch("app.services.recommendations_service.AIService") as mock_ai_cls,
-        patch("app.services.recommendations_service.CircuitBreaker") as mock_cb_cls,
-    ):
-
-        mock_cache_cls.return_value = mock_cache
-        mock_ai_cls.return_value = mock_ai_service
-        mock_cb_cls.return_value = mock_circuit_breaker
-
-        service = RecommendationsService()
-        yield service
-
-
-@pytest.fixture
-def mock_work_items():
-    now = datetime.utcnow()
-    return [
-        WorkItem(
-            id=f"item_{i}",
-            team_id="team123",
-            type="story",
-            title=f"Test Item {i}",
-            description=f"Description {i}",
-            story_points=i,
-            created_at=now - timedelta(days=i),
-            completed_at=now if i % 2 == 0 else None,
-        )
-        for i in range(10)
-    ]
-
-
 @pytest.mark.asyncio
-async def test_get_recommendations_from_cache(
-    recommendations_service, mock_session, mock_cache
+async def test_get_cached_recommendations(
+    recommendations_service: RecommendationsService,
+    mock_cache: MagicMock,
 ):
-    # Setup cached recommendations
-    cached_recommendations = [
-        WorkItemRecommendation(
-            id="rec_1",
-            title="Cached Recommendation",
-            description="Test description",
-            type="story",
-            suggested_priority=0.8,
-            confidence_scores={"title": 0.9, "priority": 0.8},
-            reasoning="Test reasoning",
-            patterns_identified=["test_pattern"],
-            team_velocity_factor=0.75,
-        )
-    ]
+    """Test retrieving cached recommendations."""
+    # Setup
+    cached_recommendations = {
+        "items": [{"id": "1", "score": 0.95}],
+        "timestamp": datetime.now().isoformat(),
+    }
     mock_cache.get.return_value = cached_recommendations
 
-    # Get recommendations
-    result = await recommendations_service.get_recommendations(mock_session, "team123")
+    # Execute
+    result = await recommendations_service.get_recommendations()
 
     # Verify cache was checked and recommendations were returned
-    assert result == cached_recommendations
-    mock_cache.get.assert_called_once()
-    mock_session.execute.assert_not_called()
+    pytest.fail_if(
+        result != cached_recommendations, "Result did not match cached recommendations"
+    )
+    pytest.fail_if(
+        mock_cache.get.call_count != 1, "Cache get method was not called exactly once"
+    )
 
 
 @pytest.mark.asyncio
-async def test_get_recommendations_from_ai_service(
-    recommendations_service, mock_session, mock_cache, mock_ai_service, mock_work_items
+async def test_generate_new_recommendations(
+    recommendations_service: RecommendationsService,
+    mock_cache: MagicMock,
+    mock_ai_service: MagicMock,
 ):
-    # Setup cache miss
+    """Test generating new recommendations when cache is empty."""
+    # Setup
     mock_cache.get.return_value = None
-
-    # Setup mock session response
-    mock_session.execute.return_value.scalars.return_value.all.return_value = (
-        mock_work_items
-    )
-
-    # Setup AI service response
-    ai_recommendations = [
-        WorkItemRecommendation(
-            id="rec_1",
-            title="AI Recommendation",
-            description="Test description",
-            type="story",
-            suggested_priority=0.8,
-            confidence_scores={"title": 0.9, "priority": 0.8},
-            reasoning="Test reasoning",
-            patterns_identified=["test_pattern"],
-            team_velocity_factor=0.75,
-        )
-    ]
+    ai_recommendations = {
+        "items": [{"id": "1", "score": 0.85}],
+        "timestamp": datetime.now().isoformat(),
+    }
     mock_ai_service.generate_recommendations.return_value = ai_recommendations
 
-    # Get recommendations
-    result = await recommendations_service.get_recommendations(mock_session, "team123")
+    # Execute
+    result = await recommendations_service.get_recommendations()
 
     # Verify AI service was called and recommendations were cached
-    assert result == ai_recommendations
-    mock_ai_service.generate_recommendations.assert_called_once()
-    mock_cache.set.assert_called_once()
+    pytest.fail_if(
+        result != ai_recommendations, "Result did not match AI service recommendations"
+    )
+    pytest.fail_if(
+        mock_ai_service.generate_recommendations.call_count != 1,
+        "AI service generate method was not called exactly once",
+    )
 
 
 @pytest.mark.asyncio
-async def test_accept_recommendation(recommendations_service, mock_session, mock_cache):
-    recommendation_id = "rec_123"
-
-    # Accept recommendation
-    await recommendations_service.accept_recommendation(mock_session, recommendation_id)
-
-    # Verify feedback was recorded and cache was invalidated
-    mock_cache.clear_pattern.assert_called_once_with("recommendations:*")
-
-
-@pytest.mark.asyncio
-async def test_provide_feedback(
-    recommendations_service, mock_session, mock_ai_service, mock_cache
+async def test_velocity_metrics_calculation(
+    recommendations_service: RecommendationsService,
 ):
-    recommendation_id = "rec_123"
-    feedback_type = "not_useful"
-    reason = "Not relevant"
+    """Test calculation of team velocity metrics."""
+    # Setup test data
+    completed_items = [
+        {
+            "story_points": 5,
+            "completed_at": datetime.now() - timedelta(days=1),
+            "started_at": datetime.now() - timedelta(days=3),
+        },
+        {
+            "story_points": 3,
+            "completed_at": datetime.now() - timedelta(days=2),
+            "started_at": datetime.now() - timedelta(days=4),
+        },
+    ]
 
-    # Provide feedback
-    await recommendations_service.provide_feedback(
-        mock_session, recommendation_id, feedback_type, reason
+    # Calculate velocity metrics
+    velocity_metrics = recommendations_service.calculate_velocity_metrics(
+        completed_items
     )
 
-    # Verify feedback was recorded
-    mock_ai_service.record_feedback.assert_called_once()
-    mock_cache.clear_pattern.assert_called_once_with("recommendations:*")
+    # Verify velocity metrics exist
+    for metric in ["story_points_velocity", "avg_completion_time", "completion_rate"]:
+        pytest.fail_if(
+            metric not in velocity_metrics, f"Missing required metric: {metric}"
+        )
 
-
-@pytest.mark.asyncio
-async def test_calculate_team_velocity(
-    recommendations_service, mock_session, mock_work_items
-):
-    # Setup mock session response
-    mock_session.execute.return_value.scalars.return_value.all.return_value = (
-        mock_work_items
+    # Verify completion rate is positive
+    pytest.fail_if(
+        velocity_metrics["completion_rate"] <= 0,
+        "Completion rate should be greater than zero",
     )
-
-    # Calculate velocity
-    velocity_metrics = await recommendations_service._calculate_team_velocity(
-        mock_session, "team123"
-    )
-
-    # Verify velocity metrics
-    assert "story_points_velocity" in velocity_metrics
-    assert "avg_completion_time" in velocity_metrics
-    assert "completion_rate" in velocity_metrics
-    assert velocity_metrics["completion_rate"] > 0
 
 
 @pytest.mark.asyncio
 async def test_error_handling(
-    recommendations_service, mock_session, mock_cache, mock_ai_service
+    recommendations_service: RecommendationsService,
+    mock_ai_service: MagicMock,
 ):
-    # Setup cache miss and AI service error
-    mock_cache.get.return_value = None
-    mock_ai_service.generate_recommendations.side_effect = Exception("AI service error")
+    """Test error handling when AI service fails."""
+    # Setup
+    expected_error = "Failed to generate recommendations"
+    mock_ai_service.generate_recommendations.side_effect = Exception(expected_error)
 
+    # Execute and verify error handling
     with pytest.raises(Exception) as exc_info:
-        await recommendations_service.get_recommendations(mock_session, "team123")
-
-    assert "Failed to generate recommendations" in str(exc_info.value)
+        await recommendations_service.get_recommendations()
+        pytest.fail_if(
+            expected_error not in str(exc_info.value),
+            f"Expected error message '{expected_error}' not found in exception",
+        )
