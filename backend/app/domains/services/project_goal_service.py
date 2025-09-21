@@ -444,4 +444,3 @@ class ProjectGoalService:
                 },
                 recovery_action="Please modify the goal description or update the existing goal",
             )
-

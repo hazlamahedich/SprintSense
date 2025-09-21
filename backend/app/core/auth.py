@@ -79,4 +79,3 @@ async def get_current_user(
 
     logger.info("User authenticated successfully", user_id=user_id_str)
     return user
-

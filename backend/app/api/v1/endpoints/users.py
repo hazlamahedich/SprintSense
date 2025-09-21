@@ -107,4 +107,3 @@ async def get_current_user_profile(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="Authentication not yet implemented",
     )
-

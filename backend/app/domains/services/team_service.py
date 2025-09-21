@@ -111,4 +111,3 @@ class TeamService:
         )
         team_member = result.scalars().first()
         return team_member is not None
-

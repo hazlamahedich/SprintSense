@@ -61,4 +61,3 @@ class InvitationListResponse(BaseModel):
     """Response schema for invitation list."""
 
     invitations: list[InvitationListItem]
-

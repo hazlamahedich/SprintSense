@@ -30,4 +30,3 @@ Set environment variables or create a `.env` file:
 - `POSTGRES_DB` - PostgreSQL database name
 - `ENVIRONMENT` - Environment (development/production)
 - `LOG_LEVEL` - Logging level (DEBUG/INFO/WARNING/ERROR)
-

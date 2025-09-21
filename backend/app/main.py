@@ -119,4 +119,3 @@ async def root() -> Dict[str, str]:
 
 # Instrument with OpenTelemetry
 instrument_fastapi(app)
-

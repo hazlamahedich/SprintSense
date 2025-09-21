@@ -289,4 +289,3 @@ def pytest_configure(config):
         "markers",
         "integration: mark test as integration test requiring external services",
     )
-

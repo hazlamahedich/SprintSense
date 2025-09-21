@@ -192,4 +192,3 @@ async def test_error_handling(
         await recommendations_service.get_recommendations(mock_session, "team123")
 
     assert "Failed to generate recommendations" in str(exc_info.value)
-

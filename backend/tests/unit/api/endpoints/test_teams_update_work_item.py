@@ -575,4 +575,3 @@ class TestUpdateTeamWorkItem:
             response_data = response.json()
             assert response_data["detail"]["error"] == "validation_error"
             assert "modified by another user" in response_data["detail"]["message"]
-

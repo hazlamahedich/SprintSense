@@ -32,4 +32,3 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Remove feedback_reason column from work_items table."""
     op.drop_column('work_items', 'feedback_reason')
-

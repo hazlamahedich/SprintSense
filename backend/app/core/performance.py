@@ -269,4 +269,3 @@ class PerformanceMiddleware:
                 await self.app(scope, receive, send)
         else:
             await self.app(scope, receive, send)
-

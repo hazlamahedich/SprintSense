@@ -225,4 +225,3 @@ class TestAuthAPI:
         # Empty request body
         response3 = client.post("/api/v1/auth/login", json={})
         assert response3.status_code == 422
-

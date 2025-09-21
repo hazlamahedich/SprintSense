@@ -77,4 +77,3 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_project_goals_created_at"), table_name="project_goals")
     op.drop_table("project_goals")
     # ### end Alembic commands ###
-

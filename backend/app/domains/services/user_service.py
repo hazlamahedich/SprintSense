@@ -95,4 +95,3 @@ class UserService:
         """Check if email address is already taken."""
         user = await self.get_user_by_email(email)
         return user is not None
-

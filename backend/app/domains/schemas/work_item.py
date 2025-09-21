@@ -188,4 +188,3 @@ class PriorityUpdateRequest(BaseModel):
             if v < 1:
                 raise ValueError("Position must be positive (1-based index)")
         return v
-

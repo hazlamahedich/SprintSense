@@ -135,4 +135,3 @@ class TestJWT:
             assert decoded is not None
             for key, value in payload.items():
                 assert decoded[key] == value
-

@@ -293,4 +293,3 @@ def test_work_item_story_points_values():
         story_points=5,
     )
     assert points_item.story_points == 5
-

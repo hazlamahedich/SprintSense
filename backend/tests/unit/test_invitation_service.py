@@ -351,4 +351,3 @@ async def test_get_invitation_by_id(
     # Assert
     assert result == sample_invitation
     mock_db_session.execute.assert_called_once()
-

@@ -267,4 +267,3 @@ async def test_list_team_invitations_empty_list(
     mock_invitation_service.get_team_invitations.assert_called_once_with(
         uuid.UUID(str(team_id))
     )
-

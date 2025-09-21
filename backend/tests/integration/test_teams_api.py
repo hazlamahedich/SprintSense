@@ -139,4 +139,3 @@ class TestTeamsAPI:
         )
 
         assert response.status_code == 422
-
