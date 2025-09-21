@@ -792,7 +792,7 @@ async def get_team_by_id(
 
 
 @router.get(
-    "/{team_id}",
+    "/{team_id}/details",
     response_model=TeamResponse,
     status_code=status.HTTP_200_OK,
     responses={
@@ -800,10 +800,10 @@ async def get_team_by_id(
         403: {"description": "Forbidden - No access to team"},
         401: {"description": "Unauthorized"},
     },
-    summary="Get team by ID",
+    summary="Get team details",
     description="Get team details by ID. Requires team membership.",
 )
-async def get_team_by_id(
+async def get_team_details(
     team_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
     team_service: TeamService = Depends(get_team_service),

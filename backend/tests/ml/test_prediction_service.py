@@ -6,8 +6,6 @@ from unittest.mock import Mock, patch
 import pytest
 
 from app.core.circuit_breaker import CircuitBreakerError
-from app.domains.ml.models.pattern_recognition import PatternRecognitionModel
-from app.domains.ml.models.priority_prediction import PriorityPredictionModel
 from app.domains.ml.services.prediction_service import PredictionService
 
 # Test data

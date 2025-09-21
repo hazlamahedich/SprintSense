@@ -4,18 +4,15 @@ import time
 from enum import Enum
 from typing import Any, Optional
 
-from fastapi import HTTPException
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 class CircuitBreakerError(Exception):
     """Raised when circuit is open and operation is blocked."""
 
     pass
-
-
-import structlog
-
-logger = structlog.get_logger(__name__)
 
 
 class CircuitState(str, Enum):
