@@ -64,10 +64,12 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
     onError: (_error) => {
       setSnackbar({
         open: true,
-        message: errorMessage,
+        message: error?.message || 'Failed to update priority',
         severity: 'error',
       })
-      onError?.(errorMessage)
+      onError?.(
+        error instanceof Error ? error.message : 'Failed to update priority'
+      )
     },
     onConflict: (conflictMessage) => {
       setSnackbar({

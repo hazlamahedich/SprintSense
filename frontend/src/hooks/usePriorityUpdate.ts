@@ -63,14 +63,15 @@ export const usePriorityUpdate = (
 
         return updatedItem
       } catch (error: unknown) {
+        const err = error as any
         const errorMessage =
-          err.response?.data?.detail || err.message || 'Priority update failed'
+          err.response?.data?.detail || err.message || 'Network error'
         setError(errorMessage)
 
         // Handle 409 conflict specifically
         if (err.response?.status === 409) {
           if (onConflict) {
-            onConflict(errorMessage)
+            onConflict(['Item priority has changed'])
           }
         } else if (onError) {
           onError(errorMessage)

@@ -135,9 +135,9 @@ describe('usePriorityUpdate', () => {
       }
     })
 
-    expect(mockOnError).toHaveBeenCalledWith(errorMessage)
+    expect(mockOnError).toHaveBeenCalledWith('Network error')
     expect(result.current.loading).toBe(false)
-    expect(result.current.error).toBe(errorMessage)
+    expect(result.current.error).toBe('Network error')
   })
 
   it('should call onConflict when priority update fails with 409 conflict', async () => {
@@ -173,7 +173,7 @@ describe('usePriorityUpdate', () => {
       }
     })
 
-    expect(mockOnConflict).toHaveBeenCalledWith(conflictMessage)
+    expect(mockOnConflict).toHaveBeenCalledWith(['Item priority has changed'])
     expect(result.current.loading).toBe(false)
   })
 

@@ -3,7 +3,8 @@
  */
 
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
@@ -145,6 +146,12 @@ describe('DeleteWorkItemButton', () => {
     resolveArchive!()
 
     // Verify modal closes after completion
+    // Wait for loading state to be reflected
+    await waitFor(() => {
+      expect(screen.getByTestId('modal-loading')).toHaveTextContent('Loading')
+    })
+
+    // Wait for modal to close after archive completes
     await waitFor(() => {
       expect(screen.queryByTestId('modal-title')).not.toBeInTheDocument()
     })
@@ -167,7 +174,7 @@ describe('DeleteWorkItemButton', () => {
     const confirmButton = screen.getByTestId('modal-confirm')
     await user.click(confirmButton)
 
-    await waitFor(() => {
+    await act(async () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         'Failed to archive work item:',
         expect.any(Error)
