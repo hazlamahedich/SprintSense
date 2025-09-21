@@ -2,10 +2,14 @@ import { Page, expect } from '@playwright/test'
 
 const TEST_USER = {
   email: 'test@example.com',
-  password: 'TestPass123'
+  password: 'TestPass123',
 }
 
-export async function login(page: Page, email = TEST_USER.email, password = TEST_USER.password) {
+export async function login(
+  page: Page,
+  email = TEST_USER.email,
+  password = TEST_USER.password
+) {
   // Navigate to login page
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
 
@@ -20,23 +24,25 @@ export async function login(page: Page, email = TEST_USER.email, password = TEST
   try {
     await Promise.all([
       page.waitForResponse(
-        res => res.url().includes('/api/v1/auth/login') && res.status() === 200,
+        (res) =>
+          res.url().includes('/api/v1/auth/login') && res.status() === 200,
         { timeout: 15000 }
       ),
-      page.click('button[type="submit"]')
+      page.click('button[type="submit"]'),
     ])
 
     // Wait for navigation
     await page.waitForURL('**/dashboard')
     await page.waitForLoadState('domcontentloaded')
-
   } catch (error) {
     console.error('Login failed:', error)
     throw new Error(`Login failed: ${error.message}`)
   }
 }
 
-export async function getAuthCookie(page: Page): Promise<{ name: string; value: string }> {
+export async function getAuthCookie(
+  page: Page
+): Promise<{ name: string; value: string }> {
   // First login to get the cookie
   await login(page)
 
@@ -44,7 +50,7 @@ export async function getAuthCookie(page: Page): Promise<{ name: string; value: 
   const cookies = await page.context().cookies()
 
   // Find the auth cookie (adjust the name based on your actual cookie name)
-  const authCookie = cookies.find(cookie => cookie.name === 'access_token')
+  const authCookie = cookies.find((cookie) => cookie.name === 'access_token')
   if (!authCookie) {
     throw new Error('Auth cookie not found after login')
   }
@@ -54,6 +60,6 @@ export async function getAuthCookie(page: Page): Promise<{ name: string; value: 
     value: authCookie.value,
     url: 'http://localhost:5173',
     httpOnly: true,
-    secure: false
+    secure: false,
   }
 }

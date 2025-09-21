@@ -7,7 +7,9 @@ test.describe('Team Management', () => {
     await login(page)
   })
 
-  test('should create a new team and display it correctly', async ({ page }) => {
+  test('should create a new team and display it correctly', async ({
+    page,
+  }) => {
     // Go to dashboard
     await page.goto('/')
     await expect(page.getByText('SprintSense Dashboard')).toBeVisible()
@@ -33,7 +35,9 @@ test.describe('Team Management', () => {
 
     // Verify team members section
     await expect(page.getByText('Team Management')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Invite User' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Invite User' })
+    ).toBeVisible()
   })
 
   test('should persist team data after page refresh', async ({ page }) => {
@@ -48,14 +52,17 @@ test.describe('Team Management', () => {
 
     // Submit and wait for both UI and network updates
     await Promise.all([
-      page.waitForResponse(response =>
-        response.url().includes('/api/v1/teams') && response.status() === 201
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/teams') && response.status() === 201
       ),
-      page.getByRole('button', { name: /Create Team$/ }).click()
+      page.getByRole('button', { name: /Create Team$/ }).click(),
     ])
 
     // Wait for success message and navigation
-    await expect(page.getByText('Team Created Successfully!')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Team Created Successfully!')).toBeVisible({
+      timeout: 10000,
+    })
     await page.waitForURL('**/teams/*', { timeout: 10000 })
 
     // Store URL for comparison
@@ -68,13 +75,17 @@ test.describe('Team Management', () => {
     await page.waitForLoadState('domcontentloaded')
 
     // Verify team header with direct selector
-    await expect(
-      page.locator('h4', { hasText: teamName })
-    ).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h4', { hasText: teamName })).toBeVisible({
+      timeout: 10000,
+    })
 
     // Verify team info sections
-    await expect(page.getByText('Team Dashboard')).toBeVisible({ timeout: 10000 })
-    await expect(page.getByText('Team Information')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Team Dashboard')).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(page.getByText('Team Information')).toBeVisible({
+      timeout: 10000,
+    })
 
     // Verify URL hasn't changed
     expect(page.url()).toBe(teamUrl)
@@ -89,10 +100,15 @@ test.describe('Team Management', () => {
 
     // Verify error message
     await expect(page.getByText('Team not found')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Back to Dashboard' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Back to Dashboard' })
+    ).toBeVisible()
   })
 
-  test('should handle unauthorized team access (403)', async ({ page, browser }) => {
+  test('should handle unauthorized team access (403)', async ({
+    page,
+    browser,
+  }) => {
     // First create a team with current user
     await page.goto('/', { waitUntil: 'domcontentloaded' })
     await page.getByRole('button', { name: 'Create New Team' }).click()
@@ -102,14 +118,17 @@ test.describe('Team Management', () => {
 
     // Submit and wait for response
     await Promise.all([
-      page.waitForResponse(response =>
-        response.url().includes('/api/v1/teams') && response.status() === 201
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/teams') && response.status() === 201
       ),
-      page.getByRole('button', { name: /Create Team$/ }).click()
+      page.getByRole('button', { name: /Create Team$/ }).click(),
     ])
 
     // Wait for success and navigation
-    await expect(page.getByText('Team Created Successfully!')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Team Created Successfully!')).toBeVisible({
+      timeout: 10000,
+    })
     await page.waitForURL('**/teams/*', { timeout: 10000 })
 
     // Get team ID
@@ -127,16 +146,17 @@ test.describe('Team Management', () => {
       await otherPage.goto(`/teams/${teamId}`)
 
       // Wait for and verify error message
-      await expect(
-        otherPage.locator('.MuiAlert-message')
-      ).toContainText('You do not have permission to view this team', {
-        timeout: 10000
-      })
+      await expect(otherPage.locator('.MuiAlert-message')).toContainText(
+        'You do not have permission to view this team',
+        {
+          timeout: 10000,
+        }
+      )
 
       // Verify back button
-      await expect(
-        otherPage.getByText('Back to Dashboard')
-      ).toBeVisible({ timeout: 10000 })
+      await expect(otherPage.getByText('Back to Dashboard')).toBeVisible({
+        timeout: 10000,
+      })
     } finally {
       await otherContext.close()
     }
@@ -152,29 +172,32 @@ test.describe('Team Management', () => {
 
     // Submit and wait for response
     await Promise.all([
-      page.waitForResponse(response =>
-        response.url().includes('/api/v1/teams') && response.status() === 201
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/teams') && response.status() === 201
       ),
-      page.getByRole('button', { name: /Create Team$/ }).click()
+      page.getByRole('button', { name: /Create Team$/ }).click(),
     ])
 
     // Wait for success and navigation
-    await expect(page.getByText('Team Created Successfully!')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Team Created Successfully!')).toBeVisible({
+      timeout: 10000,
+    })
     await page.waitForURL('**/teams/*', { timeout: 10000 })
 
     // Get team ID
     const teamId = page.url().split('/').pop()
 
     // Mock API error with proper error response
-    await context.route(`**/api/v1/teams/${teamId}`, route =>
+    await context.route(`**/api/v1/teams/${teamId}`, (route) =>
       route.fulfill({
         status: 500,
         contentType: 'application/json',
         body: JSON.stringify({
           error: 'Internal Server Error',
           message: 'Failed to load team. Please try again.',
-          code: 'INTERNAL_ERROR'
-        })
+          code: 'INTERNAL_ERROR',
+        }),
       })
     )
 
@@ -182,15 +205,16 @@ test.describe('Team Management', () => {
     await page.reload({ waitUntil: 'domcontentloaded' })
 
     // Wait for and verify error message
-    await expect(
-      page.locator('.MuiAlert-message')
-    ).toContainText('Failed to load team. Please try again.', {
-      timeout: 10000
-    })
+    await expect(page.locator('.MuiAlert-message')).toContainText(
+      'Failed to load team. Please try again.',
+      {
+        timeout: 10000,
+      }
+    )
 
     // Verify back button
-    await expect(
-      page.getByText('Back to Dashboard')
-    ).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Back to Dashboard')).toBeVisible({
+      timeout: 10000,
+    })
   })
 })

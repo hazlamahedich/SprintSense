@@ -13,7 +13,7 @@ export async function seedTestUser() {
     await api.post('/api/v1/users/register', {
       full_name: 'Test User',
       email: 'test@example.com',
-      password: 'TestPass123'
+      password: 'TestPass123',
     })
   } catch (err: unknown) {
     // Ignore if user already exists

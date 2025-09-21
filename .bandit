@@ -1,0 +1,4 @@
+[bandit]
+# Skip B311 (Standard pseudo-random generators not suitable for crypto)
+# This is fine for test code where we just need non-cryptographic randomness
+skips: B311

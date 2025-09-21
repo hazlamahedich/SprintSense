@@ -212,7 +212,11 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
                           gap={0.5}
                           mt={0.5}
                         >
-                          <Typography variant="caption" color="text.secondary" component="div">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            component="div"
+                          >
                             Invited by {invitation.inviter_name}
                           </Typography>
                           <Box display="flex" alignItems="center">
@@ -223,7 +227,11 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
                                 color: 'text.secondary',
                               }}
                             />
-                            <Typography variant="caption" color="text.secondary" component="div">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              component="div"
+                            >
                               {formatDate(invitation.created_at)}
                             </Typography>
                           </Box>
