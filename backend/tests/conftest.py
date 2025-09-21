@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.infra.db import Base, get_session
-from app.main import app
+from app.main import app as fastapi_app
 
 # Test database URL (using SQLite for simplicity in tests)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -49,7 +49,13 @@ async def db_session():
 
 
 @pytest_asyncio.fixture
-async def async_client(db_session: AsyncSession):
+async def app():
+    """Provide FastAPI app for tests."""
+    return fastapi_app
+
+
+@pytest_asyncio.fixture
+async def async_client(db_session: AsyncSession, app):
     """Create test client with database dependency override."""
 
     # Override the dependency to use our test session

@@ -1,8 +1,8 @@
 """Core configuration settings for SprintSense backend."""
 
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 
-from pydantic import AnyHttpUrl, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,17 +22,22 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS settings
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: str = ""
 
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    @classmethod
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        """Assemble CORS origins from string or list."""
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    @property
+    def backend_cors_origins_list(self) -> List[str]:
+        """Return CORS origins as a list from comma-separated string in env.
+        Supports formats like:
+        - "http://localhost:3000,http://localhost:5173"
+        - "[http://localhost:3000, http://localhost:5173]" (brackets are ignored)
+        """
+        v = self.BACKEND_CORS_ORIGINS or ""
+        v = v.strip()
+        if not v:
+            return []
+        if v.startswith("[") and v.endswith("]"):
+            v = v[1:-1]
+        return [i.strip() for i in v.split(",") if i.strip()]
 
     # Database settings (Supabase local development)
     POSTGRES_SERVER: str = "localhost"
@@ -88,6 +93,12 @@ class Settings(BaseSettings):
     # OpenTelemetry settings
     OTEL_SERVICE_NAME: str = "sprintsense-backend"
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"
+
+    # Redis settings
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: Optional[str] = None
 
 
 settings = Settings()

@@ -111,6 +111,11 @@ class WorkItem(Base):
         onupdate=func.now(),
         nullable=True,
     )
+    feedback_reason: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+        comment="Specific feedback reason for archived recommendations",
+    )
 
     # Relationships
     team = relationship("Team")

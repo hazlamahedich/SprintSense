@@ -1427,6 +1427,21 @@ pyyaml = ">=5.1"
 virtualenv = ">=20.10.0"
 
 [[package]]
+name = "prometheus-client"
+version = "0.23.1"
+description = "Python client for the Prometheus monitoring system."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "prometheus_client-0.23.1-py3-none-any.whl", hash = "sha256:dd1913e6e76b59cfe44e7a4b83e01afc9873c1bdfd2ed8739f1e76aeca115f99"},
+    {file = "prometheus_client-0.23.1.tar.gz", hash = "sha256:6ae8f9081eaaaf153a2e959d2e6c4f4fb57b12ef76c8c7980202f1e57b48b2ce"},
+]
+
+[package.extras]
+twisted = ["twisted"]
+
+[[package]]
 name = "protobuf"
 version = "4.25.8"
 description = ""
@@ -1461,7 +1476,6 @@ files = [
 
 [package.dependencies]
 psycopg-binary = {version = "3.2.10", optional = true, markers = "implementation_name != \"pypy\" and extra == \"binary\""}
-psycopg-pool = {version = "*", optional = true, markers = "extra == \"pool\""}
 typing-extensions = {version = ">=4.6", markers = "python_version < \"3.13\""}
 tzdata = {version = "*", markers = "sys_platform == \"win32\""}
 
@@ -1545,21 +1559,6 @@ files = [
     {file = "psycopg_binary-3.2.10-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:8fa2efaf5e2f8c289a185c91c80a624a8f97aa17fbedcbc68f373d089b332afd"},
     {file = "psycopg_binary-3.2.10-cp39-cp39-win_amd64.whl", hash = "sha256:6220d6efd6e2df7b67d70ed60d653106cd3b70c5cb8cbe4e9f0a142a5db14015"},
 ]
-
-[[package]]
-name = "psycopg-pool"
-version = "3.2.6"
-description = "Connection Pool for Psycopg"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "psycopg_pool-3.2.6-py3-none-any.whl", hash = "sha256:5887318a9f6af906d041a0b1dc1c60f8f0dda8340c2572b74e10907b51ed5da7"},
-    {file = "psycopg_pool-3.2.6.tar.gz", hash = "sha256:0f92a7817719517212fbfe2fd58b8c35c1850cdd2a80d36b581ba2085d9148e5"},
-]
-
-[package.dependencies]
-typing-extensions = ">=4.6"
 
 [[package]]
 name = "pyasn1"
@@ -2616,4 +2615,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "8b2a59421f4209805f3b9c8a6fb9c362600f1d29ce5742399c42b228d3d86269"
+content-hash = "d3941fc6fb4a8e5c7b7535a0a34279d71dc03a5d7d3075d1feb16871e8adbf92"
