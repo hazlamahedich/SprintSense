@@ -40,3 +40,4 @@ async def test_detailed_health_check(async_client: AsyncClient):
     assert "database" in data["checks"]
     assert data["checks"]["database"]["status"] == "healthy"
     assert data["version"] == "0.1.0"
+

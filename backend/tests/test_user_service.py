@@ -294,3 +294,4 @@ class TestUserService:
 
         assert result is None
         mock_db_session.execute.assert_called_once()
+

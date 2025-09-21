@@ -249,3 +249,4 @@ async def test_is_user_team_owner_returns_false_when_not_owner(
     # Assert
     assert result is False
     mock_db_session.execute.assert_called_once()
+

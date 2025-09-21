@@ -598,3 +598,4 @@ class WorkItemService:
         result = await self.db.execute(query)
         max_priority = result.scalar()
         return max_priority if max_priority is not None else 0.0
+

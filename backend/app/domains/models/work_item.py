@@ -128,3 +128,4 @@ class WorkItem(Base):
             f"<WorkItem(id={self.id}, title='{self.title}', "
             f"type={self.type}, status={self.status})>"
         )
+

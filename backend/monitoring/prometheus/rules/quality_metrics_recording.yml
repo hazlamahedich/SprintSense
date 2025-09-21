@@ -1,0 +1,32 @@
+groups:
+  - name: quality_metrics_recording
+    interval: 30s
+    rules:
+      # API Performance
+      - record: quality_metrics:api_latency:p95
+        expr: histogram_quantile(0.95, sum(rate(sprintsense_recommendation_response_time_seconds_bucket[5m])) by (le))
+
+      - record: quality_metrics:api_error_rate:ratio
+        expr: sum(rate(sprintsense_recommendations_total{status="error"}[5m])) / sum(rate(sprintsense_recommendations_total[5m]))
+
+      # Cache Performance
+      - record: quality_metrics:cache_hit_rate:ratio
+        expr: 1 - (sum(rate(sprintsense_recommendations_total{status="cache_miss"}[5m])) / sum(rate(sprintsense_recommendations_total[5m])))
+
+      - record: quality_metrics:cache_latency:p95
+        expr: histogram_quantile(0.95, sum(rate(sprintsense_recommendation_cache_operation_seconds_bucket[5m])) by (le))
+
+      # Business Metrics
+      - record: quality_metrics:acceptance_rate:ratio
+        expr: sum(sprintsense_recommendations_total{status="accepted"}) / sum(sprintsense_recommendations_total)
+
+      - record: quality_metrics:confidence_score:median
+        expr: histogram_quantile(0.5, sum(rate(sprintsense_recommendation_confidence_bucket[30m])) by (le))
+
+      # Load Metrics
+      - record: quality_metrics:request_rate:per_second
+        expr: sum(rate(sprintsense_recommendations_total[5m]))
+
+      # Data Consistency
+      - record: quality_metrics:feedback_consistency:ratio
+        expr: abs(sum(sprintsense_recommendations_total{status="accepted"}) - sum(sprintsense_recommendations_total{status="feedback_received"})) / sum(sprintsense_recommendations_total{status="accepted"})

@@ -273,3 +273,4 @@ class TestUserRegistrationAPI:
 
         data = response.json()
         assert "not yet implemented" in data["detail"].lower()
+

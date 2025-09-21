@@ -246,3 +246,4 @@ def patch_auth(user: User):
         return user
 
     return patch("app.core.auth.get_current_user", side_effect=mock_get_current_user)
+

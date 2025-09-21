@@ -118,3 +118,4 @@ def instrument_fastapi(app: Any) -> None:
     except Exception as e:
         logger = structlog.get_logger(__name__)
         logger.warning("Failed to instrument FastAPI with OpenTelemetry", error=str(e))
+

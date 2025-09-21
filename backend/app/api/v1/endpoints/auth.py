@@ -147,3 +147,4 @@ async def logout_user(response: Response) -> Dict[str, str]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error during logout",
         )
+

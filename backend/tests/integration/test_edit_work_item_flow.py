@@ -273,3 +273,4 @@ class TestEditWorkItemIntegration:
         # Verify success and performance
         assert response.status_code == status.HTTP_200_OK
         assert duration < 1.0, f"Response took {duration:.3f} seconds, expected <1.0"
+

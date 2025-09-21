@@ -153,3 +153,4 @@ class InvitationService:
             select(Invitation).where(Invitation.id == invitation_id)
         )
         return result.scalars().first()
+

@@ -85,3 +85,4 @@ class ProjectGoal(Base):
             f"<ProjectGoal(id={self.id}, team_id={self.team_id}, "
             f"priority_weight={self.priority_weight})>"
         )
+

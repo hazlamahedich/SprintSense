@@ -114,3 +114,4 @@ class UserResponse(UserRead):
     """Schema for user registration response."""
 
     pass
+

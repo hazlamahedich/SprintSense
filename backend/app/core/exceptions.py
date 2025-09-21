@@ -237,3 +237,4 @@ def get_http_status_for_error_code(error_code: str) -> int:
     error_info = ERROR_CODES.get(error_code, {})
     status = error_info.get("status", 500)
     return int(status) if isinstance(status, (int, str)) else 500
+

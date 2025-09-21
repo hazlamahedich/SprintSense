@@ -1,0 +1,184 @@
+# Deployment configuration for quality metrics service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quality-metrics
+  namespace: sprintsense
+  labels:
+    app: quality-metrics
+    component: metrics
+spec:
+  replicas: 2  # For high availability
+  selector:
+    matchLabels:
+      app: quality-metrics
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: quality-metrics
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      containers:
+      - name: quality-metrics
+        image: sprintsense/quality-metrics:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        ports:
+        - containerPort: 8000
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: quality-metrics-config
+              key: redis_host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: quality-metrics-config
+              key: redis_port
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: quality-metrics-secrets
+              key: redis_password
+        - name: METRICS_CACHE_TTL
+          value: "300"  # 5 minutes
+        - name: METRICS_UPDATE_INTERVAL
+          value: "60"   # 1 minute
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quality-metrics
+  namespace: sprintsense
+  labels:
+    app: quality-metrics
+spec:
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  - port: 9090
+    targetPort: metrics
+    protocol: TCP
+    name: metrics
+  selector:
+    app: quality-metrics
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quality-metrics-config
+  namespace: sprintsense
+data:
+  redis_host: "redis-master.sprintsense.svc.cluster.local"
+  redis_port: "6379"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: quality-metrics-secrets
+  namespace: sprintsense
+type: Opaque
+data:
+  # Base64 encoded placeholder - real value set by deployment pipeline
+  redis_password: UExBQ0VIT0xERVI=
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: quality-metrics
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: quality-metrics
+  namespaceSelector:
+    matchNames:
+    - sprintsense
+  endpoints:
+  - port: metrics
+    interval: 30s
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: quality-metrics-pdb
+  namespace: sprintsense
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: quality-metrics
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: quality-metrics
+  namespace: sprintsense
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: quality-metrics
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+

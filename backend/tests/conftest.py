@@ -170,3 +170,4 @@ async def user_team(db_session, authenticated_user):
 
     team = await team_service.create_team(team_data, authenticated_user)
     return team
+

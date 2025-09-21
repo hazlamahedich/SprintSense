@@ -54,3 +54,4 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     """Get password hash (alias for hash_password for consistency)."""
     return hash_password(password)
+

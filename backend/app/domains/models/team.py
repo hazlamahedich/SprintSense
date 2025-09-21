@@ -160,3 +160,4 @@ class Invitation(Base):
             f"<Invitation(id={self.id}, team_id={self.team_id}, "
             f"email={self.email}, status={self.status})>"
         )
+

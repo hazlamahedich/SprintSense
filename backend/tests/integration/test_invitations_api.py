@@ -305,3 +305,4 @@ async def test_invitation_invalid_team_id(
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+

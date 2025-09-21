@@ -395,3 +395,4 @@ class TestWorkItemListResponse:
         assert list_response.total == 0
         assert list_response.page == 1
         assert list_response.size == 10
+

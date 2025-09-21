@@ -46,3 +46,4 @@ class TeamCreateResponse(BaseModel):
 
     message: str
     team: TeamResponse
+

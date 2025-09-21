@@ -155,3 +155,4 @@ async def detailed_health_check(
         raise HTTPException(status_code=503, detail=health_status)
 
     return health_status
+
