@@ -1,10 +1,11 @@
 """Team service layer."""
 
 from uuid import UUID
-from app.domains.models import TeamMember
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.models import TeamMember
 
 
 class TeamService:
