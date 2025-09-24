@@ -10,7 +10,10 @@ tomorrow.setDate(today.getDate() + 1)
 const nextWeek = new Date(today)
 nextWeek.setDate(today.getDate() + 7)
 
-test.describe('Sprint Management', () => {
+import { test, expect } from '@playwright/test';
+import { login } from './helpers/auth';
+
+test('completes sprint lifecycle', async ({ page }) => {
   test('completes basic lifecycle', async ({ page }) => {
     await login(page)
     await page.goto('/teams/1/sprints')

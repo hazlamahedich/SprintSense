@@ -14,7 +14,7 @@ import {
   MinusIcon,
   PencilIcon,
   TrashIcon,
-} from '@heroicons/react/24/outline/index.js'
+} from '@heroicons/react/24/outline'
 import EditWorkItemModal from '../work-items/EditWorkItemModal'
 import DeleteWorkItemButton from '../work-items/DeleteWorkItemButton'
 import PriorityControls from '../feature/backlog/PriorityControls'

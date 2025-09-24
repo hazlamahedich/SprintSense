@@ -1,3 +1,15 @@
+"""Models initialization.
+
+Import models in the proper order to avoid circular imports.
+"""
+
+from app.infra.db import Base
+
+from .project_goal import ProjectGoal
+from .sprint import Sprint, SprintStatus
+from .team import Invitation, InvitationStatus, Team, TeamMember, TeamRole
+from .user import User
+
 """Domain models package."""
 
 from .project_goal import ProjectGoal

@@ -1,7 +1,7 @@
 """Invitation service with business logic for invitation management."""
 
 import uuid
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -140,16 +140,17 @@ class InvitationService:
 
         return invitations
 
-    async def get_invitation_by_id(self, invitation_id: uuid.UUID) -> Invitation | None:
-        """Get invitation by ID.
 
-        Args:
-            invitation_id: UUID of the invitation
+async def get_invitation_by_id(self, invitation_id: uuid.UUID) -> Optional[Invitation]:
+    """Get invitation by ID.
 
-        Returns:
-            Invitation: The invitation object or None if not found
-        """
-        result = await self.db_session.execute(
-            select(Invitation).where(Invitation.id == invitation_id)
-        )
-        return result.scalars().first()
+    Args:
+        invitation_id: UUID of the invitation
+
+    Returns:
+        Invitation: The invitation object or None if not found
+    """
+    result = await self.db_session.execute(
+        select(Invitation).where(Invitation.id == invitation_id)
+    )
+    return result.scalars().first()

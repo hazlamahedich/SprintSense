@@ -1,6 +1,7 @@
 """Schemas for recommendation quality metrics."""
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -12,7 +13,7 @@ class QualityMetrics(BaseModel):
     recent_acceptance_count: int
     avg_confidence: float
     total_recommendations: int
-    top_feedback_reason: str | None
+    top_feedback_reason: Optional[str]
     feedback_count: int
     ui_response_time: float
     backend_response_time_95th: float

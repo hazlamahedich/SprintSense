@@ -58,7 +58,8 @@ class TestTeamsAPI:
 
         assert response2.status_code == 409
         data = response2.json()
-        assert "already exists" in data["detail"]
+        assert data["detail"]["code"] == "TEAM_NAME_EXISTS"
+        assert "already exists" in data["detail"]["message"]
 
     @pytest.mark.asyncio
     async def test_create_team_validates_name_length(
@@ -184,7 +185,7 @@ class TestTeamsAPI:
 
         assert response.status_code == 404
         data = response.json()
-        assert data["code"] == "TEAM_NOT_FOUND"
+        assert data["detail"]["code"] == "TEAM_NOT_FOUND"
 
     @pytest.mark.asyncio
     async def test_get_team_unauthorized_access(
@@ -212,7 +213,7 @@ class TestTeamsAPI:
 
         assert get_response.status_code == 403
         data = get_response.json()
-        assert data["code"] == "NOT_TEAM_MEMBER"
+        assert data["detail"]["code"] == "NOT_TEAM_MEMBER"
 
     @pytest.mark.asyncio
     async def test_get_team_no_auth(

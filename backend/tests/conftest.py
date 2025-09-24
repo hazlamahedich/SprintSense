@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.infra.db import Base, get_session
-from app.main import app as fastapi_app
+
+# from app.main import app as fastapi_app
 
 # Test database URL (using SQLite for simplicity in tests)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -72,7 +73,7 @@ async def async_client(db_session: AsyncSession, app):
 
 
 @pytest_asyncio.fixture
-async def authenticated_async_client(db_session: AsyncSession, authenticated_user):
+async def authenticated_async_client(db_session: AsyncSession, authenticated_user, app):
     """Create authenticated test client for invitation tests."""
     from datetime import timedelta
 
@@ -170,3 +171,39 @@ async def user_team(db_session, authenticated_user):
 
     team = await team_service.create_team(team_data, authenticated_user)
     return team
+
+
+# Aliases for compatibility with various tests
+@pytest_asyncio.fixture
+async def test_db_session(db_session: AsyncSession):
+    yield db_session
+
+
+@pytest_asyncio.fixture
+async def auth_headers(auth_headers_for_user: dict):
+    return auth_headers_for_user
+
+
+@pytest_asyncio.fixture
+async def client(async_client: AsyncClient):
+    yield async_client
+
+
+@pytest_asyncio.fixture
+async def other_test_user(other_user):
+    return other_user
+
+
+@pytest_asyncio.fixture
+async def auth_headers_for_other_user(other_user):
+    """Create authentication headers for the other test user."""
+    from datetime import timedelta
+
+    from app.core.security import create_access_token
+
+    access_token = create_access_token(
+        data={"sub": str(other_user.id), "email": other_user.email},
+        expires_delta=timedelta(minutes=30),
+    )
+
+    return {"Cookie": f"access_token={access_token}"}

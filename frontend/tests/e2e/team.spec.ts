@@ -1,7 +1,10 @@
 import { test, expect } from '@playwright/test'
 import { login } from './helpers/auth'
 
-test.describe('Team Management', () => {
+import { test, expect } from '@playwright/test';
+import { login } from './helpers/auth';
+
+test('handles team management operations', async ({ page }) => {
   test.beforeEach(async ({ page }) => {
     // Login before each test
     await login(page)

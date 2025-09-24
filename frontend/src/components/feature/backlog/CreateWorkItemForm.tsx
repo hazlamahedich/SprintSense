@@ -68,7 +68,6 @@ export const CreateWorkItemForm: React.FC<CreateWorkItemFormProps> = ({
     } else if (formData.title.length > 200) {
       errors.title = 'Title cannot exceed 200 characters'
     }
-
     // Description validation (optional, max 2000 chars)
     if (formData.description && formData.description.length > 2000) {
       errors.description = 'Description cannot exceed 2000 characters'
@@ -253,24 +252,26 @@ export const CreateWorkItemForm: React.FC<CreateWorkItemFormProps> = ({
               disabled={isSubmitting}
             >
               <SelectTrigger className="w-full">
-                <SelectValue>
-                  <span className="flex items-center gap-2">
-                    <span>{getSelectedTypeIcon()}</span>
-                    <span>
-                      {TYPE_OPTIONS.find(
-                        (opt) => opt.value === formData.type
-                      )?.label.split(' ')[1] || 'Story'}
-                    </span>
-                  </span>
+                <SelectValue asChild>
+                  <div className="flex items-center gap-2">
+                    {getSelectedTypeIcon()}
+                    {TYPE_OPTIONS.find(
+                      (opt) => opt.value === formData.type
+                    )?.label.split(' ')[1] || 'Story'}
+                  </div>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {TYPE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <span className="flex items-center gap-2">
-                      <span>{option.icon}</span>
-                      <span>{option.label.split(' ')[1]}</span>
-                    </span>
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    textValue={option.label.split(' ')[1]}
+                  >
+                    <div className="flex items-center gap-2">
+                      {option.icon}
+                      {option.label.split(' ')[1]}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

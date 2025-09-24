@@ -1,71 +1,75 @@
 """Integration tests for the edit work item feature end-to-end flow."""
 
 import uuid
+from unittest.mock import patch
 
 import pytest
 from fastapi import status
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.models.team import Team, TeamMember
+from app.core.auth import get_current_user
+from app.domains.models.team import Team, TeamMember, TeamRole
 from app.domains.models.user import User
 from app.domains.models.work_item import WorkItem, WorkItemStatus, WorkItemType
 
 
+@pytest.fixture
+async def setup_test_data(db_session: AsyncSession):
+    """Set up test data for integration tests."""
+    # Create user
+    user = User(
+        id=uuid.uuid4(),
+        email="test@example.com",
+        full_name="Test User",
+        hashed_password="dummy_hash",
+    )
+    db_session.add(user)
+
+    # Create team
+    team = Team(
+        id=uuid.uuid4(),
+        name="Test Team",
+    )
+    db_session.add(team)
+
+    # Create team membership (sets ownership)
+    team_member = TeamMember(
+        team_id=team.id,
+        user_id=user.id,
+        role=TeamRole.OWNER,
+    )
+    db_session.add(team_member)
+
+    # Create work item
+    work_item = WorkItem(
+        id=uuid.uuid4(),
+        team_id=team.id,
+        author_id=user.id,
+        title="Original Work Item",
+        description="Original description",
+        type=WorkItemType.STORY,
+        status=WorkItemStatus.BACKLOG,
+        priority=1.0,
+        story_points=5,
+    )
+    db_session.add(work_item)
+
+    await db_session.commit()
+    await db_session.refresh(user)
+    await db_session.refresh(team)
+    await db_session.refresh(work_item)
+
+    return {
+        "user": user,
+        "team": team,
+        "work_item": work_item,
+    }
+
+
+@pytest.mark.asyncio
 class TestEditWorkItemIntegration:
     """Test suite for edit work item end-to-end integration."""
-
-    @pytest.fixture
-    async def setup_test_data(self, db_session: AsyncSession):
-        """Set up test data for integration tests."""
-        # Create user
-        user = User(
-            id=uuid.uuid4(),
-            email="test@example.com",
-            name="Test User",
-        )
-        db_session.add(user)
-
-        # Create team
-        team = Team(
-            id=uuid.uuid4(),
-            name="Test Team",
-            owner_id=user.id,
-        )
-        db_session.add(team)
-
-        # Create team membership
-        team_member = TeamMember(
-            team_id=team.id,
-            user_id=user.id,
-            role="owner",
-        )
-        db_session.add(team_member)
-
-        # Create work item
-        work_item = WorkItem(
-            id=uuid.uuid4(),
-            team_id=team.id,
-            author_id=user.id,
-            title="Original Work Item",
-            description="Original description",
-            type=WorkItemType.STORY,
-            status=WorkItemStatus.BACKLOG,
-            priority=1.0,
-            story_points=5,
-        )
-        db_session.add(work_item)
-
-        await db_session.commit()
-        await db_session.refresh(user)
-        await db_session.refresh(team)
-        await db_session.refresh(work_item)
-
-        return {
-            "user": user,
-            "team": team,
-            "work_item": work_item,
-        }
 
     async def test_complete_edit_work_item_flow(
         self,
@@ -74,12 +78,17 @@ class TestEditWorkItemIntegration:
         db_session: AsyncSession,
     ):
         """Test the complete edit work item flow from request to database update."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        test_data = await setup_test_data
+        user = test_data["user"]
+        team = test_data["team"]
+        work_item = test_data["work_item"]
 
-        # Authenticate user (mocked in test setup)
-        headers = {"Authorization": f"Bearer {user.id}"}
+        # Mock authentication
+        async def mock_auth():
+            return user
+
+        with patch("app.core.auth.get_current_user", return_value=mock_auth()):
+            headers = {"Authorization": f"Bearer {user.id}"}
 
         # Prepare update data
         update_data = {
@@ -123,17 +132,22 @@ class TestEditWorkItemIntegration:
         setup_test_data: dict,
     ):
         """Test authorization flow for edit work item."""
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        test_data = await setup_test_data
+        team = test_data["team"]
+        work_item = test_data["work_item"]
 
         # Create unauthorized user
         unauthorized_user = User(
             id=uuid.uuid4(),
             email="unauthorized@example.com",
-            name="Unauthorized User",
+            full_name="Unauthorized User",
         )
 
-        headers = {"Authorization": f"Bearer {unauthorized_user.id}"}
+        async def mock_auth():
+            return unauthorized_user
+
+        with patch("app.core.auth.get_current_user", new=mock_auth):
+            headers = {"Authorization": f"Bearer {unauthorized_user.id}"}
 
         update_data = {"title": "Should not work"}
 
@@ -154,11 +168,16 @@ class TestEditWorkItemIntegration:
         setup_test_data: dict,
     ):
         """Test validation flow for edit work item."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        test_data = await setup_test_data
+        user = test_data["user"]
+        team = test_data["team"]
+        work_item = test_data["work_item"]
 
-        headers = {"Authorization": f"Bearer {user.id}"}
+        async def mock_auth():
+            return user
+
+        with patch("app.core.auth.get_current_user", new=mock_auth):
+            headers = {"Authorization": f"Bearer {user.id}"}
 
         # Test with invalid data
         invalid_data = {
@@ -181,11 +200,16 @@ class TestEditWorkItemIntegration:
         db_session: AsyncSession,
     ):
         """Test partial update flow - only updating specific fields."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        test_data = await setup_test_data
+        user = test_data["user"]
+        team = test_data["team"]
+        work_item = test_data["work_item"]
 
-        headers = {"Authorization": f"Bearer {user.id}"}
+        async def mock_auth():
+            return user
+
+        with patch("app.core.auth.get_current_user", new=mock_auth):
+            headers = {"Authorization": f"Bearer {user.id}"}
 
         # Get original values
         original_title = work_item.title
@@ -222,11 +246,16 @@ class TestEditWorkItemIntegration:
         setup_test_data: dict,
     ):
         """Test work item not found flow."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
+        test_data = await setup_test_data
+        user = test_data["user"]
+        team = test_data["team"]
         non_existent_id = uuid.uuid4()
 
-        headers = {"Authorization": f"Bearer {user.id}"}
+        async def mock_auth():
+            return user
+
+        with patch("app.core.auth.get_current_user", new=mock_auth):
+            headers = {"Authorization": f"Bearer {user.id}"}
 
         update_data = {"title": "Should not work"}
 
@@ -245,11 +274,16 @@ class TestEditWorkItemIntegration:
         setup_test_data: dict,
     ):
         """Test that edit work item meets performance requirements."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        test_data = await setup_test_data
+        user = test_data["user"]
+        team = test_data["team"]
+        work_item = test_data["work_item"]
 
-        headers = {"Authorization": f"Bearer {user.id}"}
+        async def mock_auth():
+            return user
+
+        with patch("app.core.auth.get_current_user", new=mock_auth):
+            headers = {"Authorization": f"Bearer {user.id}"}
 
         update_data = {
             "title": "Performance Test Update",

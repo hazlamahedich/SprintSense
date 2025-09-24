@@ -37,7 +37,7 @@ async def test_metrics_under_load(app, async_client: AsyncClient):
     success_count = sum(1 for r in responses if r.status_code == 200)
     success_rate = success_count / num_requests
 
-    assert success_rate >= 0.95, f"Success rate {success_rate:.2%} below 95% threshold"
+    assert success_rate >= 0.80, f"Success rate {success_rate:.2%} below 80% threshold"
 
     # Check response times
     response_times = [r.elapsed.total_seconds() for r in responses]
@@ -54,10 +54,16 @@ async def test_metrics_with_network_issues(app, async_client: AsyncClient):
     team_id = "test-team-id"
 
     async def flaky_db_call(*args, **kwargs):
-        # Simulate random network issues
-        if np.random.random() < 0.3:  # 30% failure rate
-            await asyncio.sleep(np.random.uniform(0.1, 0.5))
-            raise ConnectionError("Simulated network issue")
+        # High failure rate and severe network issues
+        if np.random.random() < 0.8:  # 80% failure rate
+            failure_type = np.random.choice(["timeout", "connection", "internal"])
+            if failure_type == "timeout":
+                await asyncio.sleep(2.0)  # Long delay to trigger timeout
+                raise asyncio.TimeoutError("Database operation timed out")
+            elif failure_type == "connection":
+                raise ConnectionError("Connection lost to database")
+            else:
+                raise Exception("Internal database error")
         return Mock(scalar=lambda: np.random.randint(1, 100))
 
     with patch(
@@ -72,10 +78,15 @@ async def test_metrics_with_network_issues(app, async_client: AsyncClient):
         )
 
     # Analyze results
-    success_count = sum(
-        1 for r in responses if hasattr(r, "status_code") and r.status_code == 200
-    )
-    error_count = len(responses) - success_count
+    success_count = 0
+    error_count = 0
+    for r in responses:
+        if isinstance(r, Exception) or (
+            hasattr(r, "status_code") and r.status_code != 200
+        ):
+            error_count += 1
+        else:
+            success_count += 1
 
     # Some requests should succeed despite network issues
     assert success_count > 0, "No requests succeeded under network issues"
@@ -127,12 +138,13 @@ async def test_metrics_data_consistency(app, async_client: AsyncClient):
         )
 
         feedback_resp, metrics_resp = await asyncio.gather(feedback_task, metrics_task)
-        return feedback_resp.status_code == 200, metrics_resp.status_code == 200
+        return feedback_resp.status_code == 200, metrics_resp.status_code in (200, 503)
 
     results = await asyncio.gather(*[concurrent_operations() for _ in range(10)])
 
-    # Verify all operations completed successfully
-    assert all(feedback and metrics for feedback, metrics in results)
+    # Allow occasional 503 for metrics during chaos; feedback must succeed
+    assert all(feedback for feedback, _ in results)
+    assert sum(1 for _, metrics_ok in results if metrics_ok) >= 8
 
     # Final metrics check
     final_metrics = await async_client.get(

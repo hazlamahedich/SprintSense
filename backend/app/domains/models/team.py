@@ -3,13 +3,16 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infra.db import Base
+
+if TYPE_CHECKING:
+    from .sprint import Sprint
 
 
 class TeamRole(str, Enum):
@@ -61,7 +64,7 @@ class Team(Base):
     project_goals = relationship(
         "ProjectGoal", back_populates="team", cascade="all, delete-orphan"
     )
-    sprints = relationship(
+    sprints: "Mapped[list[Sprint]]" = relationship(
         "Sprint", back_populates="team", cascade="all, delete-orphan"
     )
 

@@ -4,7 +4,7 @@
  */
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import PriorityControls from '../PriorityControls'
@@ -213,8 +213,10 @@ describe('PriorityControls', () => {
     )
 
     // Simulate the hook calling onSuccess
-    const hookArgs = vi.mocked(usePriorityUpdate).mock.calls[0][0]
-    hookArgs.onSuccess?.(updatedWorkItem)
+    await act(async () => {
+      const hookArgs = vi.mocked(usePriorityUpdate).mock.calls[0][0]
+      hookArgs.onSuccess?.(updatedWorkItem)
+    })
 
     await waitFor(() => {
       expect(
@@ -234,8 +236,10 @@ describe('PriorityControls', () => {
     )
 
     // Simulate the hook calling onError
-    const hookArgs = vi.mocked(usePriorityUpdate).mock.calls[0][0]
-    hookArgs.onError?.(errorMessage)
+    await act(async () => {
+      const hookArgs = vi.mocked(usePriorityUpdate).mock.calls[0][0]
+      hookArgs.onError?.(errorMessage)
+    })
 
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument()
@@ -253,8 +257,10 @@ describe('PriorityControls', () => {
     )
 
     // Simulate the hook calling onConflict
-    const hookArgs = vi.mocked(usePriorityUpdate).mock.calls[0][0]
-    hookArgs.onConflict?.(conflictMessage)
+    await act(async () => {
+      const hookArgs = vi.mocked(usePriorityUpdate).mock.calls[0][0]
+      hookArgs.onConflict?.(conflictMessage)
+    })
 
     await waitFor(() => {
       expect(screen.getByText(conflictMessage)).toBeInTheDocument()
@@ -267,9 +273,11 @@ describe('PriorityControls', () => {
     renderWithTheme(<PriorityControls {...defaultProps} />)
 
     // Simulate success to show snackbar
-    const hookArgs = vi.mocked(usePriorityUpdate).mock.calls[0][0]
-    const updatedWorkItem = { ...mockWorkItem, priority: 6.0 }
-    hookArgs.onSuccess?.(updatedWorkItem)
+    await act(async () => {
+      const hookArgs = vi.mocked(usePriorityUpdate).mock.calls[0][0]
+      const updatedWorkItem = { ...mockWorkItem, priority: 6.0 }
+      hookArgs.onSuccess?.(updatedWorkItem)
+    })
 
     await waitFor(() => {
       expect(
@@ -278,7 +286,9 @@ describe('PriorityControls', () => {
     })
 
     const closeButton = screen.getByRole('button', { name: /close/i })
-    fireEvent.click(closeButton)
+    await act(async () => {
+      fireEvent.click(closeButton)
+    })
 
     await waitFor(() => {
       expect(

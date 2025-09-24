@@ -184,8 +184,10 @@ export const HealthPage: React.FC = () => {
                     )}
 
                     {detailedHealth.database && (
-                      <Typography variant="body1" sx={{ mb: 1 }}>
-                        <strong>Database:</strong>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="body1" component="div">
+                          <strong>Database:</strong>
+                        </Typography>
                         <Chip
                           label={detailedHealth.database}
                           color={
@@ -196,7 +198,7 @@ export const HealthPage: React.FC = () => {
                           size="small"
                           sx={{ ml: 1 }}
                         />
-                      </Typography>
+                      </Box>
                     )}
 
                     {detailedHealth.lastChecked && (

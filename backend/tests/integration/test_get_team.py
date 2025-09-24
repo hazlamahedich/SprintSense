@@ -54,7 +54,7 @@ async def test_get_team_not_found(async_client: AsyncClient, auth_headers: dict)
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     data = response.json()
-    assert data["code"] == "TEAM_NOT_FOUND"
+    assert data["detail"]["code"] == "TEAM_NOT_FOUND"
 
 
 @pytest.mark.asyncio
@@ -93,4 +93,4 @@ async def test_get_team_forbidden(
 
     assert response.status_code == HTTPStatus.FORBIDDEN
     data = response.json()
-    assert data["code"] == "NOT_TEAM_MEMBER"
+    assert data["detail"]["code"] == "NOT_TEAM_MEMBER"

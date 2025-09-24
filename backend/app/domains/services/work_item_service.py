@@ -1,6 +1,7 @@
 """Work Item service for business logic operations."""
 
 import uuid
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import and_, desc, func, or_, select
@@ -67,7 +68,6 @@ class WorkItemService:
         # Exclude archived items by default unless specifically requested
         if not include_archived:
             query = query.where(WorkItem.status != WorkItemStatus.ARCHIVED)
-
         # Apply status filter
         if status:
             try:
@@ -226,6 +226,23 @@ class WorkItemService:
         work_item_data: WorkItemUpdateRequest,
         user_id: uuid.UUID,
     ) -> WorkItemResponse:
+        """Update an existing work item.
+
+        Special handling for DONE status:
+        - Sets completion_date when status changes to DONE
+        - Clears completion_date when status changes from DONE to another status
+
+        Args:
+            work_item_id: ID of work item to update
+            work_item_data: Updated work item data
+            user_id: ID of user making the update
+
+        Returns:
+            WorkItemResponse: Updated work item
+
+        Raises:
+            ValueError: If work item not found or user not authorized
+        """
         """
         Update an existing work item.
 
@@ -254,6 +271,24 @@ class WorkItemService:
 
         # Update fields
         update_data = work_item_data.model_dump(exclude_unset=True)
+
+        # Special handling for DONE status
+        if "status" in update_data:
+            new_status = update_data["status"]
+            if (
+                new_status == WorkItemStatus.DONE
+                and work_item.status != WorkItemStatus.DONE
+            ):
+                # Item is being marked as done
+                work_item.completed_at = datetime.utcnow()
+            elif (
+                work_item.status == WorkItemStatus.DONE
+                and new_status != WorkItemStatus.DONE
+            ):
+                # Item is being moved out of done status
+                work_item.completed_at = None
+
+        # Update other fields
         for field, value in update_data.items():
             setattr(work_item, field, value)
 

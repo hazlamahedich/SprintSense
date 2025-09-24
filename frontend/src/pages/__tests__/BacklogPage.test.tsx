@@ -4,7 +4,6 @@ import { MemoryRouter, Routes, Route, useParams } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import BacklogPage from '../BacklogPage'
 import { useWorkItems } from '../../hooks/useWorkItems'
-
 // Mock react-router-dom useParams
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
@@ -49,15 +48,6 @@ interface IconProps {
   [key: string]: unknown
 }
 
-vi.mock('@heroicons/react/24/outline', () => ({
-  PlusIcon: (props: IconProps) => <svg {...props} data-testid="plus-icon" />,
-  ExclamationTriangleIcon: (props: IconProps) => (
-    <svg {...props} data-testid="exclamation-triangle-icon" />
-  ),
-  RefreshCwIcon: (props: IconProps) => (
-    <svg {...props} data-testid="refresh-icon" />
-  ),
-}))
 
 // Mock the child components
 interface BacklogListProps {

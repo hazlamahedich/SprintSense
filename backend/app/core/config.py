@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
 
+    # Backwards-compatible alias used in tests
+    @property
+    def API_V1_PREFIX(self) -> str:  # pragma: no cover
+        return self.API_V1_STR
+
     # Security settings
     SECRET_KEY: str = "a-secure-default-secret-that-should-be-overridden"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -99,6 +104,9 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
     REDIS_PASSWORD: Optional[str] = None
+
+    # Machine Learning settings
+    DEPENDENCY_MODEL_PATH: Optional[str] = None
 
 
 settings = Settings()

@@ -1,5 +1,7 @@
 """Basic tests for project goal API endpoints."""
 
+from contextlib import contextmanager
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +11,7 @@ from app.domains.models.team import Team, TeamMember, TeamRole
 from app.domains.models.user import User
 
 
+@pytest.mark.asyncio
 class TestProjectGoalsAPI:
     """Test project goals API endpoints."""
 
@@ -26,7 +29,7 @@ class TestProjectGoalsAPI:
         """Create a sample team owner for testing."""
         user = User(
             email="owner@example.com",
-            username="teamowner",
+            full_name="Team Owner",
             hashed_password="hashed_pw",
         )
         db_session.add(user)
@@ -39,7 +42,7 @@ class TestProjectGoalsAPI:
         """Create a sample team member for testing."""
         user = User(
             email="member@example.com",
-            username="teammember",
+            full_name="Team Member",
             hashed_password="hashed_pw",
         )
         db_session.add(user)
@@ -52,28 +55,36 @@ class TestProjectGoalsAPI:
         self, db_session: AsyncSession, sample_team: Team, sample_owner: User
     ) -> tuple[Team, User]:
         """Create team membership for owner."""
+        # Await the sample fixtures first
+        team = await sample_team
+        owner = await sample_owner
+
         membership = TeamMember(
-            team_id=sample_team.id,
-            user_id=sample_owner.id,
+            team_id=team.id,
+            user_id=owner.id,
             role=TeamRole.OWNER,
         )
         db_session.add(membership)
         await db_session.commit()
-        return sample_team, sample_owner
+        return team, owner
 
     @pytest.fixture
     async def team_with_member(
         self, db_session: AsyncSession, sample_team: Team, sample_member: User
     ) -> tuple[Team, User]:
         """Create team membership for regular member."""
+        # Await the sample fixtures first
+        team = await sample_team
+        member = await sample_member
+
         membership = TeamMember(
-            team_id=sample_team.id,
-            user_id=sample_member.id,
+            team_id=team.id,
+            user_id=member.id,
             role=TeamRole.MEMBER,
         )
         db_session.add(membership)
         await db_session.commit()
-        return sample_team, sample_member
+        return team, member
 
     async def test_get_empty_goals_list(
         self,
@@ -81,15 +92,15 @@ class TestProjectGoalsAPI:
         team_with_owner: tuple[Team, User],
     ):
         """Test getting empty goals list returns correct structure."""
-        team, owner = team_with_owner
+        team, owner = await team_with_owner
 
         # Mock authentication to return the owner
-        with patch_auth(owner):
-            response = await client.get(f"/teams/{team.id}/goals")
+        with self.patch_auth(owner):
+            response = await client.get(f"/api/v1/teams/{team.id}/goals")
 
-        assert response.status_code == 200
-        data = response.json()
-        assert data == {"goals": [], "total": 0}
+            assert response.status_code == 200
+            data = response.json()
+            assert data == {"goals": [], "total": 0}
 
     async def test_create_goal_as_owner_success(
         self,
@@ -97,7 +108,7 @@ class TestProjectGoalsAPI:
         team_with_owner: tuple[Team, User],
     ):
         """Test creating goal as team owner succeeds."""
-        team, owner = team_with_owner
+        team, owner = await team_with_owner
 
         goal_data = {
             "description": "Improve user engagement by 25%",
@@ -105,8 +116,10 @@ class TestProjectGoalsAPI:
             "success_metrics": "Increase MAU by 25%",
         }
 
-        with patch_auth(owner):
-            response = await client.post(f"/teams/{team.id}/goals", json=goal_data)
+        with self.patch_auth(owner):
+            response = await client.post(
+                f"/api/v1/teams/{team.id}/goals", json=goal_data
+            )
 
         assert response.status_code == 201
         data = response.json()
@@ -125,15 +138,17 @@ class TestProjectGoalsAPI:
         team_with_member: tuple[Team, User],
     ):
         """Test creating goal as team member is forbidden."""
-        team, member = team_with_member
+        team, member = await team_with_member
 
         goal_data = {
             "description": "Improve user engagement by 25%",
             "priority_weight": 8,
         }
 
-        with patch_auth(member):
-            response = await client.post(f"/teams/{team.id}/goals", json=goal_data)
+        with self.patch_auth(member):
+            response = await client.post(
+                f"/api/v1/teams/{team.id}/goals", json=goal_data
+            )
 
         assert response.status_code == 403
         data = response.json()
@@ -147,12 +162,13 @@ class TestProjectGoalsAPI:
         sample_owner: User,
     ):
         """Test getting goals as team member is allowed."""
-        team, member = team_with_member
+        team, member = await team_with_member
+        owner = await sample_owner
 
         # Add owner to team and create a goal
         owner_membership = TeamMember(
             team_id=team.id,
-            user_id=sample_owner.id,
+            user_id=owner.id,
             role=TeamRole.OWNER,
         )
         db_session.add(owner_membership)
@@ -161,15 +177,15 @@ class TestProjectGoalsAPI:
             team_id=team.id,
             description="Test goal",
             priority_weight=5,
-            author_id=sample_owner.id,
-            created_by=sample_owner.id,
+            author_id=owner.id,
+            created_by=owner.id,
         )
         db_session.add(goal)
         await db_session.commit()
 
         # Member should be able to view goals
-        with patch_auth(member):
-            response = await client.get(f"/teams/{team.id}/goals")
+        with self.patch_auth(member):
+            response = await client.get(f"/api/v1/teams/{team.id}/goals")
 
         assert response.status_code == 200
         data = response.json()
@@ -182,7 +198,7 @@ class TestProjectGoalsAPI:
         team_with_owner: tuple[Team, User],
     ):
         """Test goal description validation."""
-        team, owner = team_with_owner
+        team, owner = await team_with_owner
 
         # Test empty description
         goal_data = {
@@ -190,8 +206,10 @@ class TestProjectGoalsAPI:
             "priority_weight": 5,
         }
 
-        with patch_auth(owner):
-            response = await client.post(f"/teams/{team.id}/goals", json=goal_data)
+        with self.patch_auth(owner):
+            response = await client.post(
+                f"/api/v1/teams/{team.id}/goals", json=goal_data
+            )
 
         assert response.status_code == 422
 
@@ -201,8 +219,10 @@ class TestProjectGoalsAPI:
             "priority_weight": 5,
         }
 
-        with patch_auth(owner):
-            response = await client.post(f"/teams/{team.id}/goals", json=goal_data)
+        with self.patch_auth(owner):
+            response = await client.post(
+                f"/api/v1/teams/{team.id}/goals", json=goal_data
+            )
 
         assert response.status_code == 422
 
@@ -212,7 +232,7 @@ class TestProjectGoalsAPI:
         team_with_owner: tuple[Team, User],
     ):
         """Test priority weight validation."""
-        team, owner = team_with_owner
+        team, owner = await team_with_owner
 
         # Test priority weight too low
         goal_data = {
@@ -220,8 +240,10 @@ class TestProjectGoalsAPI:
             "priority_weight": 0,
         }
 
-        with patch_auth(owner):
-            response = await client.post(f"/teams/{team.id}/goals", json=goal_data)
+        with self.patch_auth(owner):
+            response = await client.post(
+                f"/api/v1/teams/{team.id}/goals", json=goal_data
+            )
 
         assert response.status_code == 422
 
@@ -231,18 +253,30 @@ class TestProjectGoalsAPI:
             "priority_weight": 11,
         }
 
-        with patch_auth(owner):
-            response = await client.post(f"/teams/{team.id}/goals", json=goal_data)
+        with self.patch_auth(owner):
+            response = await client.post(
+                f"/api/v1/teams/{team.id}/goals", json=goal_data
+            )
 
         assert response.status_code == 422
 
+    @staticmethod
+    def patch_auth(user: User):
+        """Mock authentication to return specific user by overriding FastAPI dependency."""
+        from app.core.auth import get_current_user as original_get_current_user
+        from app.main import app as fastapi_app
 
-# Helper function for mocking authentication
-def patch_auth(user: User):
-    """Mock authentication to return specific user."""
-    from unittest.mock import patch
+        async def mock_get_current_user():
+            return user
 
-    async def mock_get_current_user():
-        return user
+        @contextmanager
+        def override_dependency():
+            fastapi_app.dependency_overrides[original_get_current_user] = (
+                mock_get_current_user
+            )
+            try:
+                yield
+            finally:
+                fastapi_app.dependency_overrides.pop(original_get_current_user, None)
 
-    return patch("app.core.auth.get_current_user", side_effect=mock_get_current_user)
+        return override_dependency()
