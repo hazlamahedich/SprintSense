@@ -110,19 +110,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-      
+
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 -
-      
+
       - name: Install dependencies
         run: poetry install
-      
+
       - name: Install browsers
         run: poetry run playwright install
-      
+
       - name: Run tests
         run: poetry run test-cycle
-      
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4

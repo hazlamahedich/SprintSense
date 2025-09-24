@@ -58,9 +58,9 @@ graph TD
 
 - **Purpose:** To simulate real user scenarios from start to finish, ensuring the entire system works as a cohesive whole.
 - **Scope:** Limited to the most critical user journeys ("critical-path"), such as:
-    1.  User Registration -> Team Creation.
-    2.  User Login -> Create Work Item -> Assign to Sprint.
-    3.  Full Sprint Lifecycle: Start Sprint -> Move item to "Done" -> Close Sprint.
+    1. User Registration -> Team Creation.
+    2. User Login -> Create Work Item -> Assign to Sprint.
+    3. Full Sprint Lifecycle: Start Sprint -> Move item to "Done" -> Close Sprint.
 - **Tooling:** Playwright.
 
 ## 4. Testing Types
@@ -121,9 +121,9 @@ To ensure our E2E tests are stable, maintainable, and effective, the following b
 Tests should interact with the application in the same way a user does. This makes them more resilient to code changes that don't affect the user experience.
 
 - **DO:** Use locators that are visible to the user. The priority is:
-    1.  `page.getByRole()`: For accessibility and semantic HTML (e.g., `button`, `heading`, `link`).
-    2.  `page.getByText()`: To find elements by their text content.
-    3.  `page.getByLabel()`: To find form controls by their associated label text.
+    1. `page.getByRole()`: For accessibility and semantic HTML (e.g., `button`, `heading`, `link`).
+    2. `page.getByText()`: To find elements by their text content.
+    3. `page.getByLabel()`: To find form controls by their associated label text.
 - **AVOID:** Using brittle locators tied to implementation details.
     - `getByTestId()`: Should be used sparingly, only as a last resort when no other user-facing locator is practical.
     - CSS selectors (`page.locator('.my-class')`): These are tightly coupled to styling and implementation.

@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "sprintsense"
+version = "0.1.0"
+description = "Sprint management application"
+authors = ["Your Name <you@example.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pre-commit = "^3.5.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -5,7 +5,7 @@ import { setupTestTeam } from './helpers/setup'
 const testTimeouts = {
   navigation: { timeout: 30000 },
   assertion: { timeout: 15000 },
-  action: { timeout: 10000 }
+  action: { timeout: 10000 },
 }
 
 // Helper functions to format dates for testing
@@ -19,16 +19,20 @@ nextWeek.setDate(today.getDate() + 7)
 test.describe('Sprint Management', () => {
   test.beforeEach(async ({ page }) => {
     // Enable request/response logging for debugging
-    page.on('request', request =>
-      console.log(`>> ${request.method()} ${request.url()}`))
-    page.on('response', response =>
-      console.log(`<< ${response.status()} ${response.url()}`))
+    page.on('request', (request) =>
+      console.log(`>> ${request.method()} ${request.url()}`)
+    )
+    page.on('response', (response) =>
+      console.log(`<< ${response.status()} ${response.url()}`)
+    )
   })
   test('completes basic lifecycle', async ({ page }) => {
     const teamId = await setupTestTeam(page)
     await page.goto(`/teams/${teamId}/sprints`)
     await page.waitForLoadState('networkidle')
-    await expect(page.getByRole('heading', { name: 'Sprint Management' })).toBeVisible(testTimeouts.navigation)
+    await expect(
+      page.getByRole('heading', { name: 'Sprint Management' })
+    ).toBeVisible(testTimeouts.navigation)
 
     await test.step('Create Sprint', async () => {
       // Click Add Sprint and wait for dialog
@@ -61,10 +65,18 @@ test.describe('Sprint Management', () => {
       await page.waitForLoadState('networkidle')
 
       // Verify sprint details
-      await expect(page.getByText('Test Sprint')).toBeVisible(testTimeouts.assertion)
-      await expect(page.getByText('Test sprint goal')).toBeVisible(testTimeouts.assertion)
-      await expect(page.getByText(formatDate(today))).toBeVisible(testTimeouts.assertion)
-      await expect(page.getByText(formatDate(nextWeek))).toBeVisible(testTimeouts.assertion)
+      await expect(page.getByText('Test Sprint')).toBeVisible(
+        testTimeouts.assertion
+      )
+      await expect(page.getByText('Test sprint goal')).toBeVisible(
+        testTimeouts.assertion
+      )
+      await expect(page.getByText(formatDate(today))).toBeVisible(
+        testTimeouts.assertion
+      )
+      await expect(page.getByText(formatDate(nextWeek))).toBeVisible(
+        testTimeouts.assertion
+      )
       await expect(page.getByText('Future')).toBeVisible(testTimeouts.assertion)
     })
 
@@ -90,7 +102,9 @@ test.describe('Sprint Management', () => {
   test('prevents invalid state transitions', async ({ page }) => {
     const teamId = await setupTestTeam(page)
     await page.goto(`/teams/${teamId}/sprints`)
-    await expect(page.getByRole('heading', { name: 'Sprint Management' })).toBeVisible(testTimeouts.navigation)
+    await expect(
+      page.getByRole('heading', { name: 'Sprint Management' })
+    ).toBeVisible(testTimeouts.navigation)
 
     await test.step('Create test sprint', async () => {
       await page.getByRole('button', { name: 'Add Sprint' }).click()
@@ -120,14 +134,18 @@ test.describe('Sprint Management', () => {
 
       await page.getByRole('button', { name: 'Start Sprint' }).click()
       await page.getByRole('button', { name: 'Close Sprint' }).click()
-      await expect(page.getByText('Invalid state transition')).toBeVisible(testTimeouts.assertion)
+      await expect(page.getByText('Invalid state transition')).toBeVisible(
+        testTimeouts.assertion
+      )
     })
   })
 
   test('prevents overlapping sprint dates', async ({ page }) => {
     const teamId = await setupTestTeam(page)
     await page.goto(`/teams/${teamId}/sprints`)
-    await expect(page.getByRole('heading', { name: 'Sprint Management' })).toBeVisible(testTimeouts.navigation)
+    await expect(
+      page.getByRole('heading', { name: 'Sprint Management' })
+    ).toBeVisible(testTimeouts.navigation)
 
     await test.step('Create first sprint', async () => {
       await page.getByRole('button', { name: 'Add Sprint' }).click()
@@ -144,7 +162,9 @@ test.describe('Sprint Management', () => {
       await page.getByLabel('End Date').fill(formatDate(nextWeek))
       await page.getByRole('button', { name: 'Create Sprint' }).click()
 
-      await expect(page.getByText('Sprint dates overlap')).toBeVisible(testTimeouts.assertion)
+      await expect(page.getByText('Sprint dates overlap')).toBeVisible(
+        testTimeouts.assertion
+      )
     })
   })
 })

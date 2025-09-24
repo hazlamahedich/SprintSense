@@ -17,12 +17,20 @@ export enum WorkItemStatus {
   ARCHIVED = 'archived',
 }
 
+export enum SprintStatus {
+  FUTURE = 'future',
+  ACTIVE = 'active',
+  CLOSED = 'closed',
+}
+
 export enum SortOrder {
   ASC = 'asc',
   DESC = 'desc',
 }
 
 export interface WorkItem {
+  sprintId: string | null
+  version: number
   id: string
   team_id: string
   sprint_id?: string

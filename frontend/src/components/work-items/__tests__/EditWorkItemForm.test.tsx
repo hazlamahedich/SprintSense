@@ -431,14 +431,31 @@ describe('EditWorkItemForm', () => {
     const saveButton = screen.getByRole('button', { name: /save changes/i })
     await user.click(saveButton)
 
-    // Should show loading state
-    expect(screen.getByText('Saving...')).toBeInTheDocument()
-    expect(saveButton).toBeDisabled()
+    // Should show loading state (allow for async render)
+    await waitFor(
+      () => {
+        const submitButton = screen.getByRole('button', {
+          name: /save|saving/i,
+        })
+        expect(submitButton).toHaveAttribute('disabled')
+      },
+      { timeout: 1000 }
+    )
+
+    // Verify loading text
+    const submitText = screen.getByRole('button', {
+      name: /save|saving/i,
+    }).textContent
+    expect(submitText === 'Saving...' || submitText === 'Saving...').toBe(true)
 
     // Wait for completion
-    await waitFor(() => {
-      expect(screen.queryByText('Saving...')).not.toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        const button = screen.getByRole('button', { name: /save changes/i })
+        expect(button).not.toHaveAttribute('disabled')
+      },
+      { timeout: 1000 }
+    )
   })
 
   it('calls onCancel when cancel button clicked', async () => {

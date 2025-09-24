@@ -283,6 +283,7 @@ class TestProjectGoalService:
         team, owner = test_team_with_owner
 
         import uuid
+
         nonexistent_id = uuid.uuid4()
         update_data = ProjectGoalUpdateRequest(description="Test goal")
 

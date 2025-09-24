@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Button } from '../ui/button'
 import { TrashIcon } from '@heroicons/react/24/outline/index.js'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
@@ -30,27 +30,35 @@ export const DeleteWorkItemButton: React.FC<DeleteWorkItemButtonProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const isMounted = useRef(true)
+
+  useEffect(() => {
+    isMounted.current = true
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
   const handleButtonClick = () => {
     setIsModalOpen(true)
   }
 
   const handleModalClose = () => {
-    if (!isLoading) {
+    if (!isLoading && isMounted.current) {
       setIsModalOpen(false)
     }
   }
 
   const handleConfirmDelete = async () => {
     try {
-      setIsLoading(true)
+      if (isMounted.current) setIsLoading(true)
       await onArchive(workItemId)
-      setIsModalOpen(false)
+      if (isMounted.current) setIsModalOpen(false)
     } catch (error) {
       // Error handling is managed by the parent component through the onArchive callback
       console.error('Failed to archive work item:', error)
     } finally {
-      setIsLoading(false)
+      if (isMounted.current) setIsLoading(false)
     }
   }
 

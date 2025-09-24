@@ -2,7 +2,7 @@
 
 ## 1. Authentication Client Issues
 ### Test: Multiple authentication-related tests in integration tests
-### Error: 
+### Error:
 ```python
 AttributeError: 'FixtureFunctionDefinition' object has no attribute 'dependency_overrides'
 ```
