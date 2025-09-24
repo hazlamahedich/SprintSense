@@ -16,11 +16,11 @@ declare
 begin
   -- Generate a new UUID for the user
   v_user_id := gen_random_uuid();
-  
+
   -- Delete existing test user and profile if any
   delete from public.profiles where email = p_email;
   delete from auth.users where email = p_email;
-  
+
   -- Set the correct search path
   set search_path = public, auth, extensions;
 

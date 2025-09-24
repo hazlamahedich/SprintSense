@@ -42,7 +42,7 @@ as $$
 begin
   -- Delete existing profile if any
   delete from public.profiles where id = new.id;
-  
+
   -- Insert new profile
   insert into public.profiles (id, full_name, email)
   values (new.id, new.raw_user_meta_data->>'full_name', new.email);
