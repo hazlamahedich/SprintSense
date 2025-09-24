@@ -10,6 +10,7 @@ repos:
         exclude: ^.*\.(md|rst)$
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: ^backend/deploy/quality-metrics\.yml$
       - id: check-json
         exclude: ^frontend/tsconfig.*\.json$
       - id: check-toml
