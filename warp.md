@@ -84,25 +84,45 @@ Transform reactive project management into proactive, intelligent workflow optim
 
 | Category | Technology | Version | Purpose |
 |----------|------------|---------|---------|
-| 🌐 **Frontend** | React | ~18.2.0 | User interface framework |
-| 📝 **Language** | TypeScript | ~5.3 | Type safety |
-| 🎨 **UI Library** | Material-UI (MUI) | ~5.15.0 | Component library |
-| 🗂️ **State** | Zustand | ~4.5.0 | State management |
-| 🐍 **Backend** | FastAPI | ~0.109.0 | REST API framework |
-| 🐍 **Language** | Python | 3.11 | Backend runtime |
+| 🌐 **Frontend** | React | ~19.1.1 | Modern, type-safe UI framework |
+| 📝 **Language** | TypeScript | ~5.8.3 | Enhanced type safety and DX |
+| 🎨 **UI Library** | Material-UI (MUI) | ~5.18.0 | Comprehensive component system |
+| 🎨 **Styling** | Tailwind CSS | Latest | Utility-first CSS framework |
+| 🗂️ **State** | Zustand | ~4.5.7 | Lightweight state management |
+| 🗄️ **API Client** | Axios | ~1.12.2 | Type-safe API interactions |
+| 🛣️ **Routing** | React Router | ~7.9.1 | Client-side routing |
+| 📝 **Forms** | React Hook Form + Yup | ~7.62.0 | Form handling and validation |
+| 🐍 **Backend** | FastAPI | ~0.109.0 | High-performance API framework |
+| 🐍 **Language** | Python | ~3.11-3.14 | Backend runtime |
 | 🗄️ **Database** | PostgreSQL | 16.2 | Primary data store |
 | ⚡ **Cache** | Redis | 7.2 | Caching & background tasks |
-| 🏗️ **Build** | Vite | ~5.1.0 | Frontend build tool |
+| 🏗️ **Build** | Vite | ~7.1.2 | Next-gen frontend tooling |
 | 🚀 **Deployment** | Docker Compose | Latest | Container orchestration |
+| 🔍 **Observability** | OpenTelemetry | ~1.22.0 | Distributed tracing |
+| 📊 **ML/AI** | scikit-learn, transformers | Latest | ML capabilities |
 
-### 🛠️ **Development Tools**
+### 🔧 **Development Tools**
 
 - **Package Manager:** npm workspaces (monorepo)
 - **Type Generation:** openapi-typescript-codegen
-- **Testing:** Jest (planned), Pytest (planned)
-- **Linting:** ESLint, Ruff
+- **E2E Testing:** Playwright
+- **Unit Testing:** Vitest (frontend), pytest (backend)
+- **Linting:** ESLint w/ TypeScript, Ruff
+- **Formatting:** Prettier, Black, isort
+- **Type Checking:** TypeScript strict mode, mypy
+- **Pre-commit:** husky (frontend), pre-commit (backend)
 - **Monitoring:** OpenTelemetry, structlog
 - **CI/CD:** GitHub Actions
+
+### 🎯 **Code Quality Thresholds**
+
+| Metric | Frontend | Backend |
+|--------|-----------|----------|
+| Test Coverage | 80% | 85% |
+| Type Coverage | 95% | 100% |
+| Max Complexity | 10 | 8 |
+| Max File Size | 400 lines | 500 lines |
+| Documentation | TSDoc | Google style docstrings |
 
 ### 🏛️ **High-Level Architecture**
 
@@ -398,30 +418,125 @@ bmad flatten-context  # Generate AI context from codebase
 
 ## 🚀 Getting Started
 
-### 👩‍💻 **For Developers**
+### 👩‍💻 **Development Workflow**
+
+#### 1. **Initial Setup**
 
 ```bash
-# 1. Clone the repository
+# Clone and enter project
 git clone <repository-url>
 cd SprintSense
 
-# 2. Review architecture and requirements
-open docs/architecture.md
-open docs/prd.md
+# Install pre-commit hooks (required)
+pip install pre-commit
+pre-commit install
 
-# 3. Set up development environment (planned)
-# make install
-# make dev
+# Set up backend
+cd backend
+poetry install
+poetry run alembic upgrade head
 
-# 4. Start with BMAD workflows
-# bmad create-story
+# Set up frontend
+cd ../frontend
+npm install
 ```
 
-**📖 Essential Reading:**
+#### 2. **Development Environment**
 
-1. [🏗️ System Architecture](./docs/architecture.md) - Understand the technical foundation
-2. [📋 Epic Details](./docs/prd/6-epic-details.md) - Current development priorities
-3. [🤖 AI Guidelines](./claude_suggestions.md) - AI-assisted development practices
+```bash
+# Start local services
+cd ops
+docker-compose up -d db  # Start PostgreSQL
+
+# Start backend (in backend/)
+poetry run uvicorn app.main:app --reload
+
+# Start frontend (in frontend/)
+npm run dev
+
+# Generate API types (after backend changes)
+npm run gen-types
+```
+
+#### 3. **Testing Workflow**
+
+```bash
+# Backend tests (in backend/)
+poetry run pytest                     # Run all tests
+poetry run pytest tests/unit          # Unit tests only
+poetry run pytest tests/integration   # Integration tests
+poetry run pytest --cov=app          # With coverage
+
+# Frontend tests (in frontend/)
+npm run test              # Run unit tests
+npm run test:coverage    # With coverage
+npm run test:e2e         # Run E2E tests
+npm run test:e2e:ui      # E2E with UI
+```
+
+#### 4. **Code Quality**
+
+```bash
+# Backend quality checks
+poetry run black .
+      && poetry run isort .
+      && poetry run flake8
+      && poetry run mypy .
+
+# Frontend quality checks
+npm run lint
+npm run format
+npm run type-check
+
+# Run all checks (root directory)
+./scripts/lint-all.sh
+```
+
+#### 5. **Branch Workflow**
+
+```bash
+# Feature branches
+git checkout -b feature/xyz
+
+# Commit with semantic messages
+git commit -m "feat(component): add xyz feature"
+
+# After PR approval and QA ✅
+git push origin feature/xyz
+```
+
+### 📚 **Essential Documentation**
+
+1. [🏗️ Architecture Overview](./docs/architecture.md)
+2. [🎨 Frontend Spec](./docs/front-end-spec.md)
+3. [📋 Coding Standards](./docs/architecture/coding-standards.md)
+4. [✅ Testing Standards](./docs/architecture/testing_standards.md)
+5. [🤖 AI Development Guide](./claude_suggestions.md)
+
+### 🔄 **Development Loop**
+
+1. **Story Selection**
+   - Review sprint backlog
+   - Use BMAD for refinement
+   - Check dependencies
+
+2. **Implementation**
+   - Follow coding standards
+   - Write tests first (TDD)
+   - Document as you code
+   - Use AI assistance wisely
+
+3. **Quality Gates**
+   - Run all tests
+   - Check coverage
+   - Run linters
+   - Update documentation
+
+4. **Review Process**
+   - Self-review checklist
+   - Peer code review
+   - QA verification
+   - Documentation review
 
 ### 📐 **For Product Managers & Designers**
 
@@ -672,6 +787,216 @@ find .bmad-core -name "*.md" -exec echo "=== {} ===" \; -exec cat {} \; > bmad_c
    - Update when switching between epics
    - Refresh for new team members or AI sessions
 
+## ✅ **Code Quality Standards**
+
+### 📝 **TypeScript & Frontend Standards**
+
+```typescript
+// Type Safety
+export interface UserProfile {
+  id: string;          // Always use specific types
+  email: string;       // No 'any' unless absolutely necessary
+  age?: number;        // Optional props marked with '?'
+  roles: UserRole[];   // Use enums for fixed values
+}
+
+// Component Organization
+const UserCard: React.FC<UserProfile> = ({ id, email, age, roles }) => {
+  // Props destructured and typed
+  const theme = useTheme();  // Hooks at top
+  const [isExpanded, setExpanded] = useState(false);
+
+  // Business logic in custom hooks
+  const { data, loading } = useUserData(id);
+
+  // JSX follows consistent pattern
+  return (
+    <Card>
+      <CardHeader />
+      <CardContent />
+      <CardActions />
+    </Card>
+  );
+};
+```
+
+#### 📝 **TypeScript Guidelines**
+
+1. **Type Safety**
+   - Strict mode enabled
+   - No implicit any
+   - Exhaustive type checks
+   - Proper generics usage
+
+2. **File Organization**
+   - One component per file
+   - Clear import structure
+   - Consistent exports
+   - Type definitions separated
+
+3. **Component Patterns**
+   - Functional components
+   - Props interfaces
+   - Custom hooks
+   - Proper event types
+
+### 🐍 **Python & Backend Standards**
+
+```python
+from typing import Optional, List
+from pydantic import BaseModel
+
+class UserProfile(BaseModel):
+    """User profile data model.
+    
+    Attributes:
+        id: Unique identifier for the user
+        email: User's email address
+        age: Optional age of the user
+        roles: List of user roles
+    """
+    id: str
+    email: str
+    age: Optional[int] = None
+    roles: List[str]
+
+    def validate_email(self) -> bool:
+        """Validate email format.
+        
+        Returns:
+            bool: True if email is valid
+        """
+        return '@' in self.email
+```
+
+#### 📝 **Python Guidelines**
+
+1. **Type Hints**
+   - All functions typed
+   - Use typing module
+   - Validate with mypy
+   - Document complex types
+
+2. **Documentation**
+   - Google style docstrings
+   - Function purpose
+   - Args and returns
+   - Usage examples
+
+3. **Code Style**
+   - Black formatting
+   - isort imports
+   - Ruff linting
+   - Max line length: 88
+
+### ✅ **Testing Standards**
+
+#### Frontend Tests
+
+```typescript
+describe('UserCard', () => {
+  it('should render user information', () => {
+    const user = mockUserData();
+    const { getByText } = render(<UserCard {...user} />);
+    expect(getByText(user.email)).toBeInTheDocument();
+  });
+
+  it('should handle loading state', () => {
+    const { container } = render(<UserCard loading />);
+    expect(container).toMatchSnapshot();
+  });
+});
+```
+
+#### Backend Tests
+
+```python
+def test_user_profile_validation():
+    """Test user profile validation logic."""
+    user = UserProfile(
+        id="123",
+        email="test@example.com",
+        roles=["user"]
+    )
+    assert user.validate_email() is True
+
+@pytest.mark.integration
+def test_user_api_create():
+    """Integration test for user creation API."""
+    response = client.post("/users", json=user_data)
+    assert response.status_code == 201
+```
+
+### 📋 **Review Process**
+
+#### PR Checklist
+
+- [ ] Tests added/updated
+- [ ] Documentation updated
+- [ ] Types checked
+- [ ] Lint clean
+- [ ] Follows patterns
+- [ ] No security issues
+- [ ] Performance considered
+- [ ] Error handling
+
+#### QA Requirements
+
+1. **Functionality**
+   - Core features work
+   - Edge cases handled
+   - Error states tested
+   - Mobile responsive
+
+2. **Performance**
+   - Load times < 2s
+   - No memory leaks
+   - Bundle size optimized
+   - DB queries efficient
+
+3. **Security**
+   - Input sanitized
+   - Auth working
+   - Secrets secure
+   - CORS configured
+
+### 🔐 **Code Security**
+
+```typescript
+// Frontend Security
+import { sanitizeHtml } from '../utils';
+
+// Always sanitize user input
+const content = sanitizeHtml(userInput);
+
+// Use environment variables
+const apiKey = process.env.API_KEY;
+
+// Proper auth headers
+axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+```
+
+```python
+# Backend Security
+from fastapi import HTTPException, Security
+from fastapi.security import APIKeyHeader
+
+# Always validate input
+class UserInput(BaseModel):
+    name: str
+    email: EmailStr  # Validates email format
+    age: conint(ge=0, lt=150)  # Constrains range
+
+# Proper error handling
+def get_user(user_id: str) -> User:
+    try:
+        return db.users.get(user_id)
+    except NotFoundError:
+        raise HTTPException(status_code=404)
+    except DbError:
+        raise HTTPException(status_code=500)
+```
+
 ### 🎨 **AI Quality Standards**
 
 From `claude_suggestions.md`:
@@ -694,7 +1019,106 @@ From `claude_suggestions.md`:
 
 ## 🛠️ Development Tools
 
-### 🔧 **Planned Development Stack**
+### 🚀 **Build and Deployment Process**
+
+#### 🏗️ **Build Steps**
+
+```bash
+# Frontend Build
+cd frontend
+npm run build            # Production build
+npm run build:analyze    # Bundle analysis
+
+# Backend Build
+cd ../backend
+poetry build            # Package backend
+
+# Container Builds
+cd ../ops
+docker-compose build    # All services
+```
+
+#### 🛠️ **Environment Setup**
+
+```bash
+# Development (.env)
+ENVIRONMENT=development
+LOG_LEVEL=DEBUG
+BACKEND_CORS_ORIGINS=http://localhost:5173
+
+# Staging (.env.staging)
+ENVIRONMENT=staging
+LOG_LEVEL=INFO
+BACKEND_CORS_ORIGINS=https://staging.sprintsense.io
+
+# Production (.env.prod)
+ENVIRONMENT=production
+LOG_LEVEL=WARNING
+BACKEND_CORS_ORIGINS=https://sprintsense.io
+```
+
+### 📝 **Commit Message Format**
+
+Follow the Conventional Commits specification:
+
+```bash
+# Format
+<type>(<scope>): <description>
+[optional body]
+[optional footer(s)]
+
+# Types
+feat:     New feature
+fix:      Bug fix
+docs:     Documentation only
+style:    Code style (formatting, missing semi colons, etc)
+refactor: Code refactoring
+perf:     Performance improvement
+test:     Tests
+chore:    Tooling, dependencies, etc.
+
+# Examples
+git commit -m "feat(auth): add OAuth support"
+git commit -m "fix(db): handle connection timeout"
+git commit -m "docs(api): update endpoint docs"
+```
+
+### 📝 **Deployment Checklist**
+
+1. **Pre-deployment**
+   - [ ] All tests passing
+   - [ ] Security scan clean
+   - [ ] DB migrations ready
+   - [ ] Documentation updated
+   - [ ] QA approval
+
+2. **Deployment**
+   - [ ] Backup database
+   - [ ] Apply migrations
+   - [ ] Deploy services
+   - [ ] Verify health
+   - [ ] Smoke tests
+
+3. **Post-deployment**
+   - [ ] Monitor errors
+   - [ ] Check performance
+   - [ ] Verify features
+   - [ ] Update status
+
+#### 🔐 **Security Controls**
+
+```bash
+# Secrets Management
+API_KEY=$(secret_manager --secret-name=name)
+api --key=$API_KEY  # Use env vars
+
+# Access Control
+- Production deploys need QA sign-off
+- Staging restricted to team
+- Dev environments isolated
+```
+
+### 🔧 **Development Commands**
 
 ```bash
 # Frontend Development
@@ -756,7 +1180,64 @@ Look for issues labeled:
 
 ---
 
-## 🆘 Support & Resources
+## 🩺 Maintenance and Troubleshooting
+
+### 🔌 Common Issues
+
+- Database connectivity problems
+  - Verify Docker db container is healthy: `docker ps` and `docker-compose logs db`
+  - Check env vars: POSTGRES_SERVER, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT
+  - Test connection from backend: `poetry run python -c "import psycopg, os; print(psycopg.connect(host=os.getenv('POSTGRES_SERVER','localhost'), user='sprintsense', password='sprintsense', dbname='sprintsense'))"`
+
+- Environment setup issues
+  - Node version mismatch: use `nvm use 20`
+  - Python version mismatch: `pyenv global 3.11`
+  - Poetry missing: `brew install poetry`
+
+- Build failures
+  - Frontend: clear vite cache `rm -rf node_modules .vite` then `npm ci`
+  - Backend: `poetry lock --no-update && poetry install -n`
+  - Docker: rebuild `docker-compose build --no-cache`
+
+- Test failures
+  - Flaky E2E: use `npm run test:e2e:debug` and retry with `--retries=2`
+  - Backend integration: ensure db is seeded; run migrations
+
+### 🚀 Performance Optimization
+
+- Frontend
+  - Code-split routes and large components
+  - Memoize selectors and components
+  - Use `React.Suspense` for async boundaries
+
+- Backend
+  - Add DB indexes for frequent queries
+  - Use async SQLAlchemy sessions
+  - Cache hot paths (Redis)
+
+- Database
+  - Analyze queries with `EXPLAIN ANALYZE`
+  - Optimize N+1 selects with joins
+  - Periodic vacuum and analyze
+
+### 🔄 Update Procedures
+
+- Dependency updates
+  - Frontend: `npm outdated` → `npm update` → test → commit
+  - Backend: `poetry update` (pin major ranges), run tests
+
+- Schema migrations
+  - Create: `alembic revision -m "feat(db): add table xyz"`
+  - Apply: `alembic upgrade head`
+  - Rollback: `alembic downgrade -1`
+
+- API version management
+  - Update OpenAPI via FastAPI
+  - Regenerate frontend types: `npm run gen-types`
+
+---
+
+### 🆘 Support & Resources
 
 ### 📞 **Getting Help**
 
