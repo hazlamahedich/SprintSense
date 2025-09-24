@@ -3,13 +3,42 @@
 from typing import Dict
 
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.models.user import User
 
 
 class TestTeamsAPI:
     """Test class for teams API endpoints."""
+
+    @pytest_asyncio.fixture
+    async def other_test_user(self, db_session: AsyncSession) -> User:
+        """Create another test user."""
+        user = User(
+            email="other@example.com",
+            hashed_password="test_password_hash",
+            full_name="Other Test User",
+            is_active=True
+        )
+        db_session.add(user)
+        await db_session.commit()
+        await db_session.refresh(user)
+        return user
+
+    @pytest_asyncio.fixture
+    async def auth_headers_for_other_user(self, other_test_user: User) -> Dict[str, str]:
+        """Create auth headers for other test user."""
+        from datetime import timedelta
+        from app.core.security import create_access_token
+
+        access_token = create_access_token(
+            data={"sub": str(other_test_user.id), "email": other_test_user.email},
+            expires_delta=timedelta(minutes=30),
+        )
+
+        return {"Cookie": f"access_token={access_token}"}
 
     @pytest.mark.asyncio
     async def test_create_team_success(
@@ -184,7 +213,7 @@ class TestTeamsAPI:
 
         assert response.status_code == 404
         data = response.json()
-        assert data["code"] == "TEAM_NOT_FOUND"
+        assert data["detail"]["code"] == "TEAM_NOT_FOUND"
 
     @pytest.mark.asyncio
     async def test_get_team_unauthorized_access(
@@ -196,6 +225,10 @@ class TestTeamsAPI:
         async_client: AsyncClient,
     ):
         """Test 403 response when non-member tries to access team."""
+        # Handle async fixtures
+        other_user = other_test_user
+        other_headers = auth_headers_for_other_user
+
         # Create team as first user
         team_data = {"name": "Restricted Team"}
         create_response = await async_client.post(
@@ -207,12 +240,12 @@ class TestTeamsAPI:
 
         # Try to access as other user
         get_response = await async_client.get(
-            f"/api/v1/teams/{team_id}", headers=auth_headers_for_other_user
+            f"/api/v1/teams/{team_id}", headers=other_headers
         )
 
         assert get_response.status_code == 403
         data = get_response.json()
-        assert data["code"] == "NOT_TEAM_MEMBER"
+        assert data["detail"]["code"] == "NOT_TEAM_MEMBER"
 
     @pytest.mark.asyncio
     async def test_get_team_no_auth(

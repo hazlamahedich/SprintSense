@@ -17,7 +17,6 @@ import {
   InputAdornment,
   useTheme,
   Fade,
-  Grow,
 } from '@mui/material'
 import { Groups, ArrowBack, Add, CheckCircle, Edit } from '@mui/icons-material'
 import { useAppStore } from '../store/appStore'
@@ -148,7 +147,7 @@ export const CreateTeamPage: React.FC = () => {
           minHeight: '100vh',
         }}
       >
-        <Fade in={showSuccess} timeout={1000}>
+        <Fade in={showSuccess}>
           <Paper
             elevation={8}
             sx={{
@@ -160,9 +159,7 @@ export const CreateTeamPage: React.FC = () => {
               width: '100%',
             }}
           >
-            <Grow in={showSuccess} timeout={1500}>
-              <CheckCircle sx={{ fontSize: 80, mb: 2 }} />
-            </Grow>
+            <CheckCircle sx={{ fontSize: 80, mb: 2 }} />
             <Typography
               variant="h4"
               component="h1"

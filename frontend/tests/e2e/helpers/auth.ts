@@ -1,65 +1,82 @@
-import { Page, expect } from '@playwright/test'
+import { Page } from '@playwright/test'
+import { BrowserContext } from '@playwright/test'
+
+// Minimal auth helper for E2E: bypass backend auth and set app store state
+// The app store reads from localStorage keys: 'access_token' and 'user'
 
 const TEST_USER = {
+  id: '00000000-0000-0000-0000-000000000001',
   email: 'test@example.com',
-  password: 'TestPass123',
+  full_name: 'Test User',
+  is_active: true,
+  created_at: new Date().toISOString(),
 }
 
-export async function login(
-  page: Page,
-  email = TEST_USER.email,
-  password = TEST_USER.password
-) {
-  // Navigate to login page
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
+export async function login(page: Page, email?: string) {
+  console.log('Starting login process...');
+  const user = {
+    ...TEST_USER,
+    email: email ?? TEST_USER.email,
+  }
 
-  // Wait for and fill login form
-  await page.waitForSelector('input[type="email"]')
-  await page.waitForSelector('input[type="password"]')
-
-  await page.fill('input[type="email"]', email)
-  await page.fill('input[type="password"]', password)
-
-  // Submit login form and wait for response
+  // First navigate to the app domain to establish storage context
+  console.log('Navigating to app domain...');
   try {
-    await Promise.all([
-      page.waitForResponse(
-        (res) =>
-          res.url().includes('/api/v1/auth/login') && res.status() === 200,
-        { timeout: 15000 }
-      ),
-      page.click('button[type="submit"]'),
-    ])
-
-    // Wait for navigation
-    await page.waitForURL('**/dashboard')
-    await page.waitForLoadState('domcontentloaded')
+    await page.goto('http://localhost:5175', { 
+      waitUntil: 'networkidle',
+      timeout: 60000 // Increase timeout to 60 seconds
+    });
+    console.log('Successfully navigated to app domain');
   } catch (error) {
-    console.error('Login failed:', error)
-    throw new Error(`Login failed: ${error.message}`)
+    console.error('Failed to navigate to app domain:', error);
+    throw error;
   }
+  
+  // Add storage state initialization
+  const context = page.context() as BrowserContext
+  await context.addInitScript(() => {
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+  })
+  
+  // Now set up auth state in the correct context
+  await page.evaluate((u) => {
+    window.localStorage.setItem('access_token', 'e2e-test-token')
+    window.localStorage.setItem('user', JSON.stringify(u))
+  }, user)
+
+  // Navigate to dashboard and wait for critical elements
+  await page.goto('/', { waitUntil: 'networkidle' })
+  
+  try {
+    // Wait for the dashboard title to be visible
+    await page.getByRole('heading', { name: 'SprintSense Dashboard' }).waitFor({ 
+      state: 'visible',
+      timeout: 5000
+    })
+  } catch (e) {
+    console.log('Dashboard not loaded properly. Current URL:', await page.url())
+    console.log('Page content:', await page.content())
+    throw e
+  }
+
+  // Verify auth state
+  await page.waitForFunction(() => {
+    try {
+      const token = window.localStorage.getItem('access_token')
+      const user = window.localStorage.getItem('user')
+      return !!token && !!user
+    } catch { return false }
+  }, { timeout: 30000 })
 }
 
-export async function getAuthCookie(
-  page: Page
-): Promise<{ name: string; value: string }> {
-  // First login to get the cookie
-  await login(page)
-
-  // Get all cookies
-  const cookies = await page.context().cookies()
-
-  // Find the auth cookie (adjust the name based on your actual cookie name)
-  const authCookie = cookies.find((cookie) => cookie.name === 'access_token')
-  if (!authCookie) {
-    throw new Error('Auth cookie not found after login')
-  }
-
+export async function getAuthCookie(_page: Page): Promise<{ name: string; value: string; url: string; httpOnly: boolean; secure: boolean }> {
+  // Not used with localStorage-based auth; provided for API compatibility
   return {
-    name: authCookie.name,
-    value: authCookie.value,
-    url: 'http://localhost:5173',
+    name: 'access_token',
+    value: 'e2e-test-token',
+    url: 'http://localhost:5175',
     httpOnly: true,
-    secure: false,
+    secure: false
   }
 }

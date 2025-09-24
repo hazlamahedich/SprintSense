@@ -10,20 +10,52 @@ test.describe('Team Management', () => {
   test('should create a new team and display it correctly', async ({
     page,
   }) => {
-    // Go to dashboard
-    await page.goto('/')
-    await expect(page.getByText('SprintSense Dashboard')).toBeVisible()
+    // Verify we're on the dashboard
+    await expect(page.getByRole('heading', { name: 'SprintSense Dashboard' })).toBeVisible()
 
     // Click create team button
-    await page.getByRole('button', { name: 'Create New Team' }).click()
+    const createButton = page.getByRole('button', { name: 'Create New Team' })
+    await createButton.waitFor({ state: 'visible' })
+    await createButton.click()
 
-    // Fill and submit team creation form
+    // Wait for navigation and form to be ready
+    await page.waitForURL('**/teams/create')
+    
+    // Fill team name
     const teamName = `Test Team ${Date.now()}`
-    await page.getByLabel('Team Name').fill(teamName)
-    await page.getByRole('button', { name: /Create Team$/ }).click()
+    const teamNameInput = page.getByLabel('Team Name')
+    await teamNameInput.waitFor({ state: 'visible' })
+    await teamNameInput.fill(teamName)
+    
+    // Submit form and wait for response
+    const submitButton = page.getByRole('button', { name: /Create Team$/ })
+    await submitButton.waitFor({ state: 'visible' })
 
-    // Wait for success message and redirect
-    await expect(page.getByText('Team Created Successfully!')).toBeVisible()
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        response => response.url().includes('/api/v1/teams') && response.request().method() === 'POST'
+      ),
+      submitButton.click()
+    ])
+
+    // Log response for debugging
+    const responseData = await response.json().catch(() => null)
+    console.log('Create team response:', {
+      status: response.status(),
+      data: responseData
+    })
+
+    // Handle success or error
+    if (response.ok()) {
+      await expect(
+        page.getByRole('heading', { name: 'Team Created Successfully!' })
+      ).toBeVisible({ timeout: 5000 })
+    } else {
+      const errorAlert = page.locator('.MuiAlert-error')
+      await errorAlert.waitFor({ timeout: 5000 })
+      const errorText = await errorAlert.textContent()
+      throw new Error(`Team creation failed: ${errorText}`)
+    }
 
     // Verify redirect to team dashboard
     await expect(page.url()).toMatch(/\/teams\/[\w-]+$/)

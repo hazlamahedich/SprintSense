@@ -1,0 +1,27 @@
+[project]
+name = "test-cycle"
+version = "0.1.0"
+description = "Automated E2E test cycle runner for Playwright"
+authors = [
+    {name = "Sherwin Gorechomante"}
+]
+readme = "README.md"
+requires-python = "^3.9"
+dependencies = [
+    "pytest (>=8.4.2,<9.0.0)",
+    "playwright (>=1.55.0,<2.0.0)",
+    "pytest-playwright (>=0.7.1,<0.8.0)",
+    "pytest-html (>=4.1.1,<5.0.0)",
+    "pytest-metadata (>=3.1.1,<4.0.0)"
+]
+
+[dependency-groups]
+dev = [
+    "black (>=25.9.0,<26.0.0)",
+    "pylint (>=3.3.8,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

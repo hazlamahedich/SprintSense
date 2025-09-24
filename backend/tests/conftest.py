@@ -1,3 +1,19 @@
+"""Shared test fixtures and configuration."""
+
+import pytest
+import pytest_asyncio
+
+# Enable async test support
+pytest.register_assert_rewrite('pytest_asyncio')
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    import asyncio
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
 """Test configuration and fixtures."""
 
 import pytest_asyncio
@@ -7,6 +23,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.infra.db import Base, get_session
 from app.main import app as fastapi_app
+from app.domains.services.project_goal_service import ProjectGoalService
 
 # Test database URL (using SQLite for simplicity in tests)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -72,7 +89,7 @@ async def async_client(db_session: AsyncSession, app):
 
 
 @pytest_asyncio.fixture
-async def authenticated_async_client(db_session: AsyncSession, authenticated_user):
+async def authenticated_async_client(db_session: AsyncSession, authenticated_user, app):
     """Create authenticated test client for invitation tests."""
     from datetime import timedelta
 
@@ -170,3 +187,9 @@ async def user_team(db_session, authenticated_user):
 
     team = await team_service.create_team(team_data, authenticated_user)
     return team
+
+
+@pytest_asyncio.fixture
+async def project_goal_service(db_session: AsyncSession) -> ProjectGoalService:
+    """Create a project goal service instance with test database session."""
+    return ProjectGoalService(db_session)

@@ -45,7 +45,7 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" data-testid="dashboard-container">
       <Box sx={{ py: 4 }}>
         {/* Header */}
         <Paper

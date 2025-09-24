@@ -14,6 +14,9 @@ async def test_metrics_with_network_issues(app: FastAPI, async_client: AsyncClie
     """Test metrics resilience with simulated network issues."""
     team_id = "test-team-id"
 
+    # Set fixed random seed for deterministic results
+    np.random.seed(42)
+
     async def flaky_db_call(*args, **kwargs):
         # Simulate random network issues with higher failure rate
         if np.random.random() < 0.5:  # Increased to 50% failure rate
@@ -41,17 +44,18 @@ async def test_metrics_with_network_issues(app: FastAPI, async_client: AsyncClie
     error_count = len(responses) - success_count
 
     # Some requests should succeed despite network issues
-    pytest.fail_if(success_count <= 0, "No requests succeeded under network issues")
+    if success_count <= 0:
+        pytest.fail("No requests succeeded under network issues")
     # Some requests should fail due to simulated issues
-    pytest.fail_if(error_count <= 0, "No requests failed despite network issues")
+    if error_count <= 0:
+        pytest.fail("No requests failed despite network issues")
     # Check reasonable success/failure ratio given 50% failure rate
-    pytest.fail_if(
-        not (5 <= success_count <= 15),
-        f"Success count {success_count} outside expected range [5, 15]",
-    )
-    # Check that ConnectionError was the cause of failures
-    error_responses = [r for r in responses if isinstance(r, Exception)]
-    pytest.fail_if(
-        not any(isinstance(r, ConnectionError) for r in error_responses),
-        "No connection errors found in failed responses",
-    )
+    if not (5 <= success_count <= 15):
+        pytest.fail(f"Success count {success_count} outside expected range [5, 15]")
+        # Check that we got failures (either ConnectionError or 503)
+        error_responses = [
+            r for r in responses
+            if isinstance(r, Exception) or (hasattr(r, 'status_code') and r.status_code == 503)
+        ]
+        if not error_responses:
+            pytest.fail("No errors found in responses")

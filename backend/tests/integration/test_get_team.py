@@ -15,24 +15,24 @@ from app.domains.models.user import User
 async def test_get_team_by_id_success(
     async_client: AsyncClient,
     test_user: User,
-    test_db_session,
-    auth_headers: dict,
+    db_session,
+    auth_headers_for_user: dict,
 ):
     """Test successful team retrieval."""
     # Create test team
     team = Team(name="Test Team")
-    test_db_session.add(team)
-    await test_db_session.flush()
+    db_session.add(team)
+    await db_session.flush()
 
     # Add test user as member
     member = TeamMember(team_id=team.id, user_id=test_user.id, role=TeamRole.OWNER)
-    test_db_session.add(member)
-    await test_db_session.commit()
+    db_session.add(member)
+    await db_session.commit()
 
     # Get team
     response = await async_client.get(
-        f"{settings.API_V1_PREFIX}/teams/{team.id}",
-        headers=auth_headers,
+        f"{settings.API_V1_STR}/teams/{team.id}",
+        headers=auth_headers_for_user,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -45,23 +45,25 @@ async def test_get_team_by_id_success(
 
 
 @pytest.mark.asyncio
-async def test_get_team_not_found(async_client: AsyncClient, auth_headers: dict):
+async def test_get_team_not_found(
+    async_client: AsyncClient, auth_headers_for_user: dict
+):
     """Test team retrieval with non-existent ID."""
     response = await async_client.get(
-        f"{settings.API_V1_PREFIX}/teams/{uuid.uuid4()}",
-        headers=auth_headers,
+        f"{settings.API_V1_STR}/teams/{uuid.uuid4()}",
+        headers=auth_headers_for_user,
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     data = response.json()
-    assert data["code"] == "TEAM_NOT_FOUND"
+    assert data["detail"]["code"] == "TEAM_NOT_FOUND"
 
 
 @pytest.mark.asyncio
 async def test_get_team_unauthorized(async_client: AsyncClient):
     """Test team retrieval without authentication."""
     response = await async_client.get(
-        f"{settings.API_V1_PREFIX}/teams/{uuid.uuid4()}",
+        f"{settings.API_V1_STR}/teams/{uuid.uuid4()}",
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
@@ -72,25 +74,25 @@ async def test_get_team_forbidden(
     async_client: AsyncClient,
     test_user: User,
     other_user: User,
-    test_db_session,
-    auth_headers: dict,
+    db_session,
+    auth_headers_for_user: dict,
 ):
     """Test team retrieval by non-member."""
     # Create test team with other_user as member
     team = Team(name="Other Team")
-    test_db_session.add(team)
-    await test_db_session.flush()
+    db_session.add(team)
+    await db_session.flush()
 
     member = TeamMember(team_id=team.id, user_id=other_user.id, role=TeamRole.OWNER)
-    test_db_session.add(member)
-    await test_db_session.commit()
+    db_session.add(member)
+    await db_session.commit()
 
     # Try to get team as test_user (non-member)
     response = await async_client.get(
-        f"{settings.API_V1_PREFIX}/teams/{team.id}",
-        headers=auth_headers,
+        f"{settings.API_V1_STR}/teams/{team.id}",
+        headers=auth_headers_for_user,
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN
     data = response.json()
-    assert data["code"] == "NOT_TEAM_MEMBER"
+    assert data["detail"]["code"] == "NOT_TEAM_MEMBER"

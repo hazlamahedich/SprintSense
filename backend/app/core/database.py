@@ -5,6 +5,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
+from urllib.parse import urlparse
 from app.core.config import settings
 
 # SQLAlchemy engine for async operations
@@ -39,3 +40,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         raise
     finally:
         await db.close()
+
+
+def get_db_url() -> str:
+    """Get the database URL with sensitive information removed."""
+    url = urlparse(str(settings.DATABASE_URL))
+    return f"{url.scheme}://{url.hostname}:{url.port}/{url.path.lstrip('/')}"

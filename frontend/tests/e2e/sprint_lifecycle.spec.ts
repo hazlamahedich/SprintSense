@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { SprintStatus } from '@/types/sprint'
+enum SprintStatus {
+  FUTURE = 'future',
+  ACTIVE = 'active',
+  CLOSED = 'closed'
+}
 import { login } from './helpers/auth'
+import { setupTestTeam } from './helpers/setup'
 
 // Helper functions to format dates for testing
 const formatDate = (date: Date) => date.toISOString().split('T')[0]
@@ -12,9 +17,9 @@ nextWeek.setDate(today.getDate() + 7)
 
 test.describe('Sprint Management', () => {
   test('completes basic lifecycle', async ({ page }) => {
-    await login(page)
-    await page.goto('/teams/1/sprints')
-    await page.waitForSelector('h4:has-text("Sprint Management")')
+    const teamId = await setupTestTeam(page)
+    await page.goto(`/teams/${teamId}/sprints`)
+    await page.waitForSelector('h4:has-text("Sprint Management")', { timeout: 30000 })
 
     await test.step('Create Sprint', async () => {
       await page.click('button[aria-label="Add Sprint"]')
@@ -57,9 +62,9 @@ test.describe('Sprint Management', () => {
   })
 
   test('prevents invalid state transitions', async ({ page }) => {
-    await login(page)
-    await page.goto('/teams/1/sprints')
-    await page.waitForSelector('h4:has-text("Sprint Management")')
+    const teamId = await setupTestTeam(page)
+    await page.goto(`/teams/${teamId}/sprints`)
+    await page.waitForSelector('h4:has-text("Sprint Management")', { timeout: 30000 })
 
     await test.step('Create test sprint', async () => {
       await page.click('button[aria-label="Add Sprint"]')
@@ -94,9 +99,9 @@ test.describe('Sprint Management', () => {
   })
 
   test('prevents overlapping sprint dates', async ({ page }) => {
-    await login(page)
-    await page.goto('/teams/1/sprints')
-    await page.waitForSelector('h4:has-text("Sprint Management")')
+    const teamId = await setupTestTeam(page)
+    await page.goto(`/teams/${teamId}/sprints`)
+    await page.waitForSelector('h4:has-text("Sprint Management")', { timeout: 30000 })
 
     await test.step('Create first sprint', async () => {
       await page.click('button[aria-label="Add Sprint"]')

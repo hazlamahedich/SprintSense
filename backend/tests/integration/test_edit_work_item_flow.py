@@ -7,7 +7,10 @@ from fastapi import status
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.models.team import Team, TeamMember
+from datetime import timedelta
+
+from app.core.security import create_access_token
+from app.domains.models.team import Team, TeamMember, TeamRole
 from app.domains.models.user import User
 from app.domains.models.work_item import WorkItem, WorkItemStatus, WorkItemType
 
@@ -15,14 +18,16 @@ from app.domains.models.work_item import WorkItem, WorkItemStatus, WorkItemType
 class TestEditWorkItemIntegration:
     """Test suite for edit work item end-to-end integration."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="function")
     async def setup_test_data(self, db_session: AsyncSession):
         """Set up test data for integration tests."""
         # Create user
         user = User(
             id=uuid.uuid4(),
             email="test@example.com",
-            name="Test User",
+            full_name="Test User",
+            hashed_password="test_password_hash",
+            is_active=True,
         )
         db_session.add(user)
 
@@ -30,15 +35,15 @@ class TestEditWorkItemIntegration:
         team = Team(
             id=uuid.uuid4(),
             name="Test Team",
-            owner_id=user.id,
         )
         db_session.add(team)
+        await db_session.flush()
 
         # Create team membership
         team_member = TeamMember(
             team_id=team.id,
             user_id=user.id,
-            role="owner",
+            role=TeamRole.OWNER,
         )
         db_session.add(team_member)
 
@@ -67,6 +72,7 @@ class TestEditWorkItemIntegration:
             "work_item": work_item,
         }
 
+    @pytest.mark.asyncio
     async def test_complete_edit_work_item_flow(
         self,
         async_client: AsyncClient,
@@ -74,12 +80,20 @@ class TestEditWorkItemIntegration:
         db_session: AsyncSession,
     ):
         """Test the complete edit work item flow from request to database update."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        data = await setup_test_data
+        user = data["user"]
+        team = data["team"]
+        work_item = data["work_item"]
 
-        # Authenticate user (mocked in test setup)
-        headers = {"Authorization": f"Bearer {user.id}"}
+        # Authenticate user
+        from datetime import timedelta
+        from app.core.security import create_access_token
+
+        access_token = create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Cookie": f"access_token={access_token}"}
 
         # Prepare update data
         update_data = {
@@ -117,23 +131,36 @@ class TestEditWorkItemIntegration:
         assert work_item.priority == 3.5
         assert work_item.story_points == 8
 
+    @pytest.mark.asyncio
     async def test_edit_work_item_authorization_flow(
         self,
         async_client: AsyncClient,
         setup_test_data: dict,
+        db_session: AsyncSession,
     ):
         """Test authorization flow for edit work item."""
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        data = await setup_test_data
+        team = data["team"]
+        work_item = data["work_item"]
 
         # Create unauthorized user
+        # Need to save unauthorized user to DB to pass auth
         unauthorized_user = User(
             id=uuid.uuid4(),
             email="unauthorized@example.com",
-            name="Unauthorized User",
+            full_name="Unauthorized User",
+            is_active=True,
+            hashed_password="test_password_hash"
         )
+        db_session.add(unauthorized_user)
+        await db_session.commit()
+        await db_session.refresh(unauthorized_user)
 
-        headers = {"Authorization": f"Bearer {unauthorized_user.id}"}
+        unauthorized_access_token = create_access_token(
+            data={"sub": str(unauthorized_user.id), "email": unauthorized_user.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Cookie": f"access_token={unauthorized_access_token}"}
 
         update_data = {"title": "Should not work"}
 
@@ -148,17 +175,23 @@ class TestEditWorkItemIntegration:
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "access_denied" in response.json()["detail"]["error"]
 
+    @pytest.mark.asyncio
     async def test_edit_work_item_validation_flow(
         self,
         async_client: AsyncClient,
         setup_test_data: dict,
     ):
         """Test validation flow for edit work item."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        data = await setup_test_data
+        user = data["user"]
+        team = data["team"]
+        work_item = data["work_item"]
 
-        headers = {"Authorization": f"Bearer {user.id}"}
+        access_token = create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Cookie": f"access_token={access_token}"}
 
         # Test with invalid data
         invalid_data = {
@@ -174,6 +207,7 @@ class TestEditWorkItemIntegration:
         # Should fail validation
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+    @pytest.mark.asyncio
     async def test_edit_work_item_partial_update_flow(
         self,
         async_client: AsyncClient,
@@ -181,11 +215,16 @@ class TestEditWorkItemIntegration:
         db_session: AsyncSession,
     ):
         """Test partial update flow - only updating specific fields."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        data = await setup_test_data
+        user = data["user"]
+        team = data["team"]
+        work_item = data["work_item"]
 
-        headers = {"Authorization": f"Bearer {user.id}"}
+        access_token = create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Cookie": f"access_token={access_token}"}
 
         # Get original values
         original_title = work_item.title
@@ -216,17 +255,23 @@ class TestEditWorkItemIntegration:
         assert work_item.description == original_description
         assert work_item.type == original_type
 
+    @pytest.mark.asyncio
     async def test_edit_work_item_not_found_flow(
         self,
         async_client: AsyncClient,
         setup_test_data: dict,
     ):
         """Test work item not found flow."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
+        data = await setup_test_data
+        user = data["user"]
+        team = data["team"]
         non_existent_id = uuid.uuid4()
 
-        headers = {"Authorization": f"Bearer {user.id}"}
+        access_token = create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Cookie": f"access_token={access_token}"}
 
         update_data = {"title": "Should not work"}
 
@@ -239,17 +284,23 @@ class TestEditWorkItemIntegration:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "work_item_not_found" in response.json()["detail"]["error"]
 
+    @pytest.mark.asyncio
     async def test_edit_work_item_performance(
         self,
         async_client: AsyncClient,
         setup_test_data: dict,
     ):
         """Test that edit work item meets performance requirements."""
-        user = setup_test_data["user"]
-        team = setup_test_data["team"]
-        work_item = setup_test_data["work_item"]
+        data = await setup_test_data
+        user = data["user"]
+        team = data["team"]
+        work_item = data["work_item"]
 
-        headers = {"Authorization": f"Bearer {user.id}"}
+        access_token = create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Cookie": f"access_token={access_token}"}
 
         update_data = {
             "title": "Performance Test Update",

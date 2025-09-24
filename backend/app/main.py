@@ -1,5 +1,10 @@
 """Main FastAPI application."""
 
+# Fix for bcrypt version warning in tests
+import bcrypt
+if not hasattr(bcrypt, "__about__"):
+    bcrypt.__about__ = type("", (), {"__version__": bcrypt.__version__})()
+
 import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Dict

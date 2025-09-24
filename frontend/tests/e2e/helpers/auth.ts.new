@@ -1,0 +1,71 @@
+import { Page } from '@playwright/test'
+import { BrowserContext } from '@playwright/test'
+
+// Minimal auth helper for E2E: bypass backend auth and set app store state
+// The app store reads from localStorage keys: 'access_token' and 'user'
+
+const TEST_USER = {
+  id: '00000000-0000-0000-0000-000000000001',
+  email: 'test@example.com',
+  full_name: 'Test User',
+  is_active: true,
+  created_at: new Date().toISOString(),
+}
+
+export async function login(page: Page, email?: string) {
+  const user = {
+    ...TEST_USER,
+    email: email ?? TEST_USER.email,
+  }
+
+  // First navigate to the app domain to establish storage context
+  await page.goto('http://localhost:5173', { waitUntil: 'networkidle' })
+  
+  // Add storage state initialization
+  const context = page.context() as BrowserContext
+  await context.addInitScript(() => {
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+  })
+  
+  // Now set up auth state in the correct context
+  await page.evaluate((u) => {
+    window.localStorage.setItem('access_token', 'e2e-test-token')
+    window.localStorage.setItem('user', JSON.stringify(u))
+  }, user)
+
+  // Navigate to dashboard and wait for critical elements
+  await page.goto('/', { waitUntil: 'networkidle' })
+  
+  try {
+    // Wait for the dashboard title to be visible
+    await page.getByRole('heading', { name: 'SprintSense Dashboard' }).waitFor({ 
+      state: 'visible',
+      timeout: 5000
+    })
+  } catch (e) {
+    console.log('Dashboard not loaded properly. Current URL:', await page.url())
+    console.log('Page content:', await page.content())
+    throw e
+  }
+
+  // Verify auth state
+  await page.waitForFunction(() => {
+    try {
+      const token = window.localStorage.getItem('access_token')
+      const user = window.localStorage.getItem('user')
+      return !!token && !!user
+    } catch { return false }
+  }, { timeout: 30000 })
+}
+
+export async function getAuthCookie(_page: Page): Promise<{ name: string; value: string; url: string; httpOnly: boolean; secure: boolean }> {
+  // Not used with localStorage-based auth; provided for API compatibility
+  return {
+    name: 'access_token',
+    value: 'e2e-test-token',
+    url: 'http://localhost:5173',
+    httpOnly: true,
+    secure: false
+  }
+}

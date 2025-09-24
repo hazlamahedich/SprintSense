@@ -57,6 +57,9 @@ vi.mock('@heroicons/react/24/outline', () => ({
   RefreshCwIcon: (props: IconProps) => (
     <svg {...props} data-testid="refresh-icon" />
   ),
+  ArrowPathIcon: (props: IconProps) => (
+    <svg {...props} data-testid="arrow-path-icon" />
+  ),
 }))
 
 // Mock the child components

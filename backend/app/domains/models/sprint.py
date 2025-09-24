@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from uuid import UUID, uuid4
 
 if TYPE_CHECKING:
     from .team import Team
-from typing import Optional
-from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID as PGUUID

@@ -1,18 +1,47 @@
 import axios from 'axios'
 
-// Create axios instance with base configuration
+// Create axios instances with base configuration
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Include cookies for authentication
-  xsrfHeaderName: 'X-CSRF-Token',
-  xsrfCookieName: 'csrf_token',
 })
 
-// Add request interceptor for logging (development only)
+// Create Supabase-specific axios instance
+export const supabaseApi = axios.create({
+  baseURL: import.meta.env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321',
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+  },
+})
+
+// Attach Authorization header from localStorage (E2E and app auth)
+api.interceptors.request.use(
+  (config) => {
+    try {
+      if (typeof window !== 'undefined') {
+        const token = window.localStorage.getItem('access_token')
+        if (token) {
+          config.headers = config.headers ?? {}
+          // Only set if not already set explicitly
+          if (!('Authorization' in config.headers)) {
+            config.headers.Authorization = `Bearer ${token}`
+          }
+        }
+      }
+    } catch (e) {
+      // Ignore storage access errors in non-browser contexts
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// Add request/response logging in dev
 if (import.meta.env.DEV) {
   api.interceptors.request.use(
     (config) => {
@@ -57,11 +86,17 @@ export const healthApi = {
 }
 
 export const authApi = {
-  // User login
+  // User login using Supabase
   login: async (email: string, password: string) => {
-    const response = await api.post('/api/v1/auth/login', {
+    const response = await supabaseApi.post('/auth/v1/token?grant_type=password', {
       email,
       password,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'X-Client-Info': 'sprintsense-frontend',
+      }
     })
     return response.data
   },
