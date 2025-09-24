@@ -80,7 +80,7 @@ export async function login(page: Page) {
 
     // Navigate to app and set auth state
     await page.goto('/')
-    
+
     await page.evaluate((authData) => {
       localStorage.setItem('sb-access-token', authData.token)
       localStorage.setItem('sb-user', JSON.stringify(authData.user))
@@ -95,7 +95,7 @@ export async function login(page: Page) {
     // Navigate to dashboard and wait for auth to be recognized
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
-    
+
     const isAuthenticated = await page.evaluate(() => {
       return !!localStorage.getItem('sb-access-token')
     })

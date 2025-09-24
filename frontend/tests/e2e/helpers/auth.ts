@@ -22,7 +22,7 @@ export async function login(page: Page, email?: string) {
   // First navigate to the app domain to establish storage context
   console.log('Navigating to app domain...');
   try {
-    await page.goto('http://localhost:5175', { 
+    await page.goto('http://localhost:5175', {
       waitUntil: 'networkidle',
       timeout: 60000 // Increase timeout to 60 seconds
     });
@@ -31,14 +31,14 @@ export async function login(page: Page, email?: string) {
     console.error('Failed to navigate to app domain:', error);
     throw error;
   }
-  
+
   // Add storage state initialization
   const context = page.context() as BrowserContext
   await context.addInitScript(() => {
     window.localStorage.clear()
     window.sessionStorage.clear()
   })
-  
+
   // Now set up auth state in the correct context
   await page.evaluate((u) => {
     window.localStorage.setItem('access_token', 'e2e-test-token')
@@ -47,10 +47,10 @@ export async function login(page: Page, email?: string) {
 
   // Navigate to dashboard and wait for critical elements
   await page.goto('/', { waitUntil: 'networkidle' })
-  
+
   try {
     // Wait for the dashboard title to be visible
-    await page.getByRole('heading', { name: 'SprintSense Dashboard' }).waitFor({ 
+    await page.getByRole('heading', { name: 'SprintSense Dashboard' }).waitFor({
       state: 'visible',
       timeout: 5000
     })

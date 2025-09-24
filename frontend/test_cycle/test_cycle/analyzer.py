@@ -31,7 +31,7 @@ class FailureAnalysis:
 
 class FailureAnalyzer:
     """Analyzes test failures to categorize issues and identify patterns."""
-    
+
     # Error patterns for different categories
     ERROR_PATTERNS = {
         'selector': [
@@ -55,7 +55,7 @@ class FailureAnalyzer:
             r".*should.*but.*"
         ]
     }
-    
+
     COMMON_FIXES = {
         'selector': [
             "Update selector to use more stable attributes",
@@ -78,25 +78,25 @@ class FailureAnalyzer:
             "Verify test assumptions"
         ]
     }
-    
+
     def __init__(self):
         self.failure_history: List[TestResult] = []
-    
+
     def analyze_failure(self, test_result: TestResult) -> FailureAnalysis:
         """Analyze a single test failure."""
         if not test_result.error_message:
             return None
-            
+
         # Find matching error category
         error_category = self._categorize_error(test_result.error_message)
         pattern_matches = self._find_pattern_matches(test_result.error_message)
-        
+
         # Calculate confidence based on pattern matches
         confidence = len(pattern_matches) / (len(self.ERROR_PATTERNS[error_category]) if error_category else 1)
-        
+
         # Get suggested fix
         suggested_fix = self._get_suggested_fix(error_category) if error_category else None
-        
+
         analysis = FailureAnalysis(
             error_type=test_result.error_type or 'unknown',
             error_category=error_category or 'unknown',
@@ -104,17 +104,17 @@ class FailureAnalyzer:
             confidence=confidence,
             pattern_matches=pattern_matches
         )
-        
+
         # Add to history for pattern analysis
         self.failure_history.append(test_result)
-        
+
         return analysis
-    
+
     def get_failure_patterns(self) -> Dict[str, dict]:
         """Analyze patterns in failure history."""
         if not self.failure_history:
             return {}
-            
+
         patterns = {
             'categories': Counter(),
             'most_failed_tests': Counter(),
@@ -123,22 +123,22 @@ class FailureAnalyzer:
                 'success_after_retry': sum(1 for t in self.failure_history if t.status == 'passed' and t.retry_count > 0)
             }
         }
-        
+
         for failure in self.failure_history:
             analysis = self.analyze_failure(failure)
             if analysis:
                 patterns['categories'][analysis.error_category] += 1
             patterns['most_failed_tests'][failure.test_name] += 1
-        
+
         # Calculate success rate after retries
         if patterns['retry_statistics']['total_retries'] > 0:
             patterns['retry_statistics']['retry_success_rate'] = (
                 patterns['retry_statistics']['success_after_retry'] /
                 patterns['retry_statistics']['total_retries']
             )
-        
+
         return patterns
-    
+
     def _categorize_error(self, error_message: str) -> Optional[str]:
         """Categorize an error message based on pattern matching."""
         for category, patterns in self.ERROR_PATTERNS.items():
@@ -146,7 +146,7 @@ class FailureAnalyzer:
                 if re.search(pattern, error_message, re.IGNORECASE):
                     return category
         return None
-    
+
     def _find_pattern_matches(self, error_message: str) -> List[str]:
         """Find all patterns that match the error message."""
         matches = []
@@ -155,7 +155,7 @@ class FailureAnalyzer:
                 if re.search(pattern, error_message, re.IGNORECASE):
                     matches.append(pattern)
         return matches
-    
+
     def _get_suggested_fix(self, error_category: str) -> Optional[str]:
         """Get a suggested fix for an error category."""
         if error_category in self.COMMON_FIXES:

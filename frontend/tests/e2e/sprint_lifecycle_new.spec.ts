@@ -19,9 +19,9 @@ nextWeek.setDate(today.getDate() + 7)
 test.describe('Sprint Management', () => {
   test.beforeEach(async ({ page }) => {
     // Enable request/response logging for debugging
-    page.on('request', request => 
+    page.on('request', request =>
       console.log(`>> ${request.method()} ${request.url()}`))
-    page.on('response', response => 
+    page.on('response', response =>
       console.log(`<< ${response.status()} ${response.url()}`))
   })
   test('completes basic lifecycle', async ({ page }) => {
@@ -29,37 +29,37 @@ test.describe('Sprint Management', () => {
     await page.goto(`/teams/${teamId}/sprints`)
     await page.waitForLoadState('networkidle')
     await expect(page.getByRole('heading', { name: 'Sprint Management' })).toBeVisible(testTimeouts.navigation)
-    
+
     await test.step('Create Sprint', async () => {
       // Click Add Sprint and wait for dialog
       const addButton = page.getByRole('button', { name: 'Add Sprint' })
       await expect(addButton).toBeEnabled(testTimeouts.assertion)
       await addButton.click()
       await expect(page.getByRole('dialog')).toBeVisible(testTimeouts.assertion)
-      
+
       // Fill sprint form
       const nameInput = page.getByLabel('Name')
       await expect(nameInput).toBeVisible(testTimeouts.assertion)
       await nameInput.fill('Test Sprint')
-      
+
       const goalInput = page.getByLabel('Goal')
       await expect(goalInput).toBeVisible(testTimeouts.assertion)
       await goalInput.fill('Test sprint goal')
-      
+
       const startDateInput = page.getByLabel('Start Date')
       await expect(startDateInput).toBeVisible(testTimeouts.assertion)
       await startDateInput.fill(formatDate(today))
-      
+
       const endDateInput = page.getByLabel('End Date')
       await expect(endDateInput).toBeVisible(testTimeouts.assertion)
       await endDateInput.fill(formatDate(nextWeek))
-      
+
       // Submit and wait for completion
       const createButton = page.getByRole('button', { name: 'Create Sprint' })
       await expect(createButton).toBeEnabled(testTimeouts.assertion)
       await createButton.click()
       await page.waitForLoadState('networkidle')
-      
+
       // Verify sprint details
       await expect(page.getByText('Test Sprint')).toBeVisible(testTimeouts.assertion)
       await expect(page.getByText('Test sprint goal')).toBeVisible(testTimeouts.assertion)
@@ -71,7 +71,7 @@ test.describe('Sprint Management', () => {
     await test.step('Activate Sprint', async () => {
       await page.getByRole('button', { name: 'Start Sprint' }).click()
       await expect(page.getByText('Active')).toBeVisible(testTimeouts.assertion)
-      
+
       // Verify all Start Sprint buttons are disabled
       const startButtons = page.getByRole('button', { name: 'Start Sprint' })
       await expect(startButtons).toBeDisabled(testTimeouts.assertion)

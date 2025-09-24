@@ -20,13 +20,13 @@ test.describe('Team Management', () => {
 
     // Wait for navigation and form to be ready
     await page.waitForURL('**/teams/create')
-    
+
     // Fill team name
     const teamName = `Test Team ${Date.now()}`
     const teamNameInput = page.getByLabel('Team Name')
     await teamNameInput.waitFor({ state: 'visible' })
     await teamNameInput.fill(teamName)
-    
+
     // Submit form and wait for response
     const submitButton = page.getByRole('button', { name: /Create Team$/ })
     await submitButton.waitFor({ state: 'visible' })

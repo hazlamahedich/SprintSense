@@ -3,9 +3,9 @@ import { login } from './auth'
 
 export async function setupTestTeam(page: Page): Promise<string> {
   // Enable request/response logging
-  page.on('request', request => 
+  page.on('request', request =>
     console.log(`>> ${request.method()} ${request.url()}`))
-  page.on('response', response => 
+  page.on('response', response =>
     console.log(`<< ${response.status()} ${response.url()}`))
 
   // Login first
@@ -21,7 +21,7 @@ export async function setupTestTeam(page: Page): Promise<string> {
   // Create team
   await page.getByRole('button', { name: 'Create New Team' }).click()
   await page.waitForLoadState('networkidle')
-  
+
   const teamName = `Test Team ${Date.now()}`
   await page.getByLabel('Team Name').fill(teamName)
 
@@ -38,7 +38,7 @@ export async function setupTestTeam(page: Page): Promise<string> {
   // Wait for navigation and get team ID
   await page.waitForURL('**/teams/**', { timeout: 10000 })
   const teamId = page.url().split('/').pop()
-  
+
   if (!teamId) {
     throw new Error('Failed to obtain teamId from URL')
   }

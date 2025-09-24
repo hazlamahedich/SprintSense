@@ -41,7 +41,7 @@ class TestResult:
 
 class TestRunner:
     """Manages the execution of Playwright tests with failure tracking and retries."""
-    
+
     def __init__(
         self,
         test_path: str,
@@ -55,14 +55,14 @@ class TestRunner:
         self.artifact_path = Path(artifact_path) if artifact_path else Path('test-results')
         self.failed_tests: List[TestResult] = []
         self.all_results: List[TestResult] = []
-        
+
         # Ensure artifact directory exists
         self.artifact_path.mkdir(parents=True, exist_ok=True)
-    
+
     async def run_tests(self) -> List[TestResult]:
         """Execute the test suite and capture results."""
         logger.info(f"Starting test execution in {self.test_path}")
-        
+
         # Configure pytest arguments
         pytest_args = [
             str(self.test_path),
@@ -72,38 +72,38 @@ class TestRunner:
             '--tb=short',  # Shorter traceback format
             '-v'  # Verbose output
         ]
-        
+
         try:
             # Run tests and capture results
             pytest.main(pytest_args)
-            
+
             # Process results and collect artifacts
             await self._process_test_results()
-            
+
             return self.all_results
-            
+
         except Exception as e:
             logger.error(f"Error during test execution: {e}")
             raise
-    
+
     async def retry_failed_tests(self) -> List[TestResult]:
         """Retry failed tests with cooldown period."""
         if not self.failed_tests:
             logger.info("No failed tests to retry")
             return []
-        
+
         retry_results = []
-        
+
         for test in self.failed_tests:
             if test.retry_count >= self.max_retries:
                 logger.warning(f"Test {test.test_name} has reached maximum retry count")
                 continue
-                
+
             logger.info(f"Retrying test {test.test_name} (attempt {test.retry_count + 1})")
-            
+
             # Implement cooldown period
             await asyncio.sleep(self.cooldown_seconds)
-            
+
             # Run single test
             pytest_args = [
                 str(self.test_path),
@@ -112,37 +112,37 @@ class TestRunner:
                 f'--html={self.artifact_path}/retry-{test.test_name}.html',
                 '--self-contained-html'
             ]
-            
+
             pytest.main(pytest_args)
-            
+
             # Update retry count and process results
             test.retry_count += 1
             await self._process_test_results(test_name=test.test_name)
-            
+
             retry_results.append(test)
-        
+
         return retry_results
-    
+
     async def _process_test_results(self, test_name: Optional[str] = None):
         """Process test results and collect artifacts."""
         # Implement result processing logic here
         # This would parse pytest results and create TestResult objects
         pass
-    
+
     def _collect_artifacts(self, test_name: str) -> dict:
         """Collect test artifacts (traces, screenshots, videos)."""
         artifacts = {}
         artifact_types = ['trace.zip', 'screenshot.png', 'video.webm']
-        
+
         for artifact_type in artifact_types:
             pattern = f"**/*{test_name}*{artifact_type}"
             matches = list(self.artifact_path.glob(pattern))
-            
+
             if matches:
                 artifacts[artifact_type] = str(matches[0].relative_to(self.artifact_path))
-        
+
         return artifacts
-    
+
     def save_results(self):
         """Save test results to a JSON file."""
         results = {
@@ -151,9 +151,9 @@ class TestRunner:
             'failed_tests': len(self.failed_tests),
             'results': [result.to_dict() for result in self.all_results]
         }
-        
+
         output_file = self.artifact_path / 'test-results.json'
         with open(output_file, 'w') as f:
             json.dump(results, f, indent=2)
-            
+
         logger.info(f"Test results saved to {output_file}")

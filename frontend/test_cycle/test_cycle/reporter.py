@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class TestReporter:
     """Generates comprehensive HTML reports for test results."""
-    
+
     REPORT_TEMPLATE = """
     <!DOCTYPE html>
     <html>
@@ -72,7 +72,7 @@ class TestReporter:
     <body>
         <div class="container">
             <h1>E2E Test Report</h1>
-            
+
             <div class="summary">
                 <h2>Summary</h2>
                 <p>
@@ -84,20 +84,20 @@ class TestReporter:
                     <strong>Timestamp:</strong> {{ summary.timestamp }}
                 </p>
             </div>
-            
+
             {% if failure_patterns %}
             <div class="analysis">
                 <h2>Failure Analysis</h2>
                 <div id="categoryChart" class="chart"></div>
                 <div id="retryChart" class="chart"></div>
-                
+
                 <h3>Most Common Issues</h3>
                 <ul>
                 {% for category, count in failure_patterns.categories.most_common() %}
                     <li><strong>{{ category }}:</strong> {{ count }} occurrences</li>
                 {% endfor %}
                 </ul>
-                
+
                 <h3>Retry Statistics</h3>
                 <p>
                     <strong>Total Retries:</strong> {{ failure_patterns.retry_statistics.total_retries }}<br>
@@ -106,7 +106,7 @@ class TestReporter:
                 </p>
             </div>
             {% endif %}
-            
+
             <h2>Test Results</h2>
             {% for result in results %}
             <div class="test-result">
@@ -116,14 +116,14 @@ class TestReporter:
                     <strong>Duration:</strong> {{ "%.2f"|format(result.duration) }}s<br>
                     <strong>Retries:</strong> {{ result.retry_count }}
                 </p>
-                
+
                 {% if result.error_message %}
                 <div class="error">
                     <strong>Error:</strong><br>
                     <pre>{{ result.error_message }}</pre>
                 </div>
                 {% endif %}
-                
+
                 {% if result.artifacts %}
                 <div class="artifacts">
                     <h4>Artifacts</h4>
@@ -134,7 +134,7 @@ class TestReporter:
                     </ul>
                 </div>
                 {% endif %}
-                
+
                 {% if analyses.get(result.test_name) %}
                 <div class="analysis">
                     <h4>Analysis</h4>
@@ -152,7 +152,7 @@ class TestReporter:
             </div>
             {% endfor %}
         </div>
-        
+
         {% if failure_patterns %}
         <script>
             // Create category distribution chart
@@ -164,7 +164,7 @@ class TestReporter:
                 title: 'Error Categories Distribution'
             };
             Plotly.newPlot('categoryChart', [categoryChart]);
-            
+
             // Create retry success chart
             var retryStats = {{ failure_patterns.retry_statistics | tojson }};
             var retryChart = {
@@ -179,15 +179,15 @@ class TestReporter:
     </body>
     </html>
     """
-    
+
     def __init__(self, output_dir: Optional[str] = None):
         self.output_dir = Path(output_dir) if output_dir else Path('test-reports')
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Initialize Jinja2 environment
         self.jinja_env = jinja2.Environment()
         self.template = self.jinja_env.from_string(self.REPORT_TEMPLATE)
-    
+
     def generate_report(
         self,
         test_results: List[TestResult],
@@ -195,7 +195,7 @@ class TestReporter:
         failure_patterns: Optional[dict] = None
     ) -> str:
         """Generate HTML report from test results and analyses."""
-        
+
         # Calculate summary statistics
         summary = {
             'total_tests': len(test_results),
@@ -205,7 +205,7 @@ class TestReporter:
             'duration': sum(r.duration for r in test_results),
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        
+
         # Generate HTML report
         html_content = self.template.render(
             summary=summary,
@@ -213,11 +213,11 @@ class TestReporter:
             analyses=analyses,
             failure_patterns=failure_patterns
         )
-        
+
         # Save HTML report
         report_path = self.output_dir / 'report.html'
         report_path.write_text(html_content)
-        
+
         # Save JSON data for potential further processing
         data = {
             'summary': summary,
@@ -225,21 +225,21 @@ class TestReporter:
             'analyses': {k: v.to_dict() for k, v in analyses.items()} if analyses else {},
             'failure_patterns': failure_patterns
         }
-        
+
         json_path = self.output_dir / 'report.json'
         with open(json_path, 'w') as f:
             json.dump(data, f, indent=2)
-        
+
         logger.info(f"Report generated at {report_path}")
         logger.info(f"JSON data saved at {json_path}")
-        
+
         return str(report_path)
-    
+
     def save_artifacts(self, artifacts: Dict[str, str]):
         """Save test artifacts to the report directory."""
         artifacts_dir = self.output_dir / 'artifacts'
         artifacts_dir.mkdir(exist_ok=True)
-        
+
         for name, content in artifacts.items():
             artifact_path = artifacts_dir / name
             if isinstance(content, (str, bytes)):
@@ -247,5 +247,5 @@ class TestReporter:
             elif isinstance(content, Path):
                 import shutil
                 shutil.copy(str(content), str(artifact_path))
-                
+
         return artifacts_dir

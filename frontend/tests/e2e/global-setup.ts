@@ -12,7 +12,7 @@ async function cleanupDatabase() {
     await supabase.from('sprints').delete().neq('id', '')
     await supabase.from('teams').delete().neq('id', '')
     await supabase.from('team_members').delete().neq('id', '')
-    
+
     console.log('Successfully cleaned up test database')
   } catch (error) {
     console.error('Failed to clean up test database:', error)
