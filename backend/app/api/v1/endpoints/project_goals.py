@@ -1,6 +1,7 @@
 """Project goals API endpoints."""
 
 from uuid import UUID
+from app.domains.models import User, ProjectGoal
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
