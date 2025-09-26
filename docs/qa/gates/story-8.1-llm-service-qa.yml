@@ -37,7 +37,7 @@ quality_gates:
         actual: 312ms average
       - name: Cache Hit Ratio
         status: ✅ PASSED
-        threshold: > 40%
+        threshold: ">40%"
         actual: 47.3%
       - name: Error Rate
         status: ✅ PASSED
@@ -101,7 +101,7 @@ performance_benchmarks:
     p50: 289ms
     p95: 412ms
     p99: 489ms
-  
+
   throughput:
     avg_rps: 850
     peak_rps: 1200
@@ -134,7 +134,7 @@ recommendations:
     - Set up alerts for circuit breaker events
     - Track token quota usage patterns
     - Watch for provider latency variations
-  
+
   maintenance:
     - Regular key rotation schedule
     - Cache size optimization
