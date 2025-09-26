@@ -73,6 +73,7 @@ class TestEditWorkItemIntegration:
 
     async def test_complete_edit_work_item_flow(
         self,
+        app,  # FastAPI app fixture
         async_client: AsyncClient,
         setup_test_data: dict,
         db_session: AsyncSession,
@@ -87,8 +88,8 @@ class TestEditWorkItemIntegration:
         async def mock_auth():
             return user
 
-        with patch("app.core.auth.get_current_user", return_value=mock_auth()):
-            headers = {"Authorization": f"Bearer {user.id}"}
+        app.dependency_overrides[get_current_user] = mock_auth
+        headers = {"Authorization": f"Bearer {user.id}"}
 
         # Prepare update data
         update_data = {
@@ -128,6 +129,7 @@ class TestEditWorkItemIntegration:
 
     async def test_edit_work_item_authorization_flow(
         self,
+        app,
         async_client: AsyncClient,
         setup_test_data: dict,
     ):
@@ -146,8 +148,8 @@ class TestEditWorkItemIntegration:
         async def mock_auth():
             return unauthorized_user
 
-        with patch("app.core.auth.get_current_user", new=mock_auth):
-            headers = {"Authorization": f"Bearer {unauthorized_user.id}"}
+        app.dependency_overrides[get_current_user] = mock_auth
+        headers = {"Authorization": f"Bearer {unauthorized_user.id}"}
 
         update_data = {"title": "Should not work"}
 
@@ -164,6 +166,7 @@ class TestEditWorkItemIntegration:
 
     async def test_edit_work_item_validation_flow(
         self,
+        app,
         async_client: AsyncClient,
         setup_test_data: dict,
     ):
@@ -176,8 +179,8 @@ class TestEditWorkItemIntegration:
         async def mock_auth():
             return user
 
-        with patch("app.core.auth.get_current_user", new=mock_auth):
-            headers = {"Authorization": f"Bearer {user.id}"}
+        app.dependency_overrides[get_current_user] = mock_auth
+        headers = {"Authorization": f"Bearer {user.id}"}
 
         # Test with invalid data
         invalid_data = {
@@ -195,6 +198,7 @@ class TestEditWorkItemIntegration:
 
     async def test_edit_work_item_partial_update_flow(
         self,
+        app,
         async_client: AsyncClient,
         setup_test_data: dict,
         db_session: AsyncSession,
@@ -205,11 +209,12 @@ class TestEditWorkItemIntegration:
         team = test_data["team"]
         work_item = test_data["work_item"]
 
+        # Mock authentication
         async def mock_auth():
             return user
 
-        with patch("app.core.auth.get_current_user", new=mock_auth):
-            headers = {"Authorization": f"Bearer {user.id}"}
+        app.dependency_overrides[get_current_user] = mock_auth
+        headers = {"Authorization": f"Bearer {user.id}"}
 
         # Get original values
         original_title = work_item.title
@@ -242,7 +247,7 @@ class TestEditWorkItemIntegration:
 
     async def test_edit_work_item_not_found_flow(
         self,
-        async_client: AsyncClient,
+        authenticated_async_client: AsyncClient,
         setup_test_data: dict,
     ):
         """Test work item not found flow."""
@@ -251,15 +256,19 @@ class TestEditWorkItemIntegration:
         team = test_data["team"]
         non_existent_id = uuid.uuid4()
 
-        async def mock_auth():
-            return user
+        from datetime import timedelta
 
-        with patch("app.core.auth.get_current_user", new=mock_auth):
-            headers = {"Authorization": f"Bearer {user.id}"}
+        from app.core.security import create_access_token
+
+        token = create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Authorization": f"Bearer {token}"}
 
         update_data = {"title": "Should not work"}
 
-        response = await async_client.patch(
+        response = await authenticated_async_client.patch(
             f"/api/v1/teams/{team.id}/work-items/{non_existent_id}",
             json=update_data,
             headers=headers,
@@ -270,6 +279,7 @@ class TestEditWorkItemIntegration:
 
     async def test_edit_work_item_performance(
         self,
+        app,
         async_client: AsyncClient,
         setup_test_data: dict,
     ):
@@ -279,11 +289,12 @@ class TestEditWorkItemIntegration:
         team = test_data["team"]
         work_item = test_data["work_item"]
 
+        # Mock authentication
         async def mock_auth():
             return user
 
-        with patch("app.core.auth.get_current_user", new=mock_auth):
-            headers = {"Authorization": f"Bearer {user.id}"}
+        app.dependency_overrides[get_current_user] = mock_auth
+        headers = {"Authorization": f"Bearer {user.id}"}
 
         update_data = {
             "title": "Performance Test Update",

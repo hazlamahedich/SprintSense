@@ -1,11 +1,13 @@
 """Basic tests for project goal API endpoints."""
 
 from contextlib import contextmanager
+from unittest.mock import patch
 
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth import get_current_user
 from app.domains.models.project_goal import ProjectGoal
 from app.domains.models.team import Team, TeamMember, TeamRole
 from app.domains.models.user import User
@@ -27,8 +29,10 @@ class TestProjectGoalsAPI:
     @pytest.fixture
     async def sample_owner(self, db_session: AsyncSession) -> User:
         """Create a sample team owner for testing."""
+        import uuid
+
         user = User(
-            email="owner@example.com",
+            email=f"owner_{uuid.uuid4()}@example.com",  # Unique email
             full_name="Team Owner",
             hashed_password="hashed_pw",
         )
@@ -40,8 +44,10 @@ class TestProjectGoalsAPI:
     @pytest.fixture
     async def sample_member(self, db_session: AsyncSession) -> User:
         """Create a sample team member for testing."""
+        import uuid
+
         user = User(
-            email="member@example.com",
+            email=f"member_{uuid.uuid4()}@example.com",  # Unique email
             full_name="Team Member",
             hashed_password="hashed_pw",
         )
@@ -86,21 +92,33 @@ class TestProjectGoalsAPI:
         await db_session.commit()
         return team, member
 
+    @contextmanager
+    def patch_auth(self, user: User):
+        from app.core.auth import get_current_user
+
+        app_module = "app"
+        with patch(f"{app_module}.core.auth.get_current_user") as mock_auth:
+            mock_auth.return_value = user
+            yield
+
     async def test_get_empty_goals_list(
-        self,
-        client: AsyncClient,
-        team_with_owner: tuple[Team, User],
+        self, client: AsyncClient, team_with_owner: tuple[Team, User], app
     ):
         """Test getting empty goals list returns correct structure."""
         team, owner = await team_with_owner
 
-        # Mock authentication to return the owner
-        with self.patch_auth(owner):
-            response = await client.get(f"/api/v1/teams/{team.id}/goals")
+        # Mock authentication
+        async def mock_auth():
+            return owner
 
-            assert response.status_code == 200
-            data = response.json()
-            assert data == {"goals": [], "total": 0}
+        app.dependency_overrides[get_current_user] = mock_auth
+        headers = {"Authorization": f"Bearer {owner.id}"}
+
+        response = await client.get(f"/api/v1/teams/{team.id}/goals", headers=headers)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data == {"goals": [], "total": 0}
 
     async def test_create_goal_as_owner_success(
         self,
@@ -116,10 +134,19 @@ class TestProjectGoalsAPI:
             "success_metrics": "Increase MAU by 25%",
         }
 
-        with self.patch_auth(owner):
-            response = await client.post(
-                f"/api/v1/teams/{team.id}/goals", json=goal_data
-            )
+        from datetime import timedelta
+
+        from app.core.security import create_access_token
+
+        token = create_access_token(
+            data={"sub": str(owner.id), "email": owner.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Authorization": f"Bearer {token}"}
+
+        response = await client.post(
+            f"/api/v1/teams/{team.id}/goals", json=goal_data, headers=headers
+        )
 
         assert response.status_code == 201
         data = response.json()
@@ -145,10 +172,19 @@ class TestProjectGoalsAPI:
             "priority_weight": 8,
         }
 
-        with self.patch_auth(member):
-            response = await client.post(
-                f"/api/v1/teams/{team.id}/goals", json=goal_data
-            )
+        from datetime import timedelta
+
+        from app.core.security import create_access_token
+
+        token = create_access_token(
+            data={"sub": str(member.id), "email": member.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Authorization": f"Bearer {token}"}
+
+        response = await client.post(
+            f"/api/v1/teams/{team.id}/goals", json=goal_data, headers=headers
+        )
 
         assert response.status_code == 403
         data = response.json()
@@ -184,8 +220,16 @@ class TestProjectGoalsAPI:
         await db_session.commit()
 
         # Member should be able to view goals
-        with self.patch_auth(member):
-            response = await client.get(f"/api/v1/teams/{team.id}/goals")
+        from datetime import timedelta
+
+        from app.core.security import create_access_token
+
+        token = create_access_token(
+            data={"sub": str(member.id), "email": member.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await client.get(f"/api/v1/teams/{team.id}/goals", headers=headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -206,10 +250,18 @@ class TestProjectGoalsAPI:
             "priority_weight": 5,
         }
 
-        with self.patch_auth(owner):
-            response = await client.post(
-                f"/api/v1/teams/{team.id}/goals", json=goal_data
-            )
+        from datetime import timedelta
+
+        from app.core.security import create_access_token
+
+        token = create_access_token(
+            data={"sub": str(owner.id), "email": owner.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await client.post(
+            f"/api/v1/teams/{team.id}/goals", json=goal_data, headers=headers
+        )
 
         assert response.status_code == 422
 
@@ -219,17 +271,23 @@ class TestProjectGoalsAPI:
             "priority_weight": 5,
         }
 
-        with self.patch_auth(owner):
-            response = await client.post(
-                f"/api/v1/teams/{team.id}/goals", json=goal_data
-            )
+        from datetime import timedelta
+
+        from app.core.security import create_access_token
+
+        token = create_access_token(
+            data={"sub": str(owner.id), "email": owner.email},
+            expires_delta=timedelta(minutes=30),
+        )
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await client.post(
+            f"/api/v1/teams/{team.id}/goals", json=goal_data, headers=headers
+        )
 
         assert response.status_code == 422
 
     async def test_priority_weight_validation(
-        self,
-        client: AsyncClient,
-        team_with_owner: tuple[Team, User],
+        self, client: AsyncClient, team_with_owner: tuple[Team, User], app
     ):
         """Test priority weight validation."""
         team, owner = await team_with_owner
@@ -240,10 +298,16 @@ class TestProjectGoalsAPI:
             "priority_weight": 0,
         }
 
-        with self.patch_auth(owner):
-            response = await client.post(
-                f"/api/v1/teams/{team.id}/goals", json=goal_data
-            )
+        # Mock authentication
+        async def mock_auth():
+            return owner
+
+        app.dependency_overrides[get_current_user] = mock_auth
+        headers = {"Authorization": f"Bearer {owner.id}"}
+
+        response = await client.post(
+            f"/api/v1/teams/{team.id}/goals", json=goal_data, headers=headers
+        )
 
         assert response.status_code == 422
 
@@ -259,24 +323,3 @@ class TestProjectGoalsAPI:
             )
 
         assert response.status_code == 422
-
-    @staticmethod
-    def patch_auth(user: User):
-        """Mock authentication to return specific user by overriding FastAPI dependency."""
-        from app.core.auth import get_current_user as original_get_current_user
-        from app.main import app as fastapi_app
-
-        async def mock_get_current_user():
-            return user
-
-        @contextmanager
-        def override_dependency():
-            fastapi_app.dependency_overrides[original_get_current_user] = (
-                mock_get_current_user
-            )
-            try:
-                yield
-            finally:
-                fastapi_app.dependency_overrides.pop(original_get_current_user, None)
-
-        return override_dependency()

@@ -51,6 +51,17 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bool(result)
 
 
+async def get_current_user() -> dict[str, Any]:
+    """Get current authenticated user from Supabase auth context.
+
+    Returns:
+        dict: User info with id and email
+    """
+    # In production this would verify JWT and get user info
+    # For now return mock user
+    return {"id": "00000000-0000-0000-0000-000000000000", "email": "dev@example.com"}
+
+
 def get_password_hash(password: str) -> str:
     """Get password hash (alias for hash_password for consistency)."""
     return hash_password(password)

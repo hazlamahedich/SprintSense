@@ -2,7 +2,7 @@
 
 from typing import Any, List, Optional
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -52,24 +52,29 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str = "54322"
     DATABASE_URL: Optional[str] = None
 
-    @field_validator("DATABASE_URL", mode="before")
+    @model_validator(mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: Optional[str], info: Any) -> str:
+    def assemble_db_connection(cls, data: Any) -> Any:
         """Assemble database URL from components."""
-        if isinstance(v, str):
+        if isinstance(data.get("DATABASE_URL"), str):
             # If the URL uses standard postgresql://, convert to async for runtime
-            if v.startswith("postgresql://"):
-                return v.replace("postgresql://", "postgresql+psycopg_async://")
-            return v
+            url = data["DATABASE_URL"]
+            if url.startswith("postgresql://"):
+                data["DATABASE_URL"] = url.replace(
+                    "postgresql://", "postgresql+psycopg_async://"
+                )
+            return data
 
-        values = info.data if hasattr(info, "data") else {}
         # Build URL with async driver for runtime engine
-        user = values.get("POSTGRES_USER")
-        password = values.get("POSTGRES_PASSWORD")
-        host = values.get("POSTGRES_SERVER")
-        port = values.get("POSTGRES_PORT", 5432)
-        db = values.get("POSTGRES_DB", "")
-        return f"postgresql+psycopg_async://{user}:{password}@{host}:{port}/{db}"
+        user = data.get("POSTGRES_USER")
+        password = data.get("POSTGRES_PASSWORD")
+        host = data.get("POSTGRES_SERVER")
+        port = data.get("POSTGRES_PORT", 5432)
+        db = data.get("POSTGRES_DB", "")
+        data["DATABASE_URL"] = (
+            f"postgresql+psycopg_async://{user}:{password}@{host}:{port}/{db}"
+        )
+        return data
 
     def get_alembic_url(self) -> str:
         """Get database URL for Alembic (uses sync driver)."""

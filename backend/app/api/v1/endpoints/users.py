@@ -6,6 +6,7 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth import get_current_user
 from app.core.security import create_access_token
 from app.domains.schemas.user import UserCreateRequest, UserResponse
 from app.domains.services.user_service import UserService
@@ -97,13 +98,19 @@ async def register_user(
     description="Get the profile of the currently authenticated user",
 )
 async def get_current_user_profile(
-    # TODO: Add authentication dependency when auth is implemented
-    # current_user: User = Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service),
+    current_user=Depends(get_current_user),
 ) -> UserResponse:
-    """Get current user profile (placeholder for future authentication)."""
-    # This is a placeholder endpoint for future authentication implementation
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Authentication not yet implemented",
-    )
+    """Get current user profile.
+
+    Args:
+        current_user: Authenticated user from token
+
+    Returns:
+        UserResponse: User profile data
+    """
+    # Temporary placeholder behavior: if no auth provided, indicate unimplemented
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not yet implemented"
+        )
+    return UserResponse.model_validate(current_user)

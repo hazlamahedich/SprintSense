@@ -140,17 +140,18 @@ class InvitationService:
 
         return invitations
 
+    async def get_invitation_by_id(
+        self, invitation_id: uuid.UUID
+    ) -> Optional[Invitation]:
+        """Get invitation by ID.
 
-async def get_invitation_by_id(self, invitation_id: uuid.UUID) -> Optional[Invitation]:
-    """Get invitation by ID.
+        Args:
+            invitation_id: UUID of the invitation
 
-    Args:
-        invitation_id: UUID of the invitation
-
-    Returns:
-        Invitation: The invitation object or None if not found
-    """
-    result = await self.db_session.execute(
-        select(Invitation).where(Invitation.id == invitation_id)
-    )
-    return result.scalars().first()
+        Returns:
+            Invitation: The invitation object or None if not found
+        """
+        result = await self.db_session.execute(
+            select(Invitation).where(Invitation.id == invitation_id)
+        )
+        return result.scalars().first()

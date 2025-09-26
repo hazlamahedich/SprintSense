@@ -39,3 +39,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         raise
     finally:
         await db.close()
+
+
+# Backward-compatible alias
+get_session = get_db

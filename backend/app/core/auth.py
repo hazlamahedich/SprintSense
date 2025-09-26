@@ -4,7 +4,8 @@ import uuid
 from typing import Optional
 
 import structlog
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Cookie, Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import verify_token
@@ -20,8 +21,13 @@ async def get_user_service(db: AsyncSession = Depends(get_session)) -> UserServi
     return UserService(db)
 
 
+bearer_scheme = HTTPBearer(auto_error=False)
+
+
 async def get_current_user(
+    request: Request,
     access_token: Optional[str] = Cookie(None),
+    bearer_auth: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
     user_service: UserService = Depends(get_user_service),
 ) -> User:
     """Get the current authenticated user from the access token cookie.
@@ -42,12 +48,16 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    if not access_token:
-        logger.warning("No access token provided")
+    token = access_token
+    if not token and bearer_auth and bearer_auth.credentials:
+        token = bearer_auth.credentials
+
+    if not token:
+        logger.warning("No access token provided in cookie or Authorization header")
         raise credentials_exception
 
     # Verify token
-    payload = verify_token(access_token)
+    payload = verify_token(token)
     if not payload:
         logger.warning("Invalid access token")
         raise credentials_exception

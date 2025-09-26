@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 
 from app.api.endpoints import recommendations
-from app.api.routers import health
+from app.api.routers import health, sprint_completion
 from app.api.v1.endpoints import auth, project_goals, teams, users
 from app.core.cache_service import CacheService
 from app.core.config import settings
@@ -106,6 +106,9 @@ app.include_router(
 )
 app.include_router(
     recommendations.router, prefix=f"{settings.API_V1_STR}", tags=["recommendations"]
+)
+app.include_router(
+    sprint_completion.router, prefix=f"{settings.API_V1_STR}", tags=["sprints"]
 )
 
 # Include compatibility routes without version prefix for tests

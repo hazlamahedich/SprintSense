@@ -26,12 +26,30 @@ interface SprintCardProps {
   onCloseSprint: () => void
 }
 
+import { IncompleteWorkDialog } from './IncompleteWorkDialog'
+import { completeSprint, getIncompleteItems } from '@/api/sprint'
+import { CompleteSprintRequest } from '@/types/sprint'
+
 export const SprintCard: React.FC<SprintCardProps> = ({
   sprint,
   isStartDisabled,
   onStartSprint,
   onCloseSprint,
 }) => {
+  const [dialogOpen, setDialogOpen] = React.useState(false)
+
+  const handleCloseClick = async () => {
+    // Before closing, check if there are incomplete items
+    // Open dialog to handle move choice
+    setDialogOpen(true)
+  }
+
+  const handleDialogCompleted = async () => {
+    setDialogOpen(false)
+    // After items are handled, proceed to set sprint to CLOSED
+    await onCloseSprint()
+  }
+
   return (
     <Card
       sx={{
@@ -49,7 +67,7 @@ export const SprintCard: React.FC<SprintCardProps> = ({
           disabled={isStartDisabled}
           currentStatus={sprint.status}
           onStart={onStartSprint}
-          onClose={onCloseSprint}
+          onClose={handleCloseClick}
         />
       </Box>
 
@@ -111,6 +129,13 @@ export const SprintCard: React.FC<SprintCardProps> = ({
           </Box>
         </Box>
       </CardContent>
+
+      <IncompleteWorkDialog
+        open={dialogOpen}
+        sprintId={sprint.id}
+        onClose={() => setDialogOpen(false)}
+        onCompleted={() => handleDialogCompleted()}
+      />
     </Card>
   )
 }

@@ -58,6 +58,20 @@ class Sprint(Base):
         nullable=True,
     )
 
+    # Velocity fields
+    completed_points: Mapped[int] = mapped_column(
+        default=0,
+        nullable=False,
+    )
+    velocity_calculated: Mapped[bool] = mapped_column(
+        default=False,
+        nullable=False,
+    )
+    velocity_calculation_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

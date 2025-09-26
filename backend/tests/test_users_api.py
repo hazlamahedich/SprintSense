@@ -264,12 +264,19 @@ class TestUserRegistrationAPI:
                 # The email/name should be stored exactly as provided (no injection)
                 assert payload in data["user"]["full_name"]
 
-    async def test_get_current_user_profile_not_implemented(
-        self, async_client: AsyncClient
-    ) -> None:
-        """Test the placeholder endpoint for current user profile."""
-        response = await async_client.get("/api/v1/users/me")
-        assert response.status_code == 501
 
-        data = response.json()
-        assert "not yet implemented" in data["detail"].lower()
+@pytest.mark.asyncio
+async def test_get_current_user_profile_not_implemented(
+    async_client: AsyncClient, app
+) -> None:
+    """Test the placeholder endpoint for current user profile."""
+    from app.core.auth import get_current_user
+
+    # Bypass auth
+    app.dependency_overrides[get_current_user] = lambda: None
+
+    response = await async_client.get("/api/v1/users/me")
+    assert response.status_code == 501
+
+    data = response.json()
+    assert "not yet implemented" in data["detail"].lower()

@@ -111,3 +111,16 @@ class TeamService:
         )
         team_member = result.scalars().first()
         return team_member is not None
+
+    async def is_user_team_member(self, team_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+        """Check if user is a member of the specified team."""
+        result = await self.db_session.execute(
+            select(TeamMember).where(
+                and_(
+                    TeamMember.team_id == team_id,
+                    TeamMember.user_id == user_id,
+                )
+            )
+        )
+        team_member = result.scalars().first()
+        return team_member is not None

@@ -6,10 +6,13 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi import status
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.models.team import TeamMember, TeamRole
 from app.domains.models.user import User
 from app.domains.models.work_item import WorkItem, WorkItemStatus, WorkItemType
 from app.domains.schemas.work_item import WorkItemUpdateRequest
+from app.infra.db import get_session
 
 
 class TestUpdateTeamWorkItem:
@@ -82,8 +85,20 @@ class TestUpdateTeamWorkItem:
         mock_work_item: WorkItem,
         test_user: User,
         auth_headers_for_user: dict,
+        db_session: AsyncSession,
     ):
         """Test successful work item update."""
+        # Save work item to DB and ensure user is a team member
+        db_session.add(mock_work_item)
+        db_session.add(
+            TeamMember(
+                team_id=mock_work_item.team_id,
+                user_id=test_user.id,
+                role=TeamRole.MEMBER,
+            )
+        )
+        await db_session.commit()
+        await db_session.refresh(mock_work_item)
         # Arrange
         team_id = str(mock_work_item.team_id)
         work_item_id = str(mock_work_item.id)
@@ -104,15 +119,11 @@ class TestUpdateTeamWorkItem:
 
         # Override the dependency
         from app.api.v1.endpoints.teams import get_work_item_service
+
+        # Override DB session dependency so the endpoint uses our test session
         from app.main import app
 
-        mock_service = AsyncMock()
-        mock_service.update_work_item.return_value = updated_work_item
-
-        async def override_get_work_item_service():
-            return mock_service
-
-        app.dependency_overrides[get_work_item_service] = override_get_work_item_service
+        app.dependency_overrides[get_session] = lambda: db_session
 
         try:
             # Act
@@ -123,7 +134,7 @@ class TestUpdateTeamWorkItem:
             )
         finally:
             # Clean up dependency override
-            app.dependency_overrides.pop(get_work_item_service, None)
+            app.dependency_overrides.pop(get_session, None)
 
         # Assert
         assert response.status_code == status.HTTP_200_OK
@@ -132,13 +143,8 @@ class TestUpdateTeamWorkItem:
         assert response_data["title"] == "Updated Title"
         assert response_data["description"] == "Updated description"
         assert response_data["priority"] == 2.0
-
-        # Verify service was called correctly
-        mock_service.update_work_item.assert_called_once()
-        call_args = mock_service.update_work_item.call_args
-        assert call_args[1]["work_item_id"] == uuid.UUID(work_item_id)
-        assert call_args[1]["user_id"] == test_user.id
-        assert isinstance(call_args[1]["work_item_data"], WorkItemUpdateRequest)
+        # Ensure team_id matches
+        assert str(mock_work_item.team_id) == team_id
 
     @pytest.mark.asyncio
     async def test_update_work_item_not_found(
@@ -159,6 +165,9 @@ class TestUpdateTeamWorkItem:
         from app.main import app
 
         mock_service = AsyncMock()
+        # Simulate user is team member but work item doesn't exist
+        mock_service.is_team_member = AsyncMock(return_value=True)
+        mock_service.get_work_item_by_id = AsyncMock(return_value=None)
         mock_service.update_work_item.side_effect = ValueError("Work item not found")
 
         async def override_get_work_item_service():
@@ -177,12 +186,12 @@ class TestUpdateTeamWorkItem:
             # Clean up dependency override
             app.dependency_overrides.pop(get_work_item_service, None)
 
-            # Assert
-            assert response.status_code == status.HTTP_404_NOT_FOUND
+        # Assert
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
-            response_data = response.json()
-            assert response_data["detail"]["error"] == "work_item_not_found"
-            assert "not found" in response_data["detail"]["message"]
+        response_data = response.json()
+        assert response_data["detail"]["error"] == "work_item_not_found"
+        assert "not found" in response_data["detail"]["message"]
 
     @pytest.mark.asyncio
     async def test_update_work_item_unauthorized(
@@ -190,27 +199,32 @@ class TestUpdateTeamWorkItem:
         async_client: AsyncClient,
         test_user: User,
         auth_headers_for_user: dict,
+        db_session: AsyncSession,
     ):
         """Test unauthorized access when user is not team member."""
         # Arrange
-        team_id = str(uuid.uuid4())
-        work_item_id = str(uuid.uuid4())
+        # Create test work item in DB for unauthorized test
+        work_item = WorkItem(
+            id=uuid.uuid4(),
+            team_id=uuid.uuid4(),
+            author_id=test_user.id,
+            title="Test Item",
+            type=WorkItemType.STORY,
+            status=WorkItemStatus.BACKLOG,
+            priority=1.0,
+        )
+        db_session.add(work_item)
+        await db_session.commit()
+
+        team_id = str(work_item.team_id)
+        work_item_id = str(work_item.id)
 
         update_data = {"title": "Updated Title"}
 
-        # Override the dependency
-        from app.api.v1.endpoints.teams import get_work_item_service
+        # Override DB session dependency so the endpoint uses our test session
         from app.main import app
 
-        mock_service = AsyncMock()
-        mock_service.update_work_item.side_effect = ValueError(
-            "User is not a member of this team"
-        )
-
-        async def override_get_work_item_service():
-            return mock_service
-
-        app.dependency_overrides[get_work_item_service] = override_get_work_item_service
+        app.dependency_overrides[get_session] = lambda: db_session
 
         try:
             # Act
@@ -221,7 +235,7 @@ class TestUpdateTeamWorkItem:
             )
         finally:
             # Clean up dependency override
-            app.dependency_overrides.pop(get_work_item_service, None)
+            app.dependency_overrides.pop(get_session, None)
 
         # Assert
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -329,31 +343,34 @@ class TestUpdateTeamWorkItem:
         mock_work_item: WorkItem,
         test_user: User,
         auth_headers_for_user: dict,
+        db_session: AsyncSession,
     ):
         """Test partial update with only specific fields."""
-        # Arrange
+        # Save work item to DB and ensure user is a team member
+        db_session.add(mock_work_item)
+        db_session.add(
+            TeamMember(
+                team_id=mock_work_item.team_id,
+                user_id=test_user.id,
+                role=TeamRole.MEMBER,
+            )
+        )
+        await db_session.commit()
+        await db_session.refresh(mock_work_item)
         team_id = str(mock_work_item.team_id)
         work_item_id = str(mock_work_item.id)
+
+        # Override DB session dependency so the endpoint uses our test session
+        from app.main import app
+
+        app.dependency_overrides[get_session] = lambda: db_session
 
         # Only update status
         update_data = {"status": "todo"}
 
-        # Create updated work item by copying original and updating specific fields
-        updated_work_item = self._create_updated_work_item(
-            mock_work_item, status=WorkItemStatus.TODO
-        )
+        # Status will be updated by the service - no need to create updated work item manually
 
-        # Override the dependency
-        from app.api.v1.endpoints.teams import get_work_item_service
-        from app.main import app
-
-        mock_service = AsyncMock()
-        mock_service.update_work_item.return_value = updated_work_item
-
-        async def override_get_work_item_service():
-            return mock_service
-
-        app.dependency_overrides[get_work_item_service] = override_get_work_item_service
+        # No service override; use real service with overridden DB session
 
         try:
             # Act
@@ -364,7 +381,9 @@ class TestUpdateTeamWorkItem:
             )
         finally:
             # Clean up dependency override
-            app.dependency_overrides.pop(get_work_item_service, None)
+            from app.main import app
+
+            app.dependency_overrides.pop(get_session, None)
 
         # Assert
         assert response.status_code == status.HTTP_200_OK
@@ -380,39 +399,51 @@ class TestUpdateTeamWorkItem:
         self,
         async_client: AsyncClient,
         test_user: User,
+        mock_work_item: WorkItem,
         auth_headers_for_user: dict,
+        db_session: AsyncSession,
     ):
         """Test internal server error handling."""
         # Arrange
-        team_id = str(uuid.uuid4())
-        work_item_id = str(uuid.uuid4())
+        # Save work item and membership
+        db_session.add(mock_work_item)
+        db_session.add(
+            TeamMember(
+                team_id=mock_work_item.team_id,
+                user_id=test_user.id,
+                role=TeamRole.MEMBER,
+            )
+        )
+        await db_session.commit()
+
+        team_id = str(mock_work_item.team_id)
+        work_item_id = str(mock_work_item.id)
 
         update_data = {"title": "Updated Title"}
 
-        # Override the dependency
-        from app.api.v1.endpoints.teams import get_work_item_service
+        # Override DB session dependency so the endpoint uses our test session
         from app.main import app
 
-        mock_service = AsyncMock()
-        mock_service.update_work_item.side_effect = Exception(
-            "Database connection error"
-        )
+        app.dependency_overrides[get_session] = lambda: db_session
 
-        async def override_get_work_item_service():
-            return mock_service
+        # Patch WorkItemService.update_work_item to raise unexpected exception
+        from app.domains.services.work_item_service import WorkItemService
 
-        app.dependency_overrides[get_work_item_service] = override_get_work_item_service
-
-        try:
-            # Act
-            response = await async_client.patch(
-                f"/api/v1/teams/{team_id}/work-items/{work_item_id}",
-                json=update_data,
-                headers=auth_headers_for_user,
-            )
-        finally:
-            # Clean up dependency override
-            app.dependency_overrides.pop(get_work_item_service, None)
+        with patch.object(
+            WorkItemService,
+            "update_work_item",
+            new=AsyncMock(side_effect=Exception("Database connection error")),
+        ):
+            try:
+                # Act
+                response = await async_client.patch(
+                    f"/api/v1/teams/{team_id}/work-items/{work_item_id}",
+                    json=update_data,
+                    headers=auth_headers_for_user,
+                )
+            finally:
+                # Clean up dependency override
+                app.dependency_overrides.pop(get_session, None)
 
             # Assert
             assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -428,25 +459,30 @@ class TestUpdateTeamWorkItem:
         mock_work_item: WorkItem,
         test_user: User,
         auth_headers_for_user: dict,
+        db_session: AsyncSession,
     ):
         """Test that proper logging occurs during update."""
         # Arrange
+        # Save work item and membership
+        db_session.add(mock_work_item)
+        db_session.add(
+            TeamMember(
+                team_id=mock_work_item.team_id,
+                user_id=test_user.id,
+                role=TeamRole.MEMBER,
+            )
+        )
+        await db_session.commit()
+
         team_id = str(mock_work_item.team_id)
         work_item_id = str(mock_work_item.id)
 
-        update_data = {"title": "Updated Title"}
-
-        # Override the dependency
-        from app.api.v1.endpoints.teams import get_work_item_service
+        # Override DB session dependency so the endpoint uses our test session
         from app.main import app
 
-        mock_service = AsyncMock()
-        mock_service.update_work_item.return_value = mock_work_item
+        app.dependency_overrides[get_session] = lambda: db_session
 
-        async def override_get_work_item_service():
-            return mock_service
-
-        app.dependency_overrides[get_work_item_service] = override_get_work_item_service
+        update_data = {"title": "Updated Title"}
 
         with patch("app.api.v1.endpoints.teams.logger") as mock_logger:
             try:
@@ -458,7 +494,9 @@ class TestUpdateTeamWorkItem:
                 )
             finally:
                 # Clean up dependency override
-                app.dependency_overrides.pop(get_work_item_service, None)
+                from app.main import app
+
+                app.dependency_overrides.pop(get_session, None)
 
             # Assert
             assert response.status_code == status.HTTP_200_OK
@@ -481,25 +519,30 @@ class TestUpdateTeamWorkItem:
         mock_work_item: WorkItem,
         test_user: User,
         auth_headers_for_user: dict,
+        db_session: AsyncSession,
     ):
         """Test that the endpoint completes within performance requirements."""
         # Arrange
+        # Save work item and membership
+        db_session.add(mock_work_item)
+        db_session.add(
+            TeamMember(
+                team_id=mock_work_item.team_id,
+                user_id=test_user.id,
+                role=TeamRole.MEMBER,
+            )
+        )
+        await db_session.commit()
+
         team_id = str(mock_work_item.team_id)
         work_item_id = str(mock_work_item.id)
 
-        update_data = {"title": "Updated Title"}
-
-        # Override the dependency
-        from app.api.v1.endpoints.teams import get_work_item_service
+        # Override DB session dependency so the endpoint uses our test session
         from app.main import app
 
-        mock_service = AsyncMock()
-        mock_service.update_work_item.return_value = mock_work_item
+        app.dependency_overrides[get_session] = lambda: db_session
 
-        async def override_get_work_item_service():
-            return mock_service
-
-        app.dependency_overrides[get_work_item_service] = override_get_work_item_service
+        update_data = {"title": "Updated Title"}
 
         try:
             # Act & Assert
@@ -514,7 +557,9 @@ class TestUpdateTeamWorkItem:
             )
         finally:
             # Clean up dependency override
-            app.dependency_overrides.pop(get_work_item_service, None)
+            from app.main import app
+
+            app.dependency_overrides.pop(get_session, None)
 
             end_time = time.time()
             duration = end_time - start_time
@@ -532,42 +577,53 @@ class TestUpdateTeamWorkItem:
         mock_work_item: WorkItem,
         test_user: User,
         auth_headers_for_user: dict,
+        db_session: AsyncSession,
     ):
         """Test handling of concurrent modification scenarios."""
-        # This test simulates optimistic concurrency handling
-        # In a real system, you might check version numbers or timestamps
-
         # Arrange
+        # Save work item and membership
+        db_session.add(mock_work_item)
+        db_session.add(
+            TeamMember(
+                team_id=mock_work_item.team_id,
+                user_id=test_user.id,
+                role=TeamRole.MEMBER,
+            )
+        )
+        await db_session.commit()
+
         team_id = str(mock_work_item.team_id)
         work_item_id = str(mock_work_item.id)
 
-        update_data = {"title": "Updated Title"}
-
-        # Override the dependency
-        from app.api.v1.endpoints.teams import get_work_item_service
+        # Override DB session dependency so the endpoint uses our test session
         from app.main import app
 
-        mock_service = AsyncMock()
-        # Simulate that the item was modified after we fetched it
-        mock_service.update_work_item.side_effect = ValueError(
-            "Work item was modified by another user"
-        )
+        app.dependency_overrides[get_session] = lambda: db_session
 
-        async def override_get_work_item_service():
-            return mock_service
+        update_data = {"title": "Updated Title"}
 
-        app.dependency_overrides[get_work_item_service] = override_get_work_item_service
+        # Simulate that the item was modified after we fetched it by patching service
+        from app.domains.services.work_item_service import WorkItemService
 
-        try:
-            # Act
-            response = await async_client.patch(
-                f"/api/v1/teams/{team_id}/work-items/{work_item_id}",
-                json=update_data,
-                headers=auth_headers_for_user,
-            )
-        finally:
-            # Clean up dependency override
-            app.dependency_overrides.pop(get_work_item_service, None)
+        with patch.object(
+            WorkItemService,
+            "update_work_item",
+            new=AsyncMock(
+                side_effect=ValueError("Work item was modified by another user")
+            ),
+        ):
+            try:
+                # Act
+                response = await async_client.patch(
+                    f"/api/v1/teams/{team_id}/work-items/{work_item_id}",
+                    json=update_data,
+                    headers=auth_headers_for_user,
+                )
+            finally:
+                # Clean up dependency override
+                from app.main import app
+
+                app.dependency_overrides.pop(get_session, None)
 
             # Assert - Should be handled gracefully
             assert response.status_code == status.HTTP_400_BAD_REQUEST

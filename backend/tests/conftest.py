@@ -5,9 +5,8 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.app import app as fastapi_app
 from app.infra.db import Base, get_session
-
-# from app.main import app as fastapi_app
 
 # Test database URL (using SQLite for simplicity in tests)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
