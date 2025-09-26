@@ -1,0 +1,114 @@
+name: K6 Performance Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'tests/k6/**'
+      - '.github/workflows/k6-performance.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'tests/k6/**'
+      - '.github/workflows/k6-performance.yml'
+  workflow_dispatch:
+
+env:
+  POETRY_VERSION: "1.7.1"
+  PYTHON_VERSION: "3.9"
+
+jobs:
+  k6_performance_test:
+    name: K6 Performance Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ env.POETRY_VERSION }}
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        run: poetry install --no-interaction
+
+      - name: Start API server
+        run: |
+          poetry run python -m pytest tests/conftest.py --fixture=test_db
+          poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5  # Wait for server to start
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run k6 smoke test
+        run: |
+          k6 run tests/k6/sprint_balance_load_test.js --tag testid=smoke -e TEST_ENV=ci
+
+      - name: Run k6 load test
+        run: |
+          k6 run tests/k6/sprint_balance_load_test.js --tag testid=load -e TEST_ENV=ci
+
+      - name: Run k6 spike test
+        if: github.event_name != 'pull_request'  # Skip spike test on PR
+        run: |
+          k6 run tests/k6/sprint_balance_load_test.js --tag testid=spike -e TEST_ENV=ci
+
+      - name: Upload k6 results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results
+          path: k6-results/
+          retention-days: 30

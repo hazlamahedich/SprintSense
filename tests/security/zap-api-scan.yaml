@@ -1,0 +1,73 @@
+---
+env:
+  contexts:
+    - name: "Sprint Balance API"
+      urls: ["http://localhost:8000"]
+      includePaths: ["^/api/.*"]
+      excludePaths: []
+      authentication:
+        method: "bearer"
+        parameters:
+          url: "http://localhost:8000/api/auth/login"
+          requestBody: '{"email":"test@example.com","password":"testpass123"}'
+          tokenPath: "$.access_token"
+      users:
+        - name: "test-user"
+          credentials:
+            username: "test@example.com"
+            password: "testpass123"
+
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+apis:
+  - name: "Sprint Balance"
+    format: openapi
+    url: http://localhost:8000/api/openapi.json
+    targetUrl: http://localhost:8000
+    context: "Sprint Balance API"
+
+rules:
+  - id: 10096 # Timestamp Disclosure
+    enabled: false
+  - id: 10038 # Content Security Policy
+    threshold: "Medium"
+  - id: 10063 # Feature Policy Header Missing
+    threshold: "Low"
+
+passiveScanners:
+  - id: 2 # Private IP Disclosure
+    enabled: false
+  - id: 10049 # Non-Storable Content
+    enabled: false
+
+activeScanners:
+  - id: 40012 # Cross Site Scripting (Reflected)
+    strength: "High"
+    threshold: "Medium"
+  - id: 40014 # Cross Site Scripting (Persistent)
+    strength: "High"
+    threshold: "Medium"
+  - id: 40016 # Cross Site Scripting (DOM Based)
+    strength: "High"
+    threshold: "Medium"
+  - id: 40018 # SQL Injection
+    strength: "High"
+    threshold: "Medium"
+  - id: 90019 # Server Side Include
+    enabled: false
+  - id: 90020 # Remote File Inclusion
+    enabled: false
+
+reporting:
+  formats: ["HTML", "JSON", "XML"]
+  title: "Sprint Balance API Security Report"
+  template: "traditional-html"
+  sections:
+    - title: "About this Report"
+      content: "Security assessment of the Sprint Balance API endpoints"
+    - title: "Summary of Alerts"
+    - title: "Alert Detail"
+    - title: "Passing Rules"

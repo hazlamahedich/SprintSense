@@ -36,6 +36,20 @@ app.include_router(
 app.include_router(
     sprint_completion.router, prefix=f"{settings.API_V1_STR}", tags=["sprints"]
 )
+# Sprint balance REST routes
+from app.api.v1.sprint_balance import router as sprint_balance_router
+app.include_router(
+    sprint_balance_router,
+    prefix=f"{settings.API_V1_STR}",
+    tags=["sprint-balance"],
+)
+# Sprint balance WebSocket routes
+from app.api.v1.sprint_balance_ws import router as sprint_balance_ws_router
+app.include_router(
+    sprint_balance_ws_router,
+    prefix="",
+    tags=["sprint-balance"],
+)
 
 # Include compatibility routes without version prefix for tests
 app.include_router(teams.router, prefix="/teams", tags=["teams-compat"])

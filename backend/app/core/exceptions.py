@@ -207,6 +207,28 @@ def format_validation_errors(errors: list) -> Dict[str, Any]:
     }
 
 
+class BalanceAnalysisError(SprintSenseException):
+    """Balance analysis errors."""
+
+    @classmethod
+    def analysis_failed(cls, reason: str) -> "BalanceAnalysisError":
+        return cls(
+            message=f"Failed to analyze sprint balance: {reason}",
+            error_code="BALANCE_ANALYSIS_FAILED",
+            details={"reason": reason},
+            recovery_action="Please try again. If the problem persists, contact support.",
+        )
+
+    @classmethod
+    def invalid_data(cls, details: Dict[str, Any]) -> "BalanceAnalysisError":
+        return cls(
+            message="Invalid data provided for balance analysis",
+            error_code="BALANCE_INVALID_DATA",
+            details=details,
+            recovery_action="Please check the provided data and try again.",
+        )
+
+
 # Error code taxonomy for reference
 ERROR_CODES = {
     # Validation Errors (4xx range)
@@ -223,7 +245,9 @@ ERROR_CODES = {
     "DATABASE_PRIORITY_CALC_FAILED": {"status": 500, "category": "database"},
     "DATABASE_CONNECTION_ERROR": {"status": 503, "category": "database"},
     "DATABASE_CONSTRAINT_VIOLATION": {"status": 500, "category": "database"},
-    # Network Errors (5xx range)
+    # Error Codes (5xx range)
+    "BALANCE_ANALYSIS_FAILED": {"status": 500, "category": "balance"},
+    "BALANCE_INVALID_DATA": {"status": 400, "category": "balance"},
     "NETWORK_TIMEOUT": {"status": 504, "category": "network"},
     "NETWORK_SERVER_UNAVAILABLE": {"status": 503, "category": "network"},
     # Concurrency Errors (4xx range)

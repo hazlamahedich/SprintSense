@@ -1,10 +1,13 @@
 """Redis-based caching service for quality metrics."""
 
 import json
-from typing import Any, Optional
-
+from typing import Any, Optional, Callable
+from functools import wraps
 import structlog
 from redis.asyncio import Redis
+from uuid import UUID
+from datetime import datetime
+import json
 
 logger = structlog.get_logger(__name__)
 
@@ -171,6 +174,45 @@ class CacheService:
                 error_type=type(e).__name__,
             )
             raise
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder that handles UUIDs and datetime objects."""
+
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            return str(obj)
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return json.JSONEncoder.default(self, obj)
+
+
+def cache_with_ttl(ttl_seconds: int = 300):
+    """Decorator for caching function results with TTL."""
+
+    def decorator(func: Callable):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            # Generate cache key
+            cache_key = f"{func.__name__}:{str(args)}:{str(kwargs)}"
+
+            # Try to get from cache
+            cache_service = CacheService()
+            cached_result = await cache_service.get(cache_key)
+            if cached_result is not None:
+                return cached_result
+
+            # Execute function
+            result = await func(*args, **kwargs)
+
+            # Cache result
+            await cache_service.set(cache_key, result, expire_seconds=ttl_seconds)
+
+            return result
+
+        return wrapper
+
+    return decorator
 
 
 class RedisPipeline:

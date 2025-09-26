@@ -4,7 +4,15 @@ import uuid
 from typing import Optional
 
 import structlog
-from fastapi import Cookie, Depends, HTTPException, Request, status
+from fastapi import (
+    Cookie,
+    Depends,
+    HTTPException,
+    Request,
+    status,
+    WebSocket,
+    WebSocketException,
+)
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +22,57 @@ from app.domains.services.user_service import UserService
 from app.infra.db import get_session
 
 logger = structlog.get_logger(__name__)
+
+
+async def get_current_user_ws(
+    websocket: WebSocket, user_service: UserService = Depends(get_user_service)
+) -> User:
+    """Get current authenticated user for WebSocket connections.
+
+    Expects a token in the query string as ?token=... or in the headers as Authorization: Bearer ...
+    """
+    token = None
+    # Try query params first
+    if "token" in websocket.query_params:
+        token = websocket.query_params["token"]
+
+    # Fallback to headers
+    if not token:
+        auth_header = websocket.headers.get("authorization")
+        if auth_header and auth_header.lower().startswith("bearer "):
+            token = auth_header.split(" ", 1)[1]
+
+    if not token:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Missing token"
+        )
+
+    payload = verify_token(token)
+    if not payload:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token"
+        )
+
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token payload"
+        )
+
+    try:
+        user_id = uuid.UUID(user_id_str)
+    except ValueError:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Invalid user id"
+        )
+
+    user = await user_service.get_user_by_id(str(user_id))
+    if not user or not user.is_active:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized user"
+        )
+
+    return user
 
 
 async def get_user_service(db: AsyncSession = Depends(get_session)) -> UserService:

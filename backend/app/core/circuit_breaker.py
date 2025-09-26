@@ -123,9 +123,55 @@ class CircuitBreaker:
             return True
         return time.time() - self._last_failure_time >= self.recovery_timeout
 
-    def _time_until_recovery(self) -> float:
-        """Calculate seconds until next recovery attempt."""
-        if not self._last_failure_time:
-            return 0
-        elapsed = time.time() - self._last_failure_time
-        return max(0, self.recovery_timeout - elapsed)
+
+def _time_until_recovery(self) -> float:
+    """Calculate seconds until next recovery attempt."""
+    if not self._last_failure_time:
+        return 0
+    elapsed = time.time() - self._last_failure_time
+    return max(0, self.recovery_timeout - elapsed)
+
+
+# Global circuit breaker instances
+_circuit_breakers = {}
+
+
+def circuit_breaker(
+    failure_threshold: int = 5,
+    recovery_timeout: float = 60.0,
+    name: Optional[str] = None,
+):
+    """Decorator for adding circuit breaker to async functions.
+
+    Args:
+        failure_threshold: Number of failures before opening circuit
+        recovery_timeout: Seconds to wait before recovery attempt
+        name: Optional name for circuit breaker instance
+
+    Returns:
+        Decorator function
+    """
+    from functools import wraps
+
+    def decorator(func):
+        nonlocal name
+        if name is None:
+            name = f"{func.__module__}.{func.__qualname__}"
+
+        if name not in _circuit_breakers:
+            _circuit_breakers[name] = CircuitBreaker(
+                failure_threshold=failure_threshold,
+                recovery_timeout=recovery_timeout,
+                name=name,
+            )
+
+        breaker = _circuit_breakers[name]
+
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            async with breaker:
+                return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
