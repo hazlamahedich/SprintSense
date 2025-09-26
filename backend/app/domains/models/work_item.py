@@ -126,5 +126,6 @@ class WorkItem(Base):
         """String representation of WorkItem."""
         return (
             f"<WorkItem(id={self.id}, title='{self.title}', "
-            f"type={self.type}, status={self.status})>"
+            f"type=WorkItemType.{self.type.value.upper()}, "
+            f"status=WorkItemStatus.{self.status.value.upper()})>"
         )

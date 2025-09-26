@@ -6,25 +6,33 @@ import sys
 from typing import Any, Dict
 
 import structlog
-from opentelemetry import trace
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from app.core.config import settings
+
+# Lazy load OpenTelemetry imports
+try:
+    from opentelemetry import trace
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+    HAS_OTEL = True
+except ImportError:
+    HAS_OTEL = False
 
 
 def add_trace_info(
     logger: Any, name: str, event_dict: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Add trace and span IDs to log events."""
-    span = trace.get_current_span()
-    if span != trace.INVALID_SPAN:
-        ctx = span.get_span_context()
-        event_dict["trace_id"] = format(ctx.trace_id, "032x")
-        event_dict["span_id"] = format(ctx.span_id, "016x")
+    if HAS_OTEL:
+        span = trace.get_current_span()  # type: ignore[name-defined]
+        if span != trace.INVALID_SPAN:  # type: ignore[name-defined]
+            ctx = span.get_span_context()
+            event_dict["trace_id"] = format(ctx.trace_id, "032x")
+            event_dict["span_id"] = format(ctx.span_id, "016x")
     return event_dict
 
 
@@ -65,29 +73,35 @@ def configure_logging() -> None:
 
 def configure_tracing() -> None:
     """Configure OpenTelemetry tracing."""
-    # Skip tracing configuration during tests
-    if os.getenv("NODE_ENV") == "test" or "pytest" in sys.modules:
+    # Skip if OTEL is not available or during tests
+    if (
+        not HAS_OTEL
+        or os.getenv("NODE_ENV") == "test"
+        or os.getenv("PYTEST_DISABLE_OTEL") == "1"
+        or "pytest" in sys.modules
+    ):
         return
 
-    resource = Resource.create(
+    # These variables are only available when HAS_OTEL is True
+    resource = Resource.create(  # type: ignore[name-defined]
         {
             "service.name": settings.OTEL_SERVICE_NAME,
             "service.version": settings.VERSION,
         }
     )
 
-    provider = TracerProvider(resource=resource)
+    provider = TracerProvider(resource=resource)  # type: ignore[name-defined]
 
     # Configure OTLP exporter
-    otlp_exporter = OTLPSpanExporter(
+    otlp_exporter = OTLPSpanExporter(  # type: ignore[name-defined]
         endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,
         insecure=True,  # Use gRPC without TLS for local development
     )
 
-    span_processor = BatchSpanProcessor(otlp_exporter)
+    span_processor = BatchSpanProcessor(otlp_exporter)  # type: ignore[name-defined]
     provider.add_span_processor(span_processor)
 
-    trace.set_tracer_provider(provider)
+    trace.set_tracer_provider(provider)  # type: ignore[name-defined]
 
 
 def setup_instrumentation() -> None:
@@ -109,12 +123,17 @@ def setup_instrumentation() -> None:
 
 def instrument_fastapi(app: Any) -> None:
     """Instrument FastAPI app with OpenTelemetry."""
-    # Skip instrumentation during tests
-    if os.getenv("NODE_ENV") == "test" or "pytest" in sys.modules:
+    # Skip if OTEL is not available or during tests
+    if (
+        not HAS_OTEL
+        or os.getenv("NODE_ENV") == "test"
+        or os.getenv("PYTEST_DISABLE_OTEL") == "1"
+        or "pytest" in sys.modules
+    ):
         return
 
     try:
-        FastAPIInstrumentor.instrument_app(app)
+        FastAPIInstrumentor.instrument_app(app)  # type: ignore[name-defined]
     except Exception as e:
         logger = structlog.get_logger(__name__)
         logger.warning("Failed to instrument FastAPI with OpenTelemetry", error=str(e))

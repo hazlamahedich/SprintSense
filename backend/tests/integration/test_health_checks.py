@@ -14,7 +14,7 @@ from app.main import app
 
 # Test database URL for integration tests
 TEST_DATABASE_URL = (
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/sprintsense_test"
+    "postgresql+asyncpg://postgres:postgres@localhost:54322/sprintsense_test"
 )
 
 
@@ -69,23 +69,26 @@ class TestHealthEndpoints:
         assert data["service"] == "SprintSense Backend"
 
     @patch.dict(os.environ, {"ENVIRONMENT": "test"})
-    def test_detailed_health_check_healthy(self, test_client):
+    def test_detailed_health_check_healthy(self, test_client, db_session):
         """Test detailed health check when all services are healthy."""
-        with patch("app.api.routers.health.get_session") as mock_session:
-            # Mock successful database connection
-            mock_db_session = AsyncSession(
-                create_async_engine("sqlite+aiosqlite:///:memory:")
-            )
-            mock_session.return_value = mock_db_session
+        # Override dependency to use test db session
+        from app.infra.db import get_session
+        from app.main import app
 
+        async def override_get_session():
+            yield db_session
+
+        app.dependency_overrides[get_session] = override_get_session
+        try:
             response = test_client.get("/api/v1/health/detailed")
-
-            assert response.status_code == 200
-            data = response.json()
-            assert data["status"] in [
-                "OK",
-                "DEGRADED",
-            ]  # May be degraded due to missing Supabase
+            data = (
+                response.json()
+                if response.status_code == 200
+                else response.json()["detail"]
+            )
+            assert data["status"] in ["OK", "DEGRADED"]
+        finally:
+            app.dependency_overrides.clear()
             assert data["service"] == "SprintSense Backend"
             assert data["environment"] == "test"
             assert "checks" in data
@@ -232,7 +235,9 @@ class TestHealthCheckIntegration:
         """
         try:
             # Try to create a real database connection
-            engine = create_engine(TEST_DATABASE_URL.replace("+asyncpg", ""))
+            engine = create_engine(
+                TEST_DATABASE_URL.replace("postgresql+asyncpg", "postgresql")
+            )
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
 

@@ -41,6 +41,8 @@ def verify_token(token: str) -> Optional[dict[str, Any]]:
 
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt."""
+    if not isinstance(password, str):
+        password = str(password)
     hashed = pwd_context.hash(password)
     return str(hashed)
 
