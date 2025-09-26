@@ -9,9 +9,9 @@ from fastapi import (
     Depends,
     HTTPException,
     Request,
-    status,
     WebSocket,
     WebSocketException,
+    status,
 )
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,6 +22,14 @@ from app.domains.services.user_service import UserService
 from app.infra.db import get_session
 
 logger = structlog.get_logger(__name__)
+
+
+async def get_user_service(db: AsyncSession = Depends(get_session)) -> UserService:
+    """Dependency to get user service with database session."""
+    return UserService(db)
+
+
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user_ws(
@@ -73,14 +81,6 @@ async def get_current_user_ws(
         )
 
     return user
-
-
-async def get_user_service(db: AsyncSession = Depends(get_session)) -> UserService:
-    """Dependency to get user service with database session."""
-    return UserService(db)
-
-
-bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(

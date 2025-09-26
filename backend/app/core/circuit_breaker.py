@@ -68,7 +68,7 @@ class CircuitBreaker:
         """Check if requests should be allowed through.
 
         Raises:
-            HTTPException: If circuit is open
+            CircuitBreakerError: If circuit is open
         """
         if self._state == CircuitState.OPEN:
             if await self._should_attempt_recovery():
@@ -123,13 +123,12 @@ class CircuitBreaker:
             return True
         return time.time() - self._last_failure_time >= self.recovery_timeout
 
-
-def _time_until_recovery(self) -> float:
-    """Calculate seconds until next recovery attempt."""
-    if not self._last_failure_time:
-        return 0
-    elapsed = time.time() - self._last_failure_time
-    return max(0, self.recovery_timeout - elapsed)
+    def _time_until_recovery(self) -> float:
+        """Calculate seconds until next recovery attempt."""
+        if not self._last_failure_time:
+            return 0
+        elapsed = time.time() - self._last_failure_time
+        return max(0, self.recovery_timeout - elapsed)
 
 
 # Global circuit breaker instances

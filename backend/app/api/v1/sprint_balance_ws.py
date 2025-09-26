@@ -1,12 +1,13 @@
 """WebSocket endpoint for sprint balance updates."""
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
 from app.core.auth import get_current_user_ws
 from app.core.websocket_manager import manager
+from app.domains.schemas.team import TeamResponse
 from app.domains.sprint.balance_service import balance_service
-from app.domains.schemas.team import Team
 
 router = APIRouter()
 
@@ -15,7 +16,7 @@ router = APIRouter()
 async def balance_websocket(
     websocket: WebSocket,
     sprint_id: UUID,
-    current_user: Team = Depends(get_current_user_ws),
+    current_user: TeamResponse = Depends(get_current_user_ws),
 ):
     """WebSocket endpoint for real-time sprint balance updates.
 
@@ -74,6 +75,6 @@ async def balance_websocket(
                     {"type": "error", "data": {"message": str(e)}}
                 )
 
-    except Exception as e:
+    except Exception:
         await manager.disconnect(websocket, team_id)
         raise
