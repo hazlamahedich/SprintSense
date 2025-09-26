@@ -44,13 +44,13 @@ async def test_openai_provider_complete(openai_provider, mock_openai_client):
         "Test prompt",
         {"temperature": 0.7}
     )
-    
+
     assert isinstance(response, LLMResponse)
     assert response.content == "Test response"
     assert response.tokens_used == 10
     assert response.provider == "openai"
     assert response.model == "gpt-4"
-    
+
     mock_openai_client.chat.completions.create.assert_called_once_with(
         model="gpt-4",
         messages=[{"role": "user", "content": "Test prompt"}],
@@ -61,10 +61,10 @@ async def test_openai_provider_complete(openai_provider, mock_openai_client):
 @pytest.mark.asyncio
 async def test_openai_provider_error_handling(openai_provider, mock_openai_client):
     mock_openai_client.chat.completions.create.side_effect = Exception("API Error")
-    
+
     with pytest.raises(LLMError) as exc:
         await openai_provider.complete("Test prompt", {})
-    
+
     assert str(exc.value) == "API Error"
 
 @pytest.mark.asyncio
@@ -77,27 +77,27 @@ async def test_provider_factory():
                 model="test",
                 provider="test"
             )
-        
+
         async def validate_key(self) -> bool:
             return True
-            
+
         async def get_model_info(self) -> Dict[str, Any]:
             return {"id": "test"}
-            
+
         def calculate_tokens(self, text: str) -> int:
             return len(text.split())
-    
+
     # Register provider
     LLMProviderFactory.register("test", TestProvider)
-    
+
     # Create settings with test provider
     settings = MagicMock()
     settings.llm_provider = "test"
-    
+
     # Create provider
     provider = LLMProviderFactory.create(settings)
     assert isinstance(provider, TestProvider)
-    
+
     # Test unknown provider
     settings.llm_provider = "unknown"
     with pytest.raises(LLMError):

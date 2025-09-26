@@ -64,21 +64,21 @@ class TokenQuotaManager:
         """Check if operation would exceed quota."""
         quota = await self.get_team_quota(team_id)
         usage = await self.get_current_usage(team_id)
-        
+
         if usage + tokens > quota:
             return False
-            
+
         # Track usage
         await self.redis.incrby(self._get_quota_key(team_id), tokens)
         await self.redis.expire(self._get_quota_key(team_id), self.settings.quota_window)
-        
+
         # Update metrics
         self.tokens_used.labels(
             team_id=team_id,
             provider=provider
         ).inc(tokens)
         await self.update_usage_metrics(team_id)
-        
+
         return True
 
     async def update_usage_metrics(self, team_id: str) -> None:
@@ -86,9 +86,9 @@ class TokenQuotaManager:
         usage = await self.get_current_usage(team_id)
         quota = await self.get_team_quota(team_id)
         ratio = usage / quota
-        
+
         self.quota_usage.labels(team_id=team_id).set(ratio)
-        
+
         # Check alert threshold
         if ratio >= self.settings.alert_threshold:
             # TODO: Trigger alert through alert manager

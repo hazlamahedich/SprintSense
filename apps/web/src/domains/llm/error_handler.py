@@ -90,14 +90,14 @@ class CircuitBreaker:
                 *args,
                 **kwargs
             )
-            
+
             # Success handling
             if self.state == CircuitBreakerState.HALF_OPEN:
                 self.state = CircuitBreakerState.CLOSED
                 self._update_state_metric(provider)
             self.failure_count = 0
             self.last_success_time = datetime.now()
-            
+
             return result
 
         except Exception as e:
