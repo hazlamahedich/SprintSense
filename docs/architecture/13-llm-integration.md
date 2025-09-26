@@ -3051,33 +3051,33 @@ def get_llm_settings() -> LLMSettings:
 ### Reference Documentation
 
 - Providers and SDKs
-  - OpenAI Python SDK: https://github.com/openai/openai-python
-  - Anthropic Python SDK: https://github.com/anthropic-ai/anthropic-sdk-python
-  - Google Generative AI (Gemini) SDK: https://github.com/google/generative-ai-python
-  - tiktoken (tokenizer for OpenAI models): https://github.com/openai/tiktoken
+  - OpenAI Python SDK: <https://github.com/openai/openai-python>
+  - Anthropic Python SDK: <https://github.com/anthropic-ai/anthropic-sdk-python>
+  - Google Generative AI (Gemini) SDK: <https://github.com/google/generative-ai-python>
+  - tiktoken (tokenizer for OpenAI models): <https://github.com/openai/tiktoken>
 
 - FastAPI and Middleware
-  - FastAPI: https://fastapi.tiangolo.com/
-  - BackgroundTasks: https://fastapi.tiangolo.com/advanced/background-tasks/
-  - Dependencies: https://fastapi.tiangolo.com/tutorial/dependencies/
+  - FastAPI: <https://fastapi.tiangolo.com/>
+  - BackgroundTasks: <https://fastapi.tiangolo.com/advanced/background-tasks/>
+  - Dependencies: <https://fastapi.tiangolo.com/tutorial/dependencies/>
 
 - Observability
-  - Prometheus client (Python): https://github.com/prometheus/client_python
-  - Grafana dashboards: https://grafana.com/docs/grafana/latest/dashboards/
+  - Prometheus client (Python): <https://github.com/prometheus/client_python>
+  - Grafana dashboards: <https://grafana.com/docs/grafana/latest/dashboards/>
 
 - Caching and Rate Limiting
-  - Redis: https://redis.io/docs/latest/
-  - Redis Python (redis-py): https://github.com/redis/redis-py
+  - Redis: <https://redis.io/docs/latest/>
+  - Redis Python (redis-py): <https://github.com/redis/redis-py>
 
 - Security and Compliance
-  - OWASP ASVS: https://owasp.org/ASVS/
-  - OWASP Top 10: https://owasp.org/www-project-top-ten/
-  - GDPR overview: https://gdpr.eu/
-  - CCPA overview: https://oag.ca.gov/privacy/ccpa
+  - OWASP ASVS: <https://owasp.org/ASVS/>
+  - OWASP Top 10: <https://owasp.org/www-project-top-ten/>
+  - GDPR overview: <https://gdpr.eu/>
+  - CCPA overview: <https://oag.ca.gov/privacy/ccpa>
 
 - Testing
-  - Pytest: https://docs.pytest.org/
-  - HTTPX/TestClient: https://www.python-httpx.org/ and https://fastapi.tiangolo.com/advanced/testing/
+  - Pytest: <https://docs.pytest.org/>
+  - HTTPX/TestClient: <https://www.python-httpx.org/> and <https://fastapi.tiangolo.com/advanced/testing/>
 
 ### Security Compliance Checklist
 
@@ -3153,12 +3153,12 @@ Ballpark costs vary by provider and configuration; numbers here are illustrative
   - Monthly active teams: T
   - Avg requests per team per month: R
   - Avg prompt tokens: P; Avg completion tokens: C
-  - Total tokens = T * R * (P + C)
+  - Total tokens = T *R* (P + C)
 
 - Provider Examples
   - OpenAI GPT-4 family
     - Assume $X per 1K input tokens, $Y per 1K output tokens
-    - Monthly cost ≈ T * R * (P/1000 * X + C/1000 * Y)
+    - Monthly cost ≈ T *R* (P/1000 *X + C/1000* Y)
   - Anthropic Claude family
     - Similar split-rate model; check latest pricing
   - Google Gemini
@@ -3172,7 +3172,7 @@ Ballpark costs vary by provider and configuration; numbers here are illustrative
 
 - Example Scenario
   - T=20 teams, R=2,000/month, P=300, C=150
-  - Total tokens = 20 * 2,000 * 450 = 18,000,000
+  - Total tokens = 20 *2,000* 450 = 18,000,000
   - With blended cost $0.005 per 1K tokens: ~ $90/month
 
 - Governance
