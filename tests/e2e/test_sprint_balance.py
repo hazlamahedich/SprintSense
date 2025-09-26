@@ -21,11 +21,11 @@ async def test_sprint_balance_flow(client: AsyncClient, websocket_client: WebSoc
     # Setup test data
     sprint_id = str(uuid4())
     team_id = str(uuid4())
-    
+
     # Create test users
     user1_id = str(uuid4())
     user2_id = str(uuid4())
-    
+
     team_capacity = [
         TeamMemberCapacity(
             user_id=user1_id,
@@ -40,7 +40,7 @@ async def test_sprint_balance_flow(client: AsyncClient, websocket_client: WebSoc
             time_zone="UTC-8"
         )
     ]
-    
+
     work_items = [
         WorkItemAssignment(
             work_item_id=str(uuid4()),
@@ -57,7 +57,7 @@ async def test_sprint_balance_flow(client: AsyncClient, websocket_client: WebSoc
             estimated_hours=5.0
         )
     ]
-    
+
     # Test REST API
     response = await client.post(
         f"/api/sprints/{sprint_id}/balance",
@@ -67,16 +67,16 @@ async def test_sprint_balance_flow(client: AsyncClient, websocket_client: WebSoc
         }
     )
     assert response.status_code == 200
-    
+
     data = response.json()
     metrics = BalanceMetrics.model_validate(data)
-    
+
     assert 0 <= metrics.overall_balance_score <= 1
     assert 0 <= metrics.team_utilization <= 1
     assert 0 <= metrics.skill_coverage <= 1
     assert len(metrics.workload_distribution) == 2
     assert metrics.calculated_at is not None
-    
+
     # Test WebSocket updates
     async with websocket_client.connect(
         f"/ws/sprints/{sprint_id}/balance",
@@ -86,12 +86,12 @@ async def test_sprint_balance_flow(client: AsyncClient, websocket_client: WebSoc
         data = await ws.receive_json()
         assert data["type"] == "initial_balance"
         assert "overall_balance_score" in data["data"]
-        
+
         # Test refresh request
         await ws.send_json({"type": "refresh"})
         data = await ws.receive_json()
         assert data["type"] == "balance_update"
-        
+
         # Add work item and verify update
         new_item = WorkItemAssignment(
             work_item_id=str(uuid4()),
@@ -100,13 +100,13 @@ async def test_sprint_balance_flow(client: AsyncClient, websocket_client: WebSoc
             assigned_to=user1_id,
             estimated_hours=4.0
         )
-        
+
         response = await client.post(
             f"/api/sprints/{sprint_id}/work-items",
             json=new_item.model_dump()
         )
         assert response.status_code == 200
-        
+
         # Verify WebSocket update
         data = await ws.receive_json()
         assert data["type"] == "balance_update"
@@ -118,7 +118,7 @@ async def test_sprint_balance_flow(client: AsyncClient, websocket_client: WebSoc
 async def test_sprint_balance_validation(client: AsyncClient):
     """Test input validation for sprint balance analysis."""
     sprint_id = str(uuid4())
-    
+
     # Test invalid availability
     invalid_capacity = TeamMemberCapacity(
         user_id=str(uuid4()),
@@ -126,7 +126,7 @@ async def test_sprint_balance_validation(client: AsyncClient):
         skills=["python"],
         time_zone="UTC"
     )
-    
+
     response = await client.post(
         f"/api/sprints/{sprint_id}/balance",
         json={
@@ -135,7 +135,7 @@ async def test_sprint_balance_validation(client: AsyncClient):
         }
     )
     assert response.status_code == 422
-    
+
     # Test invalid story points/hours ratio
     invalid_item = WorkItemAssignment(
         work_item_id=str(uuid4()),
@@ -144,7 +144,7 @@ async def test_sprint_balance_validation(client: AsyncClient):
         assigned_to=None,
         estimated_hours=20.0  # Invalid: > 16h per point
     )
-    
+
     response = await client.post(
         f"/api/sprints/{sprint_id}/balance",
         json={
@@ -165,7 +165,7 @@ async def test_sprint_balance_validation(client: AsyncClient):
 async def test_sprint_balance_performance(client: AsyncClient):
     """Test performance requirements for sprint balance analysis."""
     sprint_id = str(uuid4())
-    
+
     # Generate large dataset
     team_capacity = [
         TeamMemberCapacity(
@@ -176,7 +176,7 @@ async def test_sprint_balance_performance(client: AsyncClient):
         )
         for i in range(50)  # 50 team members
     ]
-    
+
     work_items = [
         WorkItemAssignment(
             work_item_id=str(uuid4()),
@@ -187,10 +187,10 @@ async def test_sprint_balance_performance(client: AsyncClient):
         )
         for i in range(200)  # 200 work items
     ]
-    
+
     # Measure response time
     start = asyncio.get_event_loop().time()
-    
+
     response = await client.post(
         f"/api/sprints/{sprint_id}/balance",
         json={
@@ -198,12 +198,12 @@ async def test_sprint_balance_performance(client: AsyncClient):
             "work_items": [wi.model_dump() for wi in work_items]
         }
     )
-    
+
     duration = asyncio.get_event_loop().time() - start
-    
+
     assert response.status_code == 200
     assert duration < 1.0  # Must complete in < 1s
-    
+
     # Test concurrent requests
     async def make_request():
         return await client.post(
@@ -213,10 +213,10 @@ async def test_sprint_balance_performance(client: AsyncClient):
                 "work_items": [wi.model_dump() for wi in work_items]
             }
         )
-    
+
     start = asyncio.get_event_loop().time()
     responses = await asyncio.gather(*[make_request() for _ in range(10)])
     duration = asyncio.get_event_loop().time() - start
-    
+
     assert all(r.status_code == 200 for r in responses)
     assert duration < 2.0  # 10 concurrent requests in < 2s

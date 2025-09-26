@@ -15,7 +15,7 @@ export const options = {
       exec: 'smoke',
       tags: { test_type: 'smoke' },
     },
-    
+
     // Load test
     load: {
       executor: 'ramping-vus',
@@ -29,7 +29,7 @@ export const options = {
       exec: 'load',
       tags: { test_type: 'load' },
     },
-    
+
     // Stress test
     stress: {
       executor: 'ramping-vus',
@@ -45,7 +45,7 @@ export const options = {
       exec: 'stress',
       tags: { test_type: 'stress' },
     },
-    
+
     // Spike test
     spike: {
       executor: 'ramping-vus',
@@ -60,7 +60,7 @@ export const options = {
       tags: { test_type: 'spike' },
     },
   },
-  
+
   // Test thresholds
   thresholds: {
     http_req_duration: ['p95<200'],  // 95% of requests should complete within 200ms
@@ -79,7 +79,7 @@ const TEST_DATA = {
     skills: ['python', 'react', 'typescript'].slice(i % 3),
     time_zone: 'UTC',
   })),
-  
+
   work_items: Array.from({ length: 200 }, (_, i) => ({
     work_item_id: randomUUID(),
     story_points: (i % 5) + 1,
@@ -105,7 +105,7 @@ function authenticatedRequest(method, url, body = null) {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
   };
-  
+
   return http.request(method, url, body, { headers });
 }
 
@@ -113,14 +113,14 @@ function authenticatedRequest(method, url, body = null) {
 function connectWebSocket(sprintId) {
   const token = getAuthToken();
   const url = `ws://localhost:8000/ws/sprints/${sprintId}/balance?token=${token}`;
-  
+
   return new WebSocket(url);
 }
 
 // Smoke test
 export function smoke() {
   const sprintId = randomUUID();
-  
+
   // Test REST API
   const response = authenticatedRequest(
     'POST',
@@ -130,15 +130,15 @@ export function smoke() {
       work_items: TEST_DATA.work_items.slice(0, 10),
     })
   );
-  
+
   check(response, {
     'status is 200': (r) => r.status === 200,
     'has balance metrics': (r) => r.json().overall_balance_score !== undefined,
   });
-  
+
   // Test WebSocket
   const ws = connectWebSocket(sprintId);
-  
+
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     check(data, {
@@ -146,7 +146,7 @@ export function smoke() {
       'has balance data': () => data.data.overall_balance_score !== undefined,
     });
   };
-  
+
   sleep(5);
   ws.send(JSON.stringify({ type: 'refresh' }));
   sleep(5);
@@ -156,7 +156,7 @@ export function smoke() {
 // Load test
 export function load() {
   const sprintId = randomUUID();
-  
+
   // Test REST API under load
   const response = authenticatedRequest(
     'POST',
@@ -166,19 +166,19 @@ export function load() {
       work_items: TEST_DATA.work_items.slice(0, 50),
     })
   );
-  
+
   check(response, {
     'status is 200': (r) => r.status === 200,
     'response time OK': (r) => r.timings.duration < 200,
   });
-  
+
   sleep(1);
 }
 
 // Stress test
 export function stress() {
   const sprintId = randomUUID();
-  
+
   // Test REST API under stress
   const response = authenticatedRequest(
     'POST',
@@ -188,19 +188,19 @@ export function stress() {
       work_items: TEST_DATA.work_items,
     })
   );
-  
+
   check(response, {
     'status is 200': (r) => r.status === 200,
     'response time OK': (r) => r.timings.duration < 1000,
   });
-  
+
   sleep(0.5);
 }
 
 // Spike test
 export function spike() {
   const sprintId = randomUUID();
-  
+
   // Test REST API under spike
   const response = authenticatedRequest(
     'POST',
@@ -210,10 +210,10 @@ export function spike() {
       work_items: TEST_DATA.work_items.slice(0, 100),
     })
   );
-  
+
   check(response, {
     'status is 200': (r) => r.status === 200,
   });
-  
+
   sleep(0.1);
 }

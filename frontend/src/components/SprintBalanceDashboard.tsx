@@ -1,74 +1,71 @@
-import React, { useMemo } from 'react';
-import { Chart } from 'react-chartjs-2';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
-import { useSprintBalance } from '@/hooks/useSprintBalance';
+import React, { useMemo } from 'react'
+import { Chart } from 'react-chartjs-2'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
+import { RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react'
+import { useSprintBalance } from '@/hooks/useSprintBalance'
 
 interface SprintBalanceDashboardProps {
-  sprintId: string;
-  refreshInterval?: number;
+  sprintId: string
+  refreshInterval?: number
 }
 
 export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
   sprintId,
-  refreshInterval
+  refreshInterval,
 }) => {
-  const {
-    balanceMetrics,
-    isLoading,
-    isError,
-    error,
-    refreshBalance
-  } = useSprintBalance(sprintId, { refreshInterval });
+  const { balanceMetrics, isLoading, isError, error, refreshBalance } =
+    useSprintBalance(sprintId, { refreshInterval })
 
   const chartData = useMemo(() => {
-    if (!balanceMetrics?.workloadDistribution) return null;
+    if (!balanceMetrics?.workloadDistribution) return null
 
-    const data = Object.entries(balanceMetrics.workloadDistribution);
+    const data = Object.entries(balanceMetrics.workloadDistribution)
     return {
       labels: data.map(([member]) => member),
-      datasets: [{
-        label: 'Workload (hours)',
-        data: data.map(([_, hours]) => hours),
-        backgroundColor: 'rgba(59, 130, 246, 0.5)',
-        borderColor: 'rgb(59, 130, 246)',
-        borderWidth: 1
-      }]
-    };
-  }, [balanceMetrics?.workloadDistribution]);
+      datasets: [
+        {
+          label: 'Workload (hours)',
+          data: data.map(([_, hours]) => hours),
+          backgroundColor: 'rgba(59, 130, 246, 0.5)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 1,
+        },
+      ],
+    }
+  }, [balanceMetrics?.workloadDistribution])
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const
+        position: 'top' as const,
       },
       title: {
         display: true,
-        text: 'Team Workload Distribution'
-      }
+        text: 'Team Workload Distribution',
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Hours'
-        }
-      }
-    }
-  };
+          text: 'Hours',
+        },
+      },
+    },
+  }
 
   const getStatusColor = (score: number) => {
-    if (score >= 0.8) return 'bg-green-500';
-    if (score >= 0.6) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
+    if (score >= 0.8) return 'bg-green-500'
+    if (score >= 0.6) return 'bg-yellow-500'
+    return 'bg-red-500'
+  }
 
   if (isLoading) {
     return (
@@ -81,7 +78,7 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
           <Skeleton className="h-24 w-full" />
         </div>
       </div>
-    );
+    )
   }
 
   if (isError) {
@@ -93,34 +90,29 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
           Failed to load sprint balance data. {error?.message}
         </AlertDescription>
       </Alert>
-    );
+    )
   }
 
   if (!balanceMetrics) {
     return (
       <Alert>
         <AlertTitle>No Data</AlertTitle>
-        <AlertDescription>
-          No sprint balance data available.
-        </AlertDescription>
+        <AlertDescription>No sprint balance data available.</AlertDescription>
       </Alert>
-    );
+    )
   }
 
   return (
-<div 
+    <div
       className="space-y-6"
       role="region"
       aria-label="Sprint balance analysis dashboard"
     >
       <div className="flex justify-between items-center">
-<h2 
-          className="text-2xl font-bold" 
-          id="dashboard-title"
-        >
+        <h2 className="text-2xl font-bold" id="dashboard-title">
           Sprint Balance Analysis
         </h2>
-<Button
+        <Button
           onClick={() => refreshBalance()}
           size="sm"
           variant="outline"
@@ -131,18 +123,18 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
         </Button>
       </div>
 
-<div 
+      <div
         className="grid grid-cols-1 md:grid-cols-3 gap-4"
         role="list"
         aria-label="Balance metrics overview"
       >
-<Card role="listitem">
+        <Card role="listitem">
           <CardHeader className="pb-2">
             <h3 className="text-sm font-medium">Overall Balance</h3>
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-2">
-<div
+              <div
                 className={`h-8 w-8 rounded-full ${getStatusColor(
                   balanceMetrics.overallBalanceScore
                 )}`}
@@ -196,24 +188,24 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
       <Card>
         <CardContent className="pt-6">
           <div className="h-[300px]">
-{chartData && (
-              <div 
-                role="img" 
+            {chartData && (
+              <div
+                role="img"
                 aria-label="Bar chart showing workload distribution across team members"
               >
-                <Chart 
-                  type="bar" 
-                  data={chartData} 
+                <Chart
+                  type="bar"
+                  data={chartData}
                   options={{
                     ...chartOptions,
                     plugins: {
                       ...chartOptions.plugins,
                       accessibility: {
                         enabled: true,
-                        announceToScreenReader: true
-                      }
-                    }
-                  }} 
+                        announceToScreenReader: true,
+                      },
+                    },
+                  }}
                 />
               </div>
             )}
@@ -222,11 +214,11 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
       </Card>
 
       {balanceMetrics.bottlenecks.length > 0 && (
-<Alert role="alert" aria-atomic="true">
+        <Alert role="alert" aria-atomic="true">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Potential Bottlenecks</AlertTitle>
           <AlertDescription>
-<ul 
+            <ul
               className="list-disc list-inside"
               aria-label="List of identified bottlenecks"
             >
@@ -243,17 +235,11 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
           <h3 className="text-lg font-semibold">Recommendations</h3>
         </CardHeader>
         <CardContent>
-<ul 
-            className="space-y-2"
-            aria-label="List of recommendations"
-          >
+          <ul className="space-y-2" aria-label="List of recommendations">
             {balanceMetrics.recommendations.map((recommendation, index) => (
-              <li
-                key={index}
-                className="flex items-start space-x-2"
-              >
-<CheckCircle 
-                  className="h-5 w-5 text-green-500 mt-0.5" 
+              <li key={index} className="flex items-start space-x-2">
+                <CheckCircle
+                  className="h-5 w-5 text-green-500 mt-0.5"
                   aria-hidden="true"
                 />
                 <span>{recommendation}</span>
@@ -263,5 +249,5 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}
