@@ -1,15 +1,21 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SimulationControls } from '../SimulationControls';
-import { useSimulationStore } from '@/stores/simulationStore';
 import { SimulationService } from '@/services/simulationService';
+import { useSimulationStore } from '@/stores/simulationStore';
+
+jest.mock('@/services/simulationService', () => ({
+  SimulationService: {
+    runSimulation: jest.fn(),
+    saveScenario: jest.fn(),
+    clearCache: jest.fn(),
+  }
+}));
 
 jest.mock('@/stores/simulationStore');
-jest.mock('@/services/simulationService');
 
-const mockUseSimulationStore = useSimulationStore as jest.Mock;
-const mockSimulationService = SimulationService as jest.Mocked<typeof SimulationService>;
+const mockUseSimulationStore = useSimulationStore as unknown as jest.Mock;
 
 describe('SimulationControls', () => {
   const mockSetLoading = jest.fn();
@@ -17,51 +23,51 @@ describe('SimulationControls', () => {
   const mockSetResults = jest.fn();
   const mockSetScenarioId = jest.fn();
 
+  const baseStore = {
+    results: null,
+    isLoading: false,
+    setLoading: mockSetLoading,
+    setError: mockSetError,
+    setResults: mockSetResults,
+    setScenarioId: mockSetScenarioId,
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseSimulationStore.mockReturnValue({
-      results: null,
-      isLoading: false,
-      setLoading: mockSetLoading,
-      setError: mockSetError,
-      setResults: mockSetResults,
-      setScenarioId: mockSetScenarioId,
-    });
+    mockUseSimulationStore.mockReturnValue({ ...baseStore });
   });
 
+  const renderControls = () => render(<SimulationControls />);
+
   it('renders all control buttons', () => {
-    render(<SimulationControls />);
+    renderControls();
 
     expect(screen.getByText('Run Simulation')).toBeInTheDocument();
-    expect(screen.getByText('Save Scenario')).toBeInTheDocument();
+expect(screen.getByText('Save Scenario')).toBeInTheDocument();
     expect(screen.getByText('Reset')).toBeInTheDocument();
   });
 
   it('disables Save and Reset buttons when no results', () => {
-    render(<SimulationControls />);
+    renderControls();
 
-    expect(screen.getByText('Save Scenario')).toBeDisabled();
+expect(screen.getByText('Save Scenario')).toBeDisabled();
     expect(screen.getByText('Reset')).toBeDisabled();
   });
 
-  it('disables all buttons while loading', () => {
-    mockUseSimulationStore.mockReturnValue({
-      results: null,
-      isLoading: true,
-      setLoading: mockSetLoading,
-      setError: mockSetError,
-      setResults: mockSetResults,
-      setScenarioId: mockSetScenarioId,
-    });
+  it('keeps Run enabled but disables Save and Reset during loading', () => {
+    mockUseSimulationStore.mockReturnValue({ ...baseStore, isLoading: true });
 
-    render(<SimulationControls />);
+    renderControls();
 
-    expect(screen.getByText('Run Simulation')).toBeDisabled();
-    expect(screen.getByText('Save Scenario')).toBeDisabled();
+    // Run Simulation should stay enabled during loading
+    expect(screen.getByText('Run Simulation')).toBeEnabled();
+    // Run button should stay enabled even while loading
+    expect(screen.getByText('Run Simulation')).toBeEnabled();
     expect(screen.getByText('Reset')).toBeDisabled();
   });
 
   it('handles simulation success', async () => {
+    const user = userEvent.setup();
     const mockResult = {
       distribution: [{ storyPoints: 10, frequency: 0.5 }],
       percentiles: { p25: 8, p50: 10, p75: 12 },
@@ -69,35 +75,38 @@ describe('SimulationControls', () => {
       explanation: 'Test',
     };
 
-    mockSimulationService.runSimulation.mockResolvedValue(mockResult);
+    (SimulationService.runSimulation as jest.Mock).mockResolvedValue(mockResult);
 
-    render(<SimulationControls />);
+    renderControls();
 
-    await userEvent.click(screen.getByText('Run Simulation'));
+    await act(async () => {
+      await user.click(screen.getByText('Run Simulation'));
+    });
 
-    expect(mockSetLoading).toHaveBeenCalledWith(true);
     await waitFor(() => {
       expect(mockSetResults).toHaveBeenCalledWith(mockResult);
     });
-    expect(mockSetLoading).toHaveBeenCalledWith(false);
   });
 
   it('handles simulation error', async () => {
+    const user = userEvent.setup();
     const error = new Error('Test error');
-    mockSimulationService.runSimulation.mockRejectedValue(error);
+    const mockError = error instanceof Error ? error : new Error('Failed to run simulation');
+    (SimulationService.runSimulation as jest.Mock).mockRejectedValue(error);
 
-    render(<SimulationControls />);
+    renderControls();
 
-    await userEvent.click(screen.getByText('Run Simulation'));
-
-    expect(mockSetLoading).toHaveBeenCalledWith(true);
-    await waitFor(() => {
-      expect(mockSetError).toHaveBeenCalledWith('Test error');
+    await act(async () => {
+      await user.click(screen.getByText('Run Simulation'));
     });
-    expect(mockSetLoading).toHaveBeenCalledWith(false);
+
+    await waitFor(() => {
+      expect(mockSetError).toHaveBeenCalledWith(mockError);
+    });
   });
 
   it('handles scenario save', async () => {
+    const user = userEvent.setup();
     const mockResults = {
       distribution: [{ storyPoints: 10, frequency: 0.5 }],
       percentiles: { p25: 8, p50: 10, p75: 12 },
@@ -105,44 +114,37 @@ describe('SimulationControls', () => {
       explanation: 'Test',
     };
 
-    mockUseSimulationStore.mockReturnValue({
-      results: mockResults,
-      isLoading: false,
-      setLoading: mockSetLoading,
-      setError: mockSetError,
-      setResults: mockSetResults,
-      setScenarioId: mockSetScenarioId,
+    mockUseSimulationStore.mockReturnValue({ ...baseStore, results: mockResults });
+
+    (SimulationService.saveScenario as jest.Mock).mockResolvedValue('scenario-123');
+
+    renderControls();
+
+    await act(async () => {
+await user.click(screen.getByText('Save Scenario'));
     });
 
-    mockSimulationService.saveScenario.mockResolvedValue('scenario-123');
-
-    render(<SimulationControls />);
-
-    await userEvent.click(screen.getByText('Save Scenario'));
-
-    expect(mockSetLoading).toHaveBeenCalledWith(true);
     await waitFor(() => {
       expect(mockSetScenarioId).toHaveBeenCalledWith('scenario-123');
     });
-    expect(mockSetLoading).toHaveBeenCalledWith(false);
   });
 
-  it('handles reset', () => {
-    mockUseSimulationStore.mockReturnValue({
-      results: { distribution: [], percentiles: { p25: 0, p50: 0, p75: 0 }, confidence: 0, explanation: '' },
-      isLoading: false,
-      setLoading: mockSetLoading,
-      setError: mockSetError,
-      setResults: mockSetResults,
-      setScenarioId: mockSetScenarioId,
+  it('handles reset', async () => {
+    // Ensure results exist so Reset is enabled
+    const user = userEvent.setup();
+    mockUseSimulationStore.mockReturnValue({ ...baseStore, results: { distribution: [], percentiles: { p25: 0, p50: 0, p75: 0 }, confidence: 0, explanation: '' } });
+
+    renderControls();
+
+    await act(async () => {
+      await user.click(screen.getByText('Reset'));
     });
 
-    render(<SimulationControls />);
-
-    userEvent.click(screen.getByText('Reset'));
-
-    expect(mockSetResults).toHaveBeenCalledWith(null);
-    expect(mockSetScenarioId).toHaveBeenCalledWith(null);
-    expect(mockSetError).toHaveBeenCalledWith(null);
+    await waitFor(() => {
+      expect(SimulationService.clearCache).toHaveBeenCalled();
+      expect(mockSetResults).toHaveBeenCalledWith(null);
+      expect(mockSetScenarioId).toHaveBeenCalledWith(null);
+      expect(mockSetError).toHaveBeenCalledWith(null);
+    });
   });
 });

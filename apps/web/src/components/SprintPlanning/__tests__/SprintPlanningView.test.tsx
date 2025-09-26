@@ -45,7 +45,7 @@ describe('SprintPlanningView', () => {
 
     render(<SprintPlanningView />);
 
-    expect(screen.getByText('Sprint Simulation Results')).toBeInTheDocument();
+    expect(screen.getByText(/Sprint Simulation Results/)).toBeInTheDocument();
     expect(screen.getByText(/Based on historical data/)).toBeInTheDocument();
   });
 

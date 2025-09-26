@@ -35,7 +35,7 @@ export const SimulationControls: React.FC = () => {
 
       setResults(result);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to run simulation');
+      setError(error instanceof Error ? error : new Error('Failed to run simulation'));
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,6 @@ export const SimulationControls: React.FC = () => {
                 color="primary"
                 startIcon={<PlayArrowIcon />}
                 onClick={handleRunSimulation}
-                disabled={isLoading}
               >
                 Run Simulation
               </Button>
