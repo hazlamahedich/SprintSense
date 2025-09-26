@@ -74,3 +74,4 @@ export const RecommendationsPanel: React.FC<RecommendationsPanelProps> = ({
     </Box>
   )
 }
+

@@ -93,3 +93,4 @@ export const SprintList: React.FC<SprintListProps> = ({ onCreateClick }) => {
     </Box>
   )
 }
+

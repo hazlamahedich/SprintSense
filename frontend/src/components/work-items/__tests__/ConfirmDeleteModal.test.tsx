@@ -296,3 +296,4 @@ describe('ConfirmDeleteModal', () => {
     expect(archiveButton).toHaveAttribute('data-variant', 'destructive')
   })
 })
+

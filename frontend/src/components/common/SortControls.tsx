@@ -121,3 +121,4 @@ export const SortControls: React.FC<SortControlsProps> = ({
 }
 
 export default SortControls
+

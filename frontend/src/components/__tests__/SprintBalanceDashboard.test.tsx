@@ -4,6 +4,29 @@ import { SprintBalanceDashboard } from '../SprintBalanceDashboard'
 import { useSprintBalance } from '@/hooks/useSprintBalance'
 import { vi } from 'vitest'
 
+// Mock UI components
+vi.mock('@/components/ui/alert', () => ({
+  Alert: ({ children, ...props }) => <div {...props}>{children}</div>,
+  AlertTitle: ({ children }) => <div>{children}</div>,
+  AlertDescription: ({ children }) => <div>{children}</div>,
+}))
+
+vi.mock('@/components/ui/button', () => ({
+  Button: ({ children, onClick, ...props }) => (
+    <button onClick={onClick} {...props}>{children}</button>
+  ),
+}))
+
+vi.mock('@/components/ui/card', () => ({
+  Card: ({ children, ...props }) => <div {...props}>{children}</div>,
+  CardHeader: ({ children }) => <div>{children}</div>,
+  CardContent: ({ children }) => <div>{children}</div>,
+}))
+
+vi.mock('@/components/ui/badge', () => ({
+  Badge: ({ children }) => <div>{children}</div>,
+}))
+
 // Mock the hook
 vi.mock('@/hooks/useSprintBalance', () => ({
   useSprintBalance: vi.fn(),
@@ -61,9 +84,10 @@ describe('SprintBalanceDashboard', () => {
     render(<SprintBalanceDashboard sprintId="test-sprint" />)
 
     expect(
-      screen.getByText(/Failed to load sprint balance data/i)
+      screen.getByText(
+        `Failed to load sprint balance data. ${error.message}`
+      )
     ).toBeInTheDocument()
-    expect(screen.getByText(error.message)).toBeInTheDocument()
   })
 
   it('renders empty state', () => {
@@ -168,3 +192,4 @@ describe('SprintBalanceDashboard', () => {
     expect(screen.getByText('Sprint balance improved')).toBeInTheDocument()
   })
 })
+

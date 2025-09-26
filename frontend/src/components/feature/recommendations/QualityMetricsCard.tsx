@@ -149,3 +149,4 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
     </Card>
   )
 }
+

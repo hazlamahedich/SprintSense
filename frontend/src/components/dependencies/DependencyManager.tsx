@@ -201,3 +201,4 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
     </Box>
   );
 };
+

@@ -70,12 +70,11 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-[300px] w-full" />
-        <div className="grid grid-cols-3 gap-4">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
+        <Skeleton data-testid="skeleton" className="h-8 w-full" />
+        <Skeleton data-testid="skeleton" className="h-[300px] w-full" />
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton data-testid="skeleton" className="h-24 w-full" />
+          <Skeleton data-testid="skeleton" className="h-24 w-full" />
         </div>
       </div>
     )
@@ -251,3 +250,4 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
     </div>
   )
 }
+

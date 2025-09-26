@@ -1,9 +1,12 @@
 import React from 'react';
-import { vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { vi, beforeAll } from 'vitest';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { IncompleteWorkDialog } from '../IncompleteWorkDialog';
 import { getIncompleteItems, completeSprint } from '../../../api/sprint';
+
+// Import framer-motion mocks
+import '../../../test/mocks/framer-motion';
 
 // Mock API functions
 vi.mock('../../../api/sprint', () => ({
@@ -41,6 +44,23 @@ const defaultProps = {
 };
 
 describe('IncompleteWorkDialog', () => {
+  beforeAll(() => {
+    // Mock window.matchMedia for framer-motion
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation(query => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+  });
+
   beforeEach(() => {
     vi.resetAllMocks();
     (getIncompleteItems as any).mockResolvedValue(mockItems);
@@ -60,11 +80,14 @@ describe('IncompleteWorkDialog', () => {
     // Shows loading initially
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
 
-    // Check items are displayed
+    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('Task 1')).toBeInTheDocument();
-      expect(screen.getByText('Task 2')).toBeInTheDocument();
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
+
+    // Now check the table content
+    expect(screen.getByRole('cell', { name: 'Task 1' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: 'Task 2' })).toBeInTheDocument();
 
     // Check summary is correct
     expect(screen.getByText(/2 incomplete items/)).toBeInTheDocument();
@@ -86,20 +109,24 @@ describe('IncompleteWorkDialog', () => {
   });
 
   it('moves items to backlog', async () => {
-    render(
-      <ThemeProvider theme={mockTheme}>
-        <IncompleteWorkDialog {...defaultProps} />
-      </ThemeProvider>,
-    );
+    await act(async () => {
+      render(
+        <ThemeProvider theme={mockTheme}>
+          <IncompleteWorkDialog {...defaultProps} />
+        </ThemeProvider>,
+      );
+    });
 
-    // Wait for items to load
+    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('Task 1')).toBeInTheDocument();
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
     // Click move to backlog
     const moveButton = screen.getByText('Move to Backlog');
-    fireEvent.click(moveButton);
+    await act(async () => {
+      fireEvent.click(moveButton);
+    });
 
     // Verify API call
     await waitFor(() => {
@@ -123,20 +150,24 @@ describe('IncompleteWorkDialog', () => {
       next_sprint_id: 'next-123',
     });
 
-    render(
-      <ThemeProvider theme={mockTheme}>
-        <IncompleteWorkDialog {...defaultProps} />
-      </ThemeProvider>,
-    );
+    await act(async () => {
+      render(
+        <ThemeProvider theme={mockTheme}>
+          <IncompleteWorkDialog {...defaultProps} />
+        </ThemeProvider>,
+      );
+    });
 
-    // Wait for items to load
+    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('Task 1')).toBeInTheDocument();
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
     // Click move to next sprint
     const moveButton = screen.getByText('Move to Next Sprint');
-    fireEvent.click(moveButton);
+    await act(async () => {
+      fireEvent.click(moveButton);
+    });
 
     // Verify API call
     await waitFor(() => {
@@ -157,20 +188,24 @@ describe('IncompleteWorkDialog', () => {
   it('handles move error', async () => {
     (completeSprint as any).mockRejectedValue(new Error('Failed to move items'));
 
-    render(
-      <ThemeProvider theme={mockTheme}>
-        <IncompleteWorkDialog {...defaultProps} />
-      </ThemeProvider>,
-    );
+    await act(async () => {
+      render(
+        <ThemeProvider theme={mockTheme}>
+          <IncompleteWorkDialog {...defaultProps} />
+        </ThemeProvider>,
+      );
+    });
 
-    // Wait for items to load
+    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('Task 1')).toBeInTheDocument();
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
     // Click move to backlog
     const moveButton = screen.getByText('Move to Backlog');
-    fireEvent.click(moveButton);
+    await act(async () => {
+      fireEvent.click(moveButton);
+    });
 
     // Check error is displayed
     await waitFor(() => {
@@ -184,11 +219,13 @@ describe('IncompleteWorkDialog', () => {
   it('closes dialog when no items are pending', async () => {
     (getIncompleteItems as any).mockResolvedValue([]);
 
-    render(
-      <ThemeProvider theme={mockTheme}>
-        <IncompleteWorkDialog {...defaultProps} />
-      </ThemeProvider>,
-    );
+    await act(async () => {
+      render(
+        <ThemeProvider theme={mockTheme}>
+          <IncompleteWorkDialog {...defaultProps} />
+        </ThemeProvider>,
+      );
+    });
 
     // Should show message and close
     await waitFor(() => {
@@ -197,32 +234,50 @@ describe('IncompleteWorkDialog', () => {
   });
 
   it('disables close during move operation', async () => {
-    render(
-      <ThemeProvider theme={mockTheme}>
-        <IncompleteWorkDialog {...defaultProps} />
-      </ThemeProvider>,
-    );
+    // Mock completeSprint to resolve after a short delay to keep moving state true
+    (completeSprint as any).mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve({ moved_count: 2, target: 'backlog' }), 200)));
 
-    // Wait for items to load
+    await act(async () => {
+      render(
+        <ThemeProvider theme={mockTheme}>
+          <IncompleteWorkDialog {...defaultProps} />
+        </ThemeProvider>,
+      );
+    });
+
+    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('Task 1')).toBeInTheDocument();
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
     // Start move operation
     const moveButton = screen.getByText('Move to Backlog');
-    fireEvent.click(moveButton);
+    await act(async () => {
+      fireEvent.click(moveButton);
+    });
+
+    // Buttons should be disabled while request is in-flight
+    await waitFor(() => {
+      expect(screen.getByTestId('move-backlog')).toHaveAttribute('aria-disabled', 'true');
+      expect(screen.getByTestId('move-next')).toHaveAttribute('aria-disabled', 'true');
+    });
 
     // Try to close dialog (click backdrop)
     const backdrop = document.querySelector('.MuiBackdrop-root');
-    if (backdrop) {
-      fireEvent.click(backdrop);
-    }
+    await act(async () => {
+      if (backdrop) {
+        fireEvent.click(backdrop);
+      }
+    });
 
-    // Should not have called onClose
+    // Should not have called onClose during move
     expect(defaultProps.onClose).not.toHaveBeenCalled();
 
-    // Buttons should be disabled
-    expect(moveButton).toBeDisabled();
-    expect(screen.getByText('Move to Next Sprint')).toBeDisabled();
+    // Wait for request to complete and buttons to re-enable
+    await waitFor(() => {
+      expect(screen.getByTestId('move-backlog')).toHaveAttribute('aria-disabled', 'false');
+      expect(screen.getByTestId('move-next')).toHaveAttribute('aria-disabled', 'false');
+    });
   });
 });
+

@@ -347,3 +347,4 @@ describe('InviteUserModal', () => {
     expect(emailInput).toHaveValue('')
   })
 })
+

@@ -373,3 +373,4 @@ describe('EditWorkItemModal', () => {
     expect(document.body.style.overflow).toBe('unset')
   })
 })
+

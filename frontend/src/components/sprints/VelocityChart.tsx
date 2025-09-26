@@ -196,3 +196,4 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
     </AnimatePresence>
   );
 };
+
