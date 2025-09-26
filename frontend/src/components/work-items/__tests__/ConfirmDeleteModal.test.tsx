@@ -2,8 +2,8 @@
  * Tests for ConfirmDeleteModal component (Story 2.5)
  */
 
-import React from 'react';
-import '@heroicons/react/24/outline';
+import React from 'react'
+import '@heroicons/react/24/outline'
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
@@ -296,4 +296,3 @@ describe('ConfirmDeleteModal', () => {
     expect(archiveButton).toHaveAttribute('data-variant', 'destructive')
   })
 })
-

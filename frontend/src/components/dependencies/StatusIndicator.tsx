@@ -1,29 +1,29 @@
-import React from 'react';
-import { Typography, Box } from '@mui/material';
+import React from 'react'
+import { Typography, Box } from '@mui/material'
 
 interface StatusProps {
-  label: string;
-  status: string;
-  variant?: 'success' | 'warning' | 'error' | 'info';
+  label: string
+  status: string
+  variant?: 'success' | 'warning' | 'error' | 'info'
 }
 
 export const StatusIndicator: React.FC<StatusProps> = ({
   label,
   status,
-  variant = 'info'
+  variant = 'info',
 }) => {
   const getColor = () => {
     switch (variant) {
       case 'success':
-        return 'rgb(46, 125, 50)';
+        return 'rgb(46, 125, 50)'
       case 'warning':
-        return 'rgb(237, 108, 2)';
+        return 'rgb(237, 108, 2)'
       case 'error':
-        return 'rgb(211, 47, 47)';
+        return 'rgb(211, 47, 47)'
       default:
-        return 'rgb(25, 118, 210)';
+        return 'rgb(25, 118, 210)'
     }
-  };
+  }
 
   return (
     <Box display="flex" alignItems="center" gap={1}>
@@ -47,6 +47,5 @@ export const StatusIndicator: React.FC<StatusProps> = ({
         {status}
       </Box>
     </Box>
-  );
-};
-
+  )
+}

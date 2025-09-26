@@ -2,8 +2,8 @@
  * Tests for DeleteWorkItemButton component (Story 2.5)
  */
 
-import React from 'react';
-import '@heroicons/react/24/outline';
+import React from 'react'
+import '@heroicons/react/24/outline'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
@@ -257,4 +257,3 @@ describe('DeleteWorkItemButton', () => {
     expect(button).toHaveClass('hover:bg-red-50')
   })
 })
-

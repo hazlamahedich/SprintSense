@@ -250,4 +250,3 @@ export const SprintBalanceDashboard: React.FC<SprintBalanceDashboardProps> = ({
     </div>
   )
 }
-

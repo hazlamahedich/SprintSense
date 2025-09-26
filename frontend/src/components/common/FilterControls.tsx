@@ -290,4 +290,3 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
 }
 
 export default FilterControls
-

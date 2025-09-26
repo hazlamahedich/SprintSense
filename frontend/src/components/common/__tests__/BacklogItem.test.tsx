@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import BacklogItem from '../BacklogItem'
@@ -24,7 +24,7 @@ const mockWorkItem: WorkItem = {
   assignee_id: 'user-1',
 }
 
-console.log('Starting BacklogItem test suite');
+console.log('Starting BacklogItem test suite')
 
 describe('BacklogItem', () => {
   const mockOnEdit = vi.fn()
@@ -32,14 +32,14 @@ describe('BacklogItem', () => {
   const mockOnMove = vi.fn()
 
   beforeEach(() => {
-    console.log('Setting up test...');
-    vi.clearAllMocks();
-    console.log('Mocks cleared');
+    console.log('Setting up test...')
+    vi.clearAllMocks()
+    console.log('Mocks cleared')
   })
 
   it('renders work item information correctly', () => {
-    console.log('Starting first test: renders work item information');
-    console.log('Mock work item:', mockWorkItem);
+    console.log('Starting first test: renders work item information')
+    console.log('Mock work item:', mockWorkItem)
     render(
       <BacklogItem
         workItem={mockWorkItem}
@@ -157,4 +157,3 @@ describe('BacklogItem', () => {
     expect(screen.getByText(/Story Points: 5/)).toBeInTheDocument()
   })
 })
-

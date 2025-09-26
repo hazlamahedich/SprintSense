@@ -272,4 +272,3 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
     </Dialog>
   )
 }
-

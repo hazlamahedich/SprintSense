@@ -1,19 +1,22 @@
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
+import React from 'react'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@/components/ui/select-radix';
-import { WorkItem as WorkItemType, WorkItemStatus } from '@/types/workItem.types';
-import { useWorkItemStatus } from '@/hooks/useWorkItemStatus';
-import { ConfirmStatusChangeModal } from './ConfirmStatusChangeModal';
+} from '@/components/ui/select-radix'
+import {
+  WorkItem as WorkItemType,
+  WorkItemStatus,
+} from '@/types/workItem.types'
+import { useWorkItemStatus } from '@/hooks/useWorkItemStatus'
+import { ConfirmStatusChangeModal } from './ConfirmStatusChangeModal'
 
 interface WorkItemProps {
-  workItem: WorkItemType;
-  teamId: string;
+  workItem: WorkItemType
+  teamId: string
 }
 
 export const WorkItem: React.FC<WorkItemProps> = ({ workItem, teamId }) => {
@@ -24,28 +27,28 @@ export const WorkItem: React.FC<WorkItemProps> = ({ workItem, teamId }) => {
     handleStatusChange,
     handleConfirm,
     handleClose,
-  } = useWorkItemStatus({ workItem, teamId });
+  } = useWorkItemStatus({ workItem, teamId })
 
   const getStatusColor = (status: WorkItemStatus) => {
     switch (status) {
       case WorkItemStatus.DONE:
-        return 'bg-green-100 text-green-700';
+        return 'bg-green-100 text-green-700'
       case WorkItemStatus.IN_PROGRESS:
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-blue-100 text-blue-700'
       case WorkItemStatus.TODO:
-        return 'bg-yellow-100 text-yellow-700';
+        return 'bg-yellow-100 text-yellow-700'
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700'
     }
-  };
+  }
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-    });
-  };
+    })
+  }
 
   return (
     <>
@@ -68,21 +71,21 @@ export const WorkItem: React.FC<WorkItemProps> = ({ workItem, teamId }) => {
             )}
           </div>
           <div className="w-[140px]">
-            <Select
-              value={workItem.status}
-              onValueChange={handleStatusChange}
-            >
-              <SelectTrigger className="w-full" aria-label="Change work item status">
+            <Select value={workItem.status} onValueChange={handleStatusChange}>
+              <SelectTrigger
+                className="w-full"
+                aria-label="Change work item status"
+              >
                 <SelectValue placeholder="Change status" />
               </SelectTrigger>
               <SelectContent>
                 {Object.values(WorkItemStatus).map((status) => (
-                <SelectItem
-                  key={status}
-                  value={status}
-                  disabled={workItem.status === status}
-                  onClick={() => handleStatusChange(status)}
-                >
+                  <SelectItem
+                    key={status}
+                    value={status}
+                    disabled={workItem.status === status}
+                    onClick={() => handleStatusChange(status)}
+                  >
                     {status}
                   </SelectItem>
                 ))}
@@ -99,13 +102,9 @@ export const WorkItem: React.FC<WorkItemProps> = ({ workItem, teamId }) => {
         </div>
 
         <div className="pt-4 text-sm text-gray-500 flex justify-between border-t">
-          <div>
-            Created: {formatDate(workItem.created_at)}
-          </div>
+          <div>Created: {formatDate(workItem.created_at)}</div>
           {workItem.completed_at && (
-            <div>
-              Completed: {formatDate(workItem.completed_at)}
-            </div>
+            <div>Completed: {formatDate(workItem.completed_at)}</div>
           )}
         </div>
       </div>
@@ -121,8 +120,7 @@ export const WorkItem: React.FC<WorkItemProps> = ({ workItem, teamId }) => {
         />
       )}
     </>
-  );
-};
+  )
+}
 
-export default WorkItem;
-
+export default WorkItem

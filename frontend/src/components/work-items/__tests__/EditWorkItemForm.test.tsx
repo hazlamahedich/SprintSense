@@ -417,27 +417,27 @@ describe('EditWorkItemForm', () => {
     const user = userEvent.setup()
 
     // Mock slow API response
-    let resolvePromise: (value: any) => void;
+    let resolvePromise: (value: any) => void
     const slowPromise = new Promise((resolve) => {
-      resolvePromise = resolve;
-    });
-    mockWorkItemService.updateWorkItem.mockReturnValueOnce(slowPromise);
+      resolvePromise = resolve
+    })
+    mockWorkItemService.updateWorkItem.mockReturnValueOnce(slowPromise)
 
-    render(<EditWorkItemForm {...defaultProps} />);
+    render(<EditWorkItemForm {...defaultProps} />)
 
     // Make change and submit
-    const titleInput = screen.getByRole('textbox', { name: /title/i });
-    await user.type(titleInput, ' Updated');
+    const titleInput = screen.getByRole('textbox', { name: /title/i })
+    await user.type(titleInput, ' Updated')
 
-    const saveButton = screen.getByRole('button', { name: /save changes/i });
-    await user.click(saveButton);
+    const saveButton = screen.getByRole('button', { name: /save changes/i })
+    await user.click(saveButton)
 
     // Wait for loading state
-    expect(screen.getByRole('button', { name: /saving/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /saving/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled()
 
     // Complete the API call
-    resolvePromise!({ ...mockWorkItem, title: 'Updated' });
+    resolvePromise!({ ...mockWorkItem, title: 'Updated' })
 
     // Wait for completion
     await waitFor(() => {
@@ -500,4 +500,3 @@ describe('EditWorkItemForm', () => {
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 })
-

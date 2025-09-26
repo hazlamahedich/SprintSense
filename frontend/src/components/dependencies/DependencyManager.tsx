@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { DependencyGraph } from './DependencyGraph';
-import { CircularProgress, Alert, Button, Typography, Box } from '@mui/material';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { analyzeDependencies, suggestDependencyChain } from '../../services/dependencies';
-import { WorkItem, Dependency } from '../../types';
+import React, { useState, useEffect } from 'react'
+import { DependencyGraph } from './DependencyGraph'
+import { CircularProgress, Alert, Button, Typography, Box } from '@mui/material'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import {
+  analyzeDependencies,
+  suggestDependencyChain,
+} from '../../services/dependencies'
+import { WorkItem, Dependency } from '../../types'
 
 interface DependencyManagerProps {
-  workItems: WorkItem[];
-  onDependenciesUpdated?: (dependencies: Dependency[]) => void;
+  workItems: WorkItem[]
+  onDependenciesUpdated?: (dependencies: Dependency[]) => void
 }
 
 export const DependencyManager: React.FC<DependencyManagerProps> = ({
@@ -15,8 +18,11 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
   onDependenciesUpdated,
 }) => {
   // State
-  const [selectedWorkItem, setSelectedWorkItem] = useState<WorkItem | null>(null);
-  const [selectedDependency, setSelectedDependency] = useState<Dependency | null>(null);
+  const [selectedWorkItem, setSelectedWorkItem] = useState<WorkItem | null>(
+    null
+  )
+  const [selectedDependency, setSelectedDependency] =
+    useState<Dependency | null>(null)
 
   // Queries
   const {
@@ -25,11 +31,11 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
     isError: analysisError,
     refetch: refetchDependencies,
   } = useQuery({
-    queryKey: ['dependencies', workItems.map(item => item.id)],
+    queryKey: ['dependencies', workItems.map((item) => item.id)],
     queryFn: () => analyzeDependencies(workItems),
     enabled: workItems.length > 0,
     staleTime: 30000, // 30 seconds
-  });
+  })
 
   // Chain suggestion mutation
   const {
@@ -38,36 +44,37 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
     isLoading: isSuggestingChain,
     reset: resetChain,
   } = useMutation({
-    mutationFn: (targetDate: string) => suggestDependencyChain(workItems, targetDate)
-  });
+    mutationFn: (targetDate: string) =>
+      suggestDependencyChain(workItems, targetDate),
+  })
 
   // Effects
   useEffect(() => {
     if (dependencies && onDependenciesUpdated) {
-      onDependenciesUpdated(dependencies);
+      onDependenciesUpdated(dependencies)
     }
-  }, [dependencies, onDependenciesUpdated]);
+  }, [dependencies, onDependenciesUpdated])
 
   // Handlers
   const handleWorkItemClick = (workItem: WorkItem) => {
-    console.log('Work item clicked:', workItem);
-    setSelectedWorkItem(workItem);
-    resetChain();
-  };
+    console.log('Work item clicked:', workItem)
+    setSelectedWorkItem(workItem)
+    resetChain()
+  }
 
   const handleDependencyClick = (dependency: Dependency) => {
-    setSelectedDependency(dependency);
-  };
+    setSelectedDependency(dependency)
+  }
 
   const handleRefresh = () => {
-    refetchDependencies();
-  };
+    refetchDependencies()
+  }
 
   const handleSuggestChain = () => {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 30); // 30 days from now
-    suggestChain(targetDate.toISOString());
-  };
+    const targetDate = new Date()
+    targetDate.setDate(targetDate.getDate() + 30) // 30 days from now
+    suggestChain(targetDate.toISOString())
+  }
 
   if (workItems.length === 0) {
     return (
@@ -76,7 +83,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
           No work items available for dependency analysis
         </Typography>
       </Box>
-    );
+    )
   }
 
   if (isAnalyzing) {
@@ -89,7 +96,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
       >
         <CircularProgress />
       </Box>
-    );
+    )
   }
 
   if (analysisError) {
@@ -106,22 +113,21 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
           Failed to analyze dependencies. Please try again.
         </Alert>
       </Box>
-    );
+    )
   }
 
   return (
     <Box className="dependency-manager">
       {/* Controls */}
-      <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="h6">
-          Dependency Analysis
-        </Typography>
+      <Box
+        mb={2}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+      >
+        <Typography variant="h6">Dependency Analysis</Typography>
         <Box>
-          <Button
-            variant="outlined"
-            onClick={handleRefresh}
-            sx={{ mr: 1 }}
-          >
+          <Button variant="outlined" onClick={handleRefresh} sx={{ mr: 1 }}>
             Refresh
           </Button>
           <Button
@@ -160,13 +166,12 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
             overflow="auto"
           >
             {suggestedChain.map((item, index) => (
-              <Box
-                key={item.id}
-                py={1}
-                display="flex"
-                alignItems="center"
-              >
-                <Typography variant="body2" color="textSecondary" sx={{ mr: 2 }}>
+              <Box key={item.id} py={1} display="flex" alignItems="center">
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  sx={{ mr: 2 }}
+                >
                   {index + 1}.
                 </Typography>
                 <Typography>{item.title}</Typography>
@@ -189,16 +194,15 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
             Status: {selectedWorkItem.status.replace(/_/g, ' ').toLowerCase()}
           </Typography>
           <Typography variant="body2">
-            Dependencies: {
-              dependencies?.filter(d =>
+            Dependencies:{' '}
+            {dependencies?.filter(
+              (d) =>
                 d.source.id === selectedWorkItem.id ||
                 d.target.id === selectedWorkItem.id
-              ).length || 0
-            }
+            ).length || 0}
           </Typography>
         </Box>
       )}
     </Box>
-  );
-};
-
+  )
+}

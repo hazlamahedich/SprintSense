@@ -275,4 +275,3 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
     </Card>
   )
 }
-

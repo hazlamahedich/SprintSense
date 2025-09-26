@@ -69,4 +69,3 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
     </Tooltip>
   )
 }
-

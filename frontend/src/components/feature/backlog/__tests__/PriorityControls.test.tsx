@@ -327,4 +327,3 @@ describe('PriorityControls', () => {
     expect(group).toBeInTheDocument()
   })
 })
-

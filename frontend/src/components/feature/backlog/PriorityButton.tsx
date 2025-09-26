@@ -147,4 +147,3 @@ export const PriorityButton: React.FC<PriorityButtonProps> = ({
 }
 
 export default PriorityButton
-

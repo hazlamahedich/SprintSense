@@ -1,19 +1,21 @@
-import React from 'react';
-import { Dialog } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/button-radix';
-import { WorkItemStatus } from '@/types/workItem.types';
+import React from 'react'
+import { Dialog } from '@headlessui/react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/ui/button-radix'
+import { WorkItemStatus } from '@/types/workItem.types'
 
 interface ConfirmStatusChangeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => Promise<void>;
-  title: string;
-  targetStatus: WorkItemStatus;
-  isLoading?: boolean;
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => Promise<void>
+  title: string
+  targetStatus: WorkItemStatus
+  isLoading?: boolean
 }
 
-export const ConfirmStatusChangeModal: React.FC<ConfirmStatusChangeModalProps> = ({
+export const ConfirmStatusChangeModal: React.FC<
+  ConfirmStatusChangeModalProps
+> = ({
   isOpen,
   onClose,
   onConfirm,
@@ -25,20 +27,16 @@ export const ConfirmStatusChangeModal: React.FC<ConfirmStatusChangeModalProps> =
   const getMessage = (status: WorkItemStatus) => {
     switch (status) {
       case WorkItemStatus.DONE:
-        return 'Are you sure you want to mark this item as Done? This will record the completion date for velocity tracking.';
+        return 'Are you sure you want to mark this item as Done? This will record the completion date for velocity tracking.'
       case WorkItemStatus.IN_PROGRESS:
-        return 'Are you sure you want to move this item back to In Progress? This will clear any recorded completion date.';
+        return 'Are you sure you want to move this item back to In Progress? This will clear any recorded completion date.'
       default:
-        return `Are you sure you want to change the status to ${status}?`;
+        return `Are you sure you want to change the status to ${status}?`
     }
-  };
+  }
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      className="relative z-50"
-    >
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       {/* Backdrop overlay */}
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
@@ -85,8 +83,7 @@ export const ConfirmStatusChangeModal: React.FC<ConfirmStatusChangeModalProps> =
         </Dialog.Panel>
       </div>
     </Dialog>
-  );
-};
+  )
+}
 
-export default ConfirmStatusChangeModal;
-
+export default ConfirmStatusChangeModal

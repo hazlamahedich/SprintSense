@@ -266,4 +266,3 @@ export const GoalsList: React.FC<GoalsListProps> = ({ teamId, userRole }) => {
 }
 
 export default GoalsList
-

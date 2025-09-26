@@ -260,4 +260,3 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({
 }
 
 export default BacklogItem
-

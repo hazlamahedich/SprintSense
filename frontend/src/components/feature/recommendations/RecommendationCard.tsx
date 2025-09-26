@@ -188,4 +188,3 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
     </>
   )
 }
-

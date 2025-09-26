@@ -102,4 +102,3 @@ export const QualityDashboard: React.FC<QualityDashboardProps> = ({
     </Card>
   )
 }
-

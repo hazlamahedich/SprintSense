@@ -13,7 +13,9 @@ vi.mock('@/components/ui/alert', () => ({
 
 vi.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, ...props }) => (
-    <button onClick={onClick} {...props}>{children}</button>
+    <button onClick={onClick} {...props}>
+      {children}
+    </button>
   ),
 }))
 
@@ -84,9 +86,7 @@ describe('SprintBalanceDashboard', () => {
     render(<SprintBalanceDashboard sprintId="test-sprint" />)
 
     expect(
-      screen.getByText(
-        `Failed to load sprint balance data. ${error.message}`
-      )
+      screen.getByText(`Failed to load sprint balance data. ${error.message}`)
     ).toBeInTheDocument()
   })
 
@@ -192,4 +192,3 @@ describe('SprintBalanceDashboard', () => {
     expect(screen.getByText('Sprint balance improved')).toBeInTheDocument()
   })
 })
-

@@ -139,4 +139,3 @@ export const SprintCard: React.FC<SprintCardProps> = ({
     </Card>
   )
 }
-

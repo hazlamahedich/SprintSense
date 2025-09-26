@@ -80,4 +80,3 @@ export const DeleteWorkItemButton: React.FC<DeleteWorkItemButtonProps> = ({
 }
 
 export default DeleteWorkItemButton
-

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 import {
   Card,
   CardContent,
@@ -7,7 +7,7 @@ import {
   CircularProgress,
   Alert,
   AlertTitle,
-} from "@mui/material";
+} from '@mui/material'
 import {
   AreaChart,
   Area,
@@ -16,16 +16,16 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-} from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
+} from 'recharts'
+import { motion, AnimatePresence } from 'framer-motion'
 // import { useUserStore } from "../../stores/userStore";
-import { getVelocityData } from "../../services/velocityService";
-import type { VelocityData } from "../../types/sprint.types";
+import { getVelocityData } from '../../services/velocityService'
+import type { VelocityData } from '../../types/sprint.types'
 
 interface VelocityChartProps {
-  teamId: string;
-  sprints?: number;
-  showRollingAverage?: boolean;
+  teamId: string
+  sprints?: number
+  showRollingAverage?: boolean
 }
 
 export const VelocityChart: React.FC<VelocityChartProps> = ({
@@ -33,42 +33,44 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
   sprints = 5,
   showRollingAverage = true,
 }) => {
-  const [data, setData] = useState<VelocityData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [rollingAverage, setRollingAverage] = useState<number | null>(null);
+  const [data, setData] = useState<VelocityData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [rollingAverage, setRollingAverage] = useState<number | null>(null)
 
   const calculateRollingAverage = (data: VelocityData[]): number | null => {
-    if (data.length < 3) return null;
-    const last3Sprints = data.slice(-3);
-    const sum = last3Sprints.reduce((acc, sprint) => acc + sprint.points, 0);
-    return Math.round(sum / 3);
-  };
+    if (data.length < 3) return null
+    const last3Sprints = data.slice(-3)
+    const sum = last3Sprints.reduce((acc, sprint) => acc + sprint.points, 0)
+    return Math.round(sum / 3)
+  }
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const velocityData = await getVelocityData(teamId, sprints);
-        setData(velocityData);
+        setLoading(true)
+        setError(null)
+        const velocityData = await getVelocityData(teamId, sprints)
+        setData(velocityData)
 
         if (showRollingAverage) {
-          const avg = calculateRollingAverage(velocityData);
-          setRollingAverage(avg);
+          const avg = calculateRollingAverage(velocityData)
+          setRollingAverage(avg)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load velocity data");
+        setError(
+          err instanceof Error ? err.message : 'Failed to load velocity data'
+        )
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, [teamId, sprints, showRollingAverage]);
+    fetchData()
+  }, [teamId, sprints, showRollingAverage])
 
   const NewTeamMessage = () => (
-    <Box sx={{ p: 2, textAlign: "center" }}>
+    <Box sx={{ p: 2, textAlign: 'center' }}>
       <Typography variant="h6" gutterBottom>
         Velocity trends will appear after completing 3 sprints
       </Typography>
@@ -82,8 +84,8 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
       >
         <Alert severity="info">
           <AlertTitle>Getting Started</AlertTitle>
-          Complete your first few sprints to start seeing velocity trends.
-          This will help in:
+          Complete your first few sprints to start seeing velocity trends. This
+          will help in:
           <ul>
             <li>Understanding team capacity</li>
             <li>Planning future sprints</li>
@@ -92,16 +94,23 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
         </Alert>
       </motion.div>
     </Box>
-  );
+  )
 
   if (loading) {
     return (
       <Card>
-        <CardContent sx={{ minHeight: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <CardContent
+          sx={{
+            minHeight: 300,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <CircularProgress />
         </CardContent>
       </Card>
-    );
+    )
   }
 
   if (error) {
@@ -114,7 +123,7 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
           </Alert>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   if (data.length < 3) {
@@ -124,7 +133,7 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
           <NewTeamMessage />
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -140,9 +149,15 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
             <Typography variant="h6" gutterBottom>
               Team Velocity
             </Typography>
-            <Box data-testid="velocity-chart" sx={{ height: 300, width: "100%" }}>
+            <Box
+              data-testid="velocity-chart"
+              sx={{ height: 300, width: '100%' }}
+            >
               <ResponsiveContainer>
-                <AreaChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <AreaChart
+                  data={data}
+                  margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+                >
                   <XAxis
                     dataKey="sprintName"
                     stroke="#64748b"
@@ -155,14 +170,20 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
                       borderRadius: 8,
-                      border: "none",
-                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                      border: 'none',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                     }}
                   />
                   <defs>
-                    <linearGradient id="velocityGradient" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="velocityGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                     </linearGradient>
@@ -182,7 +203,7 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
                       strokeDasharray="3 3"
                       label={{
                         value: `3-Sprint Avg: ${rollingAverage} pts`,
-                        fill: "#f59e0b",
+                        fill: '#f59e0b',
                         fontSize: 12,
                       }}
                     />
@@ -194,6 +215,5 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
         </Card>
       </motion.div>
     </AnimatePresence>
-  );
-};
-
+  )
+}
