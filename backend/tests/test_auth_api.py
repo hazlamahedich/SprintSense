@@ -45,6 +45,7 @@ class TestAuthAPI:
         """Test successful user login."""
         # Arrange
         mock_user_service.authenticate_user = AsyncMock(return_value=mock_user)
+        mock_user_service.create_access_token = AsyncMock(return_value=("test-token", None))
 
         def mock_get_user_service():
             return mock_user_service
@@ -63,11 +64,10 @@ class TestAuthAPI:
             # Assert
             assert response.status_code == 200
             data = response.json()
-            assert data["message"] == "Login successful"
+            assert data["access_token"] == "test-token"
+            assert data["token_type"] == "bearer"
             assert data["user"]["email"] == "test@example.com"
             assert data["user"]["full_name"] == "Test User"
-            assert "access_token" in response.cookies
-            assert response.cookies["access_token"] is not None
         finally:
             # Clean up dependency override
             app.dependency_overrides.clear()

@@ -261,8 +261,9 @@ class TestEditWorkItemIntegration:
         from app.core.security import create_access_token
 
         token = create_access_token(
-            data={"sub": str(user.id), "email": user.email},
+            subject=str(user.id),
             expires_delta=timedelta(minutes=30),
+            email=user.email
         )
         headers = {"Authorization": f"Bearer {token}"}
 

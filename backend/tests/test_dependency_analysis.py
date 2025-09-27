@@ -3,6 +3,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
+# Skip this test module if required torch components are not available
+if not hasattr(torch, "nn") or not hasattr(torch.nn, "TransformerEncoder"):
+    pytest.skip("Torch TransformerEncoder not available in this environment", allow_module_level=True)
+
 from app.core.config import settings
 from app.domains.ml.dependency_analysis import (
     DependencyAnalysisModel,

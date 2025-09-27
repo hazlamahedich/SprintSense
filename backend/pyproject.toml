@@ -31,6 +31,11 @@ xgboost = "^3.0.5"
 scikit-learn = "^1.7.2"
 numpy = "^2.3.3"
 pandas = "^2.3.2"
+boto3 = "^1.40.40"
+moto = "^5.1.13"
+types-boto3 = {extras = ["essential"], version = "^1.40.40"}
+redis = {extras = ["hiredis"], version = "^6.4.0"}
+apscheduler = "^3.11.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

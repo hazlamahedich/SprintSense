@@ -80,8 +80,9 @@ async def authenticated_async_client(db_session: AsyncSession, authenticated_use
 
     # Create access token for authenticated user
     access_token = create_access_token(
-        data={"sub": str(authenticated_user.id), "email": authenticated_user.email},
+        subject=str(authenticated_user.id),
         expires_delta=timedelta(minutes=30),
+        email=authenticated_user.email
     )
 
     # Override the dependency to use our test session
@@ -122,8 +123,9 @@ async def auth_headers_for_user(test_user):
     from app.core.security import create_access_token
 
     access_token = create_access_token(
-        data={"sub": str(test_user.id), "email": test_user.email},
+        subject=str(test_user.id),
         expires_delta=timedelta(minutes=30),
+        email=test_user.email
     )
 
     return {"Cookie": f"access_token={access_token}"}
@@ -201,8 +203,9 @@ async def auth_headers_for_other_user(other_user):
     from app.core.security import create_access_token
 
     access_token = create_access_token(
-        data={"sub": str(other_user.id), "email": other_user.email},
+        subject=str(other_user.id),
         expires_delta=timedelta(minutes=30),
+        email=other_user.email
     )
 
     return {"Cookie": f"access_token={access_token}"}

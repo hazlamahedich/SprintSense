@@ -70,8 +70,9 @@ async def test_create_invitation_not_team_owner(
 
     # Create access token for other user (not team owner)
     access_token = create_access_token(
-        data={"sub": str(other_user.id), "email": other_user.email},
-        expires_delta=timedelta(minutes=30),
+            subject=str(other_user.id),
+            expires_delta=timedelta(minutes=30),
+            email=other_user.email
     )
 
     invitation_data = {"email": "newuser@example.com", "role": "member"}
@@ -244,8 +245,9 @@ async def test_list_invitations_not_team_owner(
 
     # Create access token for other user (not team owner)
     access_token = create_access_token(
-        data={"sub": str(other_user.id), "email": other_user.email},
-        expires_delta=timedelta(minutes=30),
+            subject=str(other_user.id),
+            expires_delta=timedelta(minutes=30),
+            email=other_user.email
     )
 
     response = await async_client.get(

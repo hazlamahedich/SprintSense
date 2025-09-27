@@ -75,8 +75,9 @@ async def login_user(
         # Create access token
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
-            data={"sub": str(user.id), "email": user.email},
+            subject=str(user.id),
             expires_delta=access_token_expires,
+            email=user.email,
         )
 
         # Set secure HTTP-only cookie

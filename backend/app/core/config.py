@@ -24,6 +24,8 @@ class Settings(BaseSettings):
 
     # Security settings
     SECRET_KEY: str = "a-secure-default-secret-that-should-be-overridden"
+    JWT_SECRET_KEY: str = "a-secure-jwt-secret-key-that-should-be-overridden"
+    JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS settings
@@ -112,6 +114,19 @@ class Settings(BaseSettings):
 
     # Machine Learning settings
     DEPENDENCY_MODEL_PATH: Optional[str] = None
+
+    # AWS settings
+    AWS_REGION: str = "us-east-1"
+    AWS_ACCESS_KEY_ID: Optional[str] = None
+    AWS_SECRET_ACCESS_KEY: Optional[str] = None
+
+    # LLM Security settings
+    LLM_API_KEY_SECRET_ID: str = "test/llm/api-keys"
+    LLM_PROVIDERS: List[str] = ["openai", "anthropic"]
+    LLM_RATE_LIMIT_PER_MINUTE: int = 100
+    
+    # Security monitoring
+    SECURITY_ALERT_CHANNELS: List[str] = ["slack", "email"]
 
 
 settings = Settings()

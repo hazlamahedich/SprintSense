@@ -139,8 +139,9 @@ class TestProjectGoalsAPI:
         from app.core.security import create_access_token
 
         token = create_access_token(
-            data={"sub": str(owner.id), "email": owner.email},
+            subject=str(owner.id),
             expires_delta=timedelta(minutes=30),
+            email=owner.email
         )
         headers = {"Authorization": f"Bearer {token}"}
 
@@ -177,8 +178,9 @@ class TestProjectGoalsAPI:
         from app.core.security import create_access_token
 
         token = create_access_token(
-            data={"sub": str(member.id), "email": member.email},
+            subject=str(member.id),
             expires_delta=timedelta(minutes=30),
+            email=member.email
         )
         headers = {"Authorization": f"Bearer {token}"}
 
@@ -255,8 +257,9 @@ class TestProjectGoalsAPI:
         from app.core.security import create_access_token
 
         token = create_access_token(
-            data={"sub": str(owner.id), "email": owner.email},
+            subject=str(owner.id),
             expires_delta=timedelta(minutes=30),
+            email=owner.email
         )
         headers = {"Authorization": f"Bearer {token}"}
         response = await client.post(
@@ -276,8 +279,9 @@ class TestProjectGoalsAPI:
         from app.core.security import create_access_token
 
         token = create_access_token(
-            data={"sub": str(owner.id), "email": owner.email},
+            subject=str(owner.id),
             expires_delta=timedelta(minutes=30),
+            email=owner.email
         )
         headers = {"Authorization": f"Bearer {token}"}
         response = await client.post(

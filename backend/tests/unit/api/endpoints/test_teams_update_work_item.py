@@ -25,8 +25,9 @@ class TestUpdateTeamWorkItem:
         from app.core.security import create_access_token
 
         access_token = create_access_token(
-            data={"sub": str(user.id), "email": user.email},
+            subject=str(user.id),
             expires_delta=timedelta(minutes=30),
+            email=user.email
         )
         return {"Cookie": f"access_token={access_token}"}
 

@@ -15,8 +15,9 @@ from app.domains.models.user import User
 def test_token(test_user: User) -> str:
     """Create a valid test token."""
     return create_access_token(
-        data={"sub": str(test_user.id), "email": test_user.email},
+        subject=str(test_user.id),
         expires_delta=timedelta(minutes=30),
+        email=test_user.email
     )
 
 
@@ -81,8 +82,9 @@ async def test_invalid_token_fails(async_client: AsyncClient):
 async def test_expired_token_fails(async_client: AsyncClient, test_user: User):
     """Test authentication with expired token fails."""
     expired_token = create_access_token(
-        data={"sub": str(test_user.id), "email": test_user.email},
-        expires_delta=timedelta(minutes=-30),  # Negative delta = expired
+        subject=str(test_user.id),
+        expires_delta=timedelta(minutes=-30),
+        email=test_user.email
     )
 
     # Test with cookie
@@ -121,8 +123,9 @@ async def test_invalid_user_id_in_token(async_client: AsyncClient):
     """Test authentication with non-existent user ID fails."""
     non_existent_id = str(uuid.uuid4())
     token = create_access_token(
-        data={"sub": non_existent_id, "email": "fake@example.com"},
+        subject=non_existent_id,
         expires_delta=timedelta(minutes=30),
+        email="fake@example.com"
     )
 
     # Test with cookie
